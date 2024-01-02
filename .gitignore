@@ -8,3 +8,5 @@ logs/
 .project
 build.number
 libs/
+run/
+.idea/

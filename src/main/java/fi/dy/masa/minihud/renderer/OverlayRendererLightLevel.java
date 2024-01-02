@@ -2,7 +2,7 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.client.MinecraftClient;
@@ -400,8 +400,10 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                 final int endZ   = Math.min((cz << 4) + 15, maxZ);
                 WorldChunk chunk = world.getChunk(cx, cz);
                 final int startY = Math.max(minY, world.getBottomY());
-                final int endY   = Math.min(maxY, chunk.getHighestNonEmptySectionYOffset() + 15 + 1);
-
+                // Replaces getHighestNonEmptySectionYOffset()
+                int yMaxMath = chunk.getHighestNonEmptySection();
+                yMaxMath = yMaxMath == -1 ? chunk.getBottomY() : ChunkSectionPos.getBlockCoord(chunk.sectionIndexToCoord(yMaxMath));
+                final int endY = Math.min(maxY, yMaxMath + 15 + 1);
                 for (int y = startY; y <= endY; ++y)
                 {
                     if (y > startY)
