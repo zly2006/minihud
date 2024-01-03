@@ -10,12 +10,12 @@ import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.malilib.config.IConfigBoolean;
+import fi.dy.masa.malilib.util.ChunkUtils;
 
 public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends OverlayRendererBase
 {
@@ -192,10 +192,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
             for (int cx = minCX; cx <= maxCX; ++cx)
             {
                 WorldChunk chunk = world.getChunk(cx, cz);
-                // Replaces getHighestNonEmptySectionYOffset()
-                int yMaxMath = chunk.getHighestNonEmptySection();
-                yMaxMath = yMaxMath == -1 ? chunk.getBottomY() : ChunkSectionPos.getBlockCoord(chunk.sectionIndexToCoord(yMaxMath));
-                int height = yMaxMath + 15;
+                int height = ChunkUtils.getHighestSectionYOffset(chunk) + 15;
 
                 if (height > maxY)
                 {
