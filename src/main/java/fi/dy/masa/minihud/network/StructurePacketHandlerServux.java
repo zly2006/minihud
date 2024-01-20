@@ -18,7 +18,8 @@ public class StructurePacketHandlerServux implements IPluginChannelHandler
 
     public static final StructurePacketHandlerServux INSTANCE = new StructurePacketHandlerServux();
 
-    private static final Identifier CHANNEL = new Identifier("servux:structures");
+    // Change Channel Identifier to having two parameters.  See ServUX.
+    private static final Identifier CHANNEL = new Identifier("servux", "structures");
     private boolean registered;
     private int timeout;
 
