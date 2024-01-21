@@ -2,6 +2,7 @@ package fi.dy.masa.minihud.util;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.regex.Matcher;
@@ -12,6 +13,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
+import fi.dy.masa.minihud.renderer.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
@@ -32,6 +34,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
@@ -48,11 +51,6 @@ import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.network.StructurePacketHandlerCarpet;
 import fi.dy.masa.minihud.network.StructurePacketHandlerServux;
-import fi.dy.masa.minihud.renderer.OverlayRendererBeaconRange;
-import fi.dy.masa.minihud.renderer.OverlayRendererBiomeBorders;
-import fi.dy.masa.minihud.renderer.OverlayRendererConduitRange;
-import fi.dy.masa.minihud.renderer.OverlayRendererLightLevel;
-import fi.dy.masa.minihud.renderer.OverlayRendererSpawnableColumnHeights;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.renderer.worker.ChunkTask;
 import fi.dy.masa.minihud.renderer.worker.ThreadWorker;
@@ -87,11 +85,12 @@ public class DataStorage
     private double serverTPS;
     private double serverMSPT;
     private BlockPos worldSpawn = BlockPos.ORIGIN;
+    private int spawnChunkRadius = -1;
     private Vec3d distanceReferencePoint = Vec3d.ZERO;
     private final int[] blockBreakCounter = new int[100];
     private final ArrayListMultimap<StructureType, StructureData> structures = ArrayListMultimap.create();
     private final MinecraftClient mc = MinecraftClient.getInstance();
-
+    private final boolean hasIntegratedServer = mc.isIntegratedServerRunning();
     private final PriorityBlockingQueue<ChunkTask> taskQueue = Queues.newPriorityBlockingQueue();
     private final Thread workerThread;
     private final ThreadWorker worker;
@@ -149,6 +148,7 @@ public class DataStorage
         this.lastStructureUpdatePos = null;
         this.structures.clear();
         this.worldSpawn = BlockPos.ORIGIN;
+        this.spawnChunkRadius = -1;
         this.clearTasks();
 
         StructurePacketHandlerCarpet.INSTANCE.reset();
@@ -202,10 +202,19 @@ public class DataStorage
         MiniHUD.printDebug("DataStorage#onWorldJoin()");
         OverlayRendererBeaconRange.INSTANCE.setNeedsUpdate();
         OverlayRendererConduitRange.INSTANCE.setNeedsUpdate();
+        OverlayRendererSpawnChunks.setNeedsUpdate();
 
-        if (this.mc.isIntegratedServerRunning() == false && RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
+        if (!this.hasIntegratedServer)
         {
-            this.shouldRegisterStructureChannel = true;
+            if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
+                this.shouldRegisterStructureChannel = true;
+            // Add servux packets for SpawnChunkRadius, etc
+        }
+        else
+        {
+            // Set Spawn Chunk Radius from game rules.
+            setSpawnChunkRadiusIfUnknown(Objects.requireNonNull(mc.getServer()).getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS));
+            MiniHUD.printDebug("DataStorage#oNWorldJoin(): setting Spawn Chunk Radius to: {}", this.spawnChunkRadius);
         }
     }
 
@@ -221,11 +230,28 @@ public class DataStorage
         this.worldSpawnValid = true;
     }
 
+    public void setSpawnChunkRadius(int radius) {
+        if (radius >= 0)
+        {
+            OverlayRendererSpawnChunks.setNeedsUpdate();
+            this.spawnChunkRadius = radius;
+        }
+        else
+        {
+            this.spawnChunkRadius = -1;
+        }
+    }
     public void setWorldSpawnIfUnknown(BlockPos spawn)
     {
         if (this.worldSpawnValid == false)
         {
             this.setWorldSpawn(spawn);
+        }
+    }
+    public void setSpawnChunkRadiusIfUnknown(int radius) {
+        if (this.spawnChunkRadius < 0)
+        {
+            this.setSpawnChunkRadius(radius);
         }
     }
 
@@ -274,6 +300,20 @@ public class DataStorage
     public BlockPos getWorldSpawn()
     {
         return this.worldSpawn;
+    }
+
+    public boolean isSpawnChunkRadiusKnown()
+    {
+        return this.spawnChunkRadius >= 0;
+    }
+    public int getSpawnChunkRadius()
+    {
+        return this.spawnChunkRadius;
+    }
+
+    public boolean hasIntegratedServer()
+    {
+        return this.hasIntegratedServer;
     }
 
     public boolean hasTPSData()

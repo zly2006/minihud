@@ -1,5 +1,8 @@
 package fi.dy.masa.minihud.renderer;
 
+import fi.dy.masa.minihud.MiniHUD;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.GameRules;
 import org.apache.commons.lang3.tuple.Pair;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
@@ -21,6 +24,8 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
 
     protected final RendererToggle toggle;
     protected final boolean isPlayerFollowing;
+    // Set to -1 if radius is unknown, using default values
+    protected int spawnChunkRadius = -1;
 
     public static void setNeedsUpdate()
     {
@@ -76,6 +81,33 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
 
         DataStorage data = DataStorage.getInstance();
         BlockPos spawn = this.isPlayerFollowing ? PositionUtils.getEntityBlockPos(entity) : data.getWorldSpawn();
+        if (this.spawnChunkRadius < 0)
+        {
+            // For Integrated server
+            if (data.hasIntegratedServer())
+            {
+                this.spawnChunkRadius = getSpawnChunkRadius(mc.getServer());
+                data.setSpawnChunkRadiusIfUnknown(this.spawnChunkRadius);
+            }
+            else if (data.getSpawnChunkRadius() >= 0)
+            {
+                this.spawnChunkRadius = data.getSpawnChunkRadius();
+            }
+            else
+            {
+                this.spawnChunkRadius = 2;
+                data.setSpawnChunkRadiusIfUnknown(this.spawnChunkRadius);
+            }
+            // Sets default 24w03b spawn chunk radius of 2 if not found.
+        }
+        int spawnChunkRadius = this.spawnChunkRadius;
+        if (spawnChunkRadius < 0)
+            spawnChunkRadius = 2;
+        // Minecraft increments this value by 1 when setting the chunk loader ticket
+        //      because we can't force load -1 chunks for entity processing.
+        spawnChunkRadius++;
+
+        MiniHUD.printDebug("OverlayRendererSpawnChunks#update(): SpawnChunkRadius calc base: {}, outer: {}, lazy: {}, entity: {}", spawnChunkRadius, spawnChunkRadius*2, spawnChunkRadius, spawnChunkRadius-1);
 
         RenderObjectBase renderQuads = this.renderObjects.get(0);
         RenderObjectBase renderLines = this.renderObjects.get(1);
@@ -95,13 +127,17 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(spawn, cameraPos, colorEntity, 0.001, BUFFER_2);
         drawBlockBoundingBoxSidesBatchedQuads(spawn, cameraPos, colorEntity, 0.001, BUFFER_1);
 
-        Pair<BlockPos, BlockPos> corners = this.getSpawnChunkCorners(spawn, 22, mc.world);
+        // Orig: Base is 10.
+        // Org 22 (Outer (10 + 1) * 2)
+        Pair<BlockPos, BlockPos> corners = this.getSpawnChunkCorners(spawn, spawnChunkRadius*2, mc.world);
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorOuter, BUFFER_1, BUFFER_2);
 
-        corners = this.getSpawnChunkCorners(spawn, 11, mc.world);
+        // Org 11 (Lazy 10 + 1)
+        corners = this.getSpawnChunkCorners(spawn, spawnChunkRadius, mc.world);
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorLazy, BUFFER_1, BUFFER_2);
 
-        corners = this.getSpawnChunkCorners(spawn, 9, mc.world);
+        // Org 9 (Entity 10 - 1)
+        corners = this.getSpawnChunkCorners(spawn, spawnChunkRadius-1, mc.world);
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorEntity, BUFFER_1, BUFFER_2);
 
         renderQuads.uploadData(BUFFER_1);
@@ -121,6 +157,25 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         BlockPos pos2 = new BlockPos(((cx + chunkRange) << 4) + 15, maxY, ((cz + chunkRange) << 4) + 15);
 
         return Pair.of(pos1, pos2);
+    }
+    protected int getSpawnChunkRadius(MinecraftServer server)
+    {
+        if (server != null)
+        {
+            int spawnChunkRadius = server.getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
+            this.spawnChunkRadius = spawnChunkRadius;
+            return spawnChunkRadius;
+        }
+        else return -1;
+    }
+    protected int getSpawnChunkRadius(World world)
+    {
+        if (world != null)
+        {
+            int spawnChunkRadius = world.getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
+            this.spawnChunkRadius = spawnChunkRadius;
+            return spawnChunkRadius;
+        } else return -1;
     }
 
     /**
