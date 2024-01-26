@@ -18,6 +18,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
@@ -776,6 +777,8 @@ public class DataStorage
     {
         if (textComponent.getString().isEmpty() == false)
         {
+            MiniHUD.printDebug("DataStorage#handleCarpetServerTPSData(): Did we receive Carpet TPS Data?: hashcode: {}", textComponent.hashCode());
+            MiniHUD.printDebug("DataStorage#handleCarpetServerTPSData(): getLiteralString(): {}", textComponent.getLiteralString());
             String text = Formatting.strip(textComponent.getString());
             String[] lines = text.split("\n");
 
@@ -799,6 +802,11 @@ public class DataStorage
                 }
             }
         }
+    }
+    public void handleCarpetServerLoggerData(Text content)
+    {
+        MiniHUD.printDebug("DataStorage#handleCarpetServerLoggerData(): received Server logger data (Carpet?): hashcode: {}", content.hashCode());
+        MiniHUD.printDebug("DataStorage#handleCarpetServerLoggerData(): getLiteralString(): {}", content.getLiteralString());
     }
 
     public JsonObject toJson()

@@ -5,12 +5,14 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
-import fi.dy.masa.malilib.network.IPluginChannelHandler;
+//import fi.dy.masa.malilib.network.IPluginChannelHandler;
 import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.util.DataStorage;
 
-public class StructurePacketHandlerServux implements IPluginChannelHandler
+@Deprecated
+//public class StructurePacketHandlerServux implements IPluginChannelHandler
+public class StructurePacketHandlerServux
 {
     public static final int PROTOCOL_VERSION = 1;
     public static final int PACKET_S2C_METADATA = 1;
@@ -28,13 +30,13 @@ public class StructurePacketHandlerServux implements IPluginChannelHandler
         this.registered = false;
     }
 
-    @Override
+    //@Override
     public Identifier getChannel()
     {
         return CHANNEL;
     }
 
-    @Override
+    //@Override
     public void onPacketReceived(PacketByteBuf buf)
     {
         int id = buf.readVarInt();
@@ -60,6 +62,7 @@ public class StructurePacketHandlerServux implements IPluginChannelHandler
             if (tag != null &&
                 tag.getInt("version") == PROTOCOL_VERSION &&
                 tag.getString("id").equals(CHANNEL.toString()))
+            // Might need to remove the "id" string
             {
                 this.timeout = tag.getInt("timeout");
                 this.registered = true;

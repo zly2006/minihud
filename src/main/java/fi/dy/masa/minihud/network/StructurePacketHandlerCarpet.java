@@ -10,7 +10,9 @@ import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.util.DataStorage;
 
-public class StructurePacketHandlerCarpet implements IPluginChannelHandler
+@Deprecated
+//public class StructurePacketHandlerCarpet implements IPluginChannelHandler
+public class StructurePacketHandlerCarpet
 {
     // Change Channel Identifier to having two parameters
     // --> I can't find this code under carpet mod -- Was it removed?
@@ -29,13 +31,13 @@ public class StructurePacketHandlerCarpet implements IPluginChannelHandler
         this.registered = false;
     }
 
-    @Override
+    //@Override
     public Identifier getChannel()
     {
         return CHANNEL;
     }
 
-    @Override
+    //@Override
     public void onPacketReceived(PacketByteBuf buf)
     {
         int id = buf.readVarInt();

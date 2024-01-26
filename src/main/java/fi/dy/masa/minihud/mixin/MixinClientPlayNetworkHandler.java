@@ -32,12 +32,15 @@ public abstract class MixinClientPlayNetworkHandler
     @Inject(method = "onGameMessage", at = @At("RETURN"))
     private void onGameMessage(net.minecraft.network.packet.s2c.play.GameMessageS2CPacket packet, CallbackInfo ci)
     {
+        // #FIXME -- Verify Carpet's Logger subscriptions get sent via "GameMessageS2CPackets"
+        DataStorage.getInstance().handleCarpetServerLoggerData(packet.content());
         DataStorage.getInstance().onChatMessage(packet.content());
     }
 
     @Inject(method = "onPlayerListHeader", at = @At("RETURN"))
     private void onHandlePlayerListHeaderFooter(net.minecraft.network.packet.s2c.play.PlayerListHeaderS2CPacket packetIn, CallbackInfo ci)
     {
+        // #FIXME -- Verify that this works
         DataStorage.getInstance().handleCarpetServerTPSData(packetIn.getFooter());
         DataStorage.getInstance().getMobCapData().parsePlayerListFooterMobCapData(packetIn.getFooter());
     }
