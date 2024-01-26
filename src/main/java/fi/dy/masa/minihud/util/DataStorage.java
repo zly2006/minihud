@@ -40,7 +40,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.gen.structure.Structure;
 
-import fi.dy.masa.malilib.network.ClientPacketChannelHandler;
+//import fi.dy.masa.malilib.network.ClientPacketChannelHandler;
 import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
@@ -194,7 +194,8 @@ public class DataStorage
     {
         MiniHUD.printDebug("DataStorage#setIsServuxServer()");
         this.servuxServer = true;
-        ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerCarpet.INSTANCE);
+        // #FIXME
+        //ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerCarpet.INSTANCE);
     }
 
     public void onWorldJoin()
@@ -603,8 +604,9 @@ public class DataStorage
                     {
                         MiniHUD.printDebug("DataStorage#updateStructureData(): Unregister channels");
                         // (re-)register the structure packet handlers
-                        ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerCarpet.INSTANCE);
-                        ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerServux.INSTANCE);
+                        // #FIXME
+                        //ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerCarpet.INSTANCE);
+                        //ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerServux.INSTANCE);
 
                         this.registerStructureChannel();
                     }
@@ -618,14 +620,16 @@ public class DataStorage
     public void registerStructureChannel()
     {
         MiniHUD.printDebug("DataStorage#registerStructureChannel(): Servux");
-        ClientPacketChannelHandler.getInstance().registerClientChannelHandler(StructurePacketHandlerServux.INSTANCE);
+        // #FIXME
+        //ClientPacketChannelHandler.getInstance().registerClientChannelHandler(StructurePacketHandlerServux.INSTANCE);
 
         // Don't register the Carpet structure channel if the server is known to have the Servux mod
         if (this.servuxServer == false)
         {
             MiniHUD.printDebug("DataStorage#registerStructureChannel(): Carpet");
 
-            ClientPacketChannelHandler.getInstance().registerClientChannelHandler(StructurePacketHandlerCarpet.INSTANCE);
+            // #FIXME
+            //ClientPacketChannelHandler.getInstance().registerClientChannelHandler(StructurePacketHandlerCarpet.INSTANCE);
         }
     }
 
