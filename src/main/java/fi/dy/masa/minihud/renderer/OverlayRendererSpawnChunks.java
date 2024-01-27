@@ -25,7 +25,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
     protected final RendererToggle toggle;
     protected final boolean isPlayerFollowing;
     // Set to -1 if radius is unknown, using default values
-    protected int spawnChunkRadius = -1;
+    private int spawnChunkRadius = -1;
 
     public static void setNeedsUpdate()
     {
@@ -87,27 +87,27 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
             if (data.hasIntegratedServer())
             {
                 this.spawnChunkRadius = getSpawnChunkRadius(mc.getServer());
-                data.setSpawnChunkRadiusIfUnknown(this.spawnChunkRadius);
-            }
-            else if (data.getSpawnChunkRadius() >= 0)
-            {
-                this.spawnChunkRadius = data.getSpawnChunkRadius();
+                data.setSpawnChunkRadius(this.spawnChunkRadius);
             }
             else
             {
-                this.spawnChunkRadius = 2;
-                data.setSpawnChunkRadiusIfUnknown(this.spawnChunkRadius);
+                this.spawnChunkRadius = getSpawnChunkRadius();
+                if (this.spawnChunkRadius < 0)
+                {
+                    this.spawnChunkRadius = 2;
+                    data.setSpawnChunkRadiusIfUnknown(this.spawnChunkRadius);
+                }
+                // Sets default 24w03b spawn chunk radius of 2 if not found.
             }
-            // Sets default 24w03b spawn chunk radius of 2 if not found.
         }
         int spawnChunkRadius = this.spawnChunkRadius;
         if (spawnChunkRadius < 0)
             spawnChunkRadius = 2;
         // Minecraft increments this value by 1 when setting the chunk loader ticket
         //      because we can't force load -1 chunks for entity processing.
-        spawnChunkRadius++;
+        // spawnChunkRadius++;
 
-        MiniHUD.printDebug("OverlayRendererSpawnChunks#update(): SpawnChunkRadius calc base: {}, outer: {}, lazy: {}, entity: {}", spawnChunkRadius, spawnChunkRadius*2, spawnChunkRadius, spawnChunkRadius-1);
+        MiniHUD.printDebug("OverlayRendererSpawnChunks#update(): SpawnChunkRadius calc base: {}, outer: {}, lazy: {}, entity: {}", spawnChunkRadius, spawnChunkRadius+1, spawnChunkRadius, spawnChunkRadius-1);
 
         RenderObjectBase renderQuads = this.renderObjects.get(0);
         RenderObjectBase renderLines = this.renderObjects.get(1);
@@ -129,7 +129,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
 
         // Orig: Base is 10.
         // Org 22 (Outer (10 + 1) * 2)
-        Pair<BlockPos, BlockPos> corners = this.getSpawnChunkCorners(spawn, spawnChunkRadius*2, mc.world);
+        Pair<BlockPos, BlockPos> corners = this.getSpawnChunkCorners(spawn, spawnChunkRadius+1, mc.world);
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorOuter, BUFFER_1, BUFFER_2);
 
         // Org 11 (Lazy 10 + 1)
@@ -162,9 +162,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
     {
         if (server != null)
         {
-            int spawnChunkRadius = server.getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
-            this.spawnChunkRadius = spawnChunkRadius;
-            return spawnChunkRadius;
+            return server.getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
         }
         else return -1;
     }
@@ -172,10 +170,13 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
     {
         if (world != null)
         {
-            int spawnChunkRadius = world.getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
-            this.spawnChunkRadius = spawnChunkRadius;
-            return spawnChunkRadius;
-        } else return -1;
+            return world.getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
+        }
+        else return -1;
+    }
+    protected int getSpawnChunkRadius()
+    {
+        return DataStorage.getInstance().getSpawnChunkRadius();
     }
 
     /**

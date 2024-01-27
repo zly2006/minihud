@@ -7,6 +7,7 @@ import fi.dy.masa.minihud.config.StructureToggle;
 
 public enum StructureType
 {
+    ANCIENT_CITY        (StructureToggle.OVERLAY_STRUCTURE_ANCIENT_CITY,        "minecraft:ancient_city"),
     BURIED_TREASURE     (StructureToggle.OVERLAY_STRUCTURE_BURIED_TREASURE,     "minecraft:buried_treasure"),
     DESERT_PYRAMID      (StructureToggle.OVERLAY_STRUCTURE_DESERT_PYRAMID,      "minecraft:desert_pyramid"),
     IGLOO               (StructureToggle.OVERLAY_STRUCTURE_IGLOO,               "minecraft:igloo"),
@@ -21,7 +22,6 @@ public enum StructureType
     STRONGHOLD          (StructureToggle.OVERLAY_STRUCTURE_STRONGHOLD,          "minecraft:stronghold"),
     VILLAGE             (StructureToggle.OVERLAY_STRUCTURE_VILLAGE,             "minecraft:village_desert", "minecraft:village_plains", "minecraft:village_savanna", "minecraft:village_snowy", "minecraft:village_taiga"),
     WITCH_HUT           (StructureToggle.OVERLAY_STRUCTURE_WITCH_HUT,           "minecraft:swamp_hut"),
-
     BASTION_REMNANT     (StructureToggle.OVERLAY_STRUCTURE_BASTION_REMNANT,     "minecraft:bastion_remnant"),
     NETHER_FORTRESS     (StructureToggle.OVERLAY_STRUCTURE_NETHER_FORTRESS,     "minecraft:fortress"),
     NETHER_FOSSIL       (StructureToggle.OVERLAY_STRUCTURE_NETHER_FOSSIL,       "minecraft:nether_fossil"),

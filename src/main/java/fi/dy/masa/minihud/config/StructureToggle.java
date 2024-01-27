@@ -10,6 +10,7 @@ import fi.dy.masa.minihud.util.DataStorage;
 
 public enum StructureToggle
 {
+    OVERLAY_STRUCTURE_ANCIENT_CITY      ("Ancient City",    "", "#30EB07EB", "#30EB07EB", "Toggle Ancient City structure bounding boxes rendering", "Ancient City"),
     OVERLAY_STRUCTURE_BASTION_REMNANT   ("Bastion Remnant", "", "#302171F5", "#302171F5", "Toggle Bastion Remnant structure bounding boxes rendering", "Bastion Remnant"),
     OVERLAY_STRUCTURE_BURIED_TREASURE   ("Buried Treasure", "", "#302298E6", "#302298E6", "Toggle Buried Treasure structure bounding boxes rendering", "Buried Treasure"),
     OVERLAY_STRUCTURE_DESERT_PYRAMID    ("Desert Pyramid",  "", "#30FFFF00", "#30FFFF00", "Toggle Desert Pyramid structure bounding boxes rendering", "Desert Pyramid"),

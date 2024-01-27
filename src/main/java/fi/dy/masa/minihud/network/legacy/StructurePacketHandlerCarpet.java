@@ -1,14 +1,14 @@
-package fi.dy.masa.minihud.network;
+package fi.dy.masa.minihud.network.legacy;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+//import net.minecraft.nbt.NbtCompound;
+//import net.minecraft.nbt.NbtList;
+//import net.minecraft.network.PacketByteBuf;
+//import net.minecraft.util.Identifier;
 
 //import fi.dy.masa.malilib.network.IPluginChannelHandler;
-import fi.dy.masa.malilib.util.Constants;
-import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.util.DataStorage;
+//import fi.dy.masa.malilib.util.Constants;
+//import fi.dy.masa.minihud.MiniHUD;
+//import fi.dy.masa.minihud.util.DataStorage;
 
 @Deprecated
 //public class StructurePacketHandlerCarpet implements IPluginChannelHandler
@@ -16,7 +16,7 @@ public class StructurePacketHandlerCarpet
 {
     // Change Channel Identifier to having two parameters
     // --> I can't find this code under carpet mod -- Was it removed?
-    // --> I'll just leave this alone for the moment until verified
+    /*
     public static final Identifier CHANNEL = new Identifier("carpet", "structures");
     public static final int PACKET_S2C_DATA = 0;
     public static final int VERSION = 1;
@@ -67,4 +67,5 @@ public class StructurePacketHandlerCarpet
             }
         }
     }
+     */
 }

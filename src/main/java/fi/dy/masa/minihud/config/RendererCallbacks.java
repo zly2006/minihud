@@ -1,5 +1,6 @@
 package fi.dy.masa.minihud.config;
 
+import fi.dy.masa.minihud.network.packet.PacketProvider;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -7,12 +8,9 @@ import net.minecraft.util.math.Vec3d;
 
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.network.ClientPacketChannelHandler;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
-import fi.dy.masa.minihud.network.StructurePacketHandlerCarpet;
-import fi.dy.masa.minihud.network.StructurePacketHandlerServux;
 import fi.dy.masa.minihud.renderer.OverlayRendererBeaconRange;
 import fi.dy.masa.minihud.renderer.OverlayRendererBiomeBorders;
 import fi.dy.masa.minihud.renderer.OverlayRendererConduitRange;
@@ -131,7 +129,7 @@ public class RendererCallbacks
 
         if (mc != null && mc.player != null)
         {
-            if (mc.isIntegratedServerRunning() == false)
+            if (!mc.isIntegratedServerRunning())
             {
                 if (config.getBooleanValue())
                 {
@@ -139,8 +137,9 @@ public class RendererCallbacks
                 }
                 else
                 {
-                    ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerCarpet.INSTANCE);
-                    ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerServux.INSTANCE);
+                    PacketProvider.unregisterPayloads();
+                    //ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerCarpet.INSTANCE);
+                    //ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerServux.INSTANCE);
                 }
             }
             else

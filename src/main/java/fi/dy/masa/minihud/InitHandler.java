@@ -1,17 +1,13 @@
 package fi.dy.masa.minihud;
 
 import fi.dy.masa.malilib.config.ConfigManager;
-import fi.dy.masa.malilib.event.InputEventHandler;
-import fi.dy.masa.malilib.event.RenderEventHandler;
-import fi.dy.masa.malilib.event.TickHandler;
-import fi.dy.masa.malilib.event.WorldLoadHandler;
+import fi.dy.masa.malilib.event.*;
 import fi.dy.masa.malilib.interfaces.IInitializationHandler;
+import fi.dy.masa.malilib.network.ClientNetworkPlayInitHandler;
 import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.event.ClientTickHandler;
-import fi.dy.masa.minihud.event.InputHandler;
-import fi.dy.masa.minihud.event.RenderHandler;
-import fi.dy.masa.minihud.event.WorldLoadListener;
+import fi.dy.masa.minihud.event.*;
 import fi.dy.masa.minihud.hotkeys.KeyCallbacks;
+import fi.dy.masa.minihud.network.packet.PacketProvider;
 
 public class InitHandler implements IInitializationHandler
 {
@@ -32,6 +28,15 @@ public class InitHandler implements IInitializationHandler
         WorldLoadHandler.getInstance().registerWorldLoadPostHandler(listener);
 
         TickHandler.getInstance().registerClientTickHandler(new ClientTickHandler());
+
+        // Register Play Channels
+        ClientNetworkPlayInitHandler.registerPlayChannels();
+        // Register Server Events Listener
+        ServerListener serverListener = new ServerListener();
+        ServerHandler.getInstance().registerServerHandler(serverListener);
+
+        // Register All Packet Providers
+        PacketProvider.registerPayloads();
 
         KeyCallbacks.init();
     }

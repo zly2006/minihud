@@ -13,12 +13,14 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
+import fi.dy.masa.malilib.event.ServuxPayloadHandler;
+import fi.dy.masa.minihud.network.packet.PacketProvider;
+import fi.dy.masa.minihud.network.packet.ServuxPacketType;
 import fi.dy.masa.minihud.renderer.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
@@ -41,7 +43,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.gen.structure.Structure;
 
-//import fi.dy.masa.malilib.network.ClientPacketChannelHandler;
 import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
@@ -50,8 +51,6 @@ import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
-import fi.dy.masa.minihud.network.StructurePacketHandlerCarpet;
-import fi.dy.masa.minihud.network.StructurePacketHandlerServux;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.renderer.worker.ChunkTask;
 import fi.dy.masa.minihud.renderer.worker.ThreadWorker;
@@ -62,11 +61,6 @@ public class DataStorage
     private static final Pattern PATTERN_CARPET_TPS = Pattern.compile("TPS: (?<tps>[0-9]+[\\.,][0-9]) MSPT: (?<mspt>[0-9]+[\\.,][0-9])");
 
     public static final DataStorage INSTANCE = new DataStorage();
-
-    public static final int CARPET_ID_BOUNDINGBOX_MARKERS = 3;
-    public static final int CARPET_ID_LARGE_BOUNDINGBOX_MARKERS_START = 7;
-    public static final int CARPET_ID_LARGE_BOUNDINGBOX_MARKERS = 8;
-
     private final MobCapDataHandler mobCapData = new MobCapDataHandler();
     private boolean worldSeedValid;
     private boolean serverTPSValid;
@@ -152,15 +146,17 @@ public class DataStorage
         this.spawnChunkRadius = -1;
         this.clearTasks();
 
-        StructurePacketHandlerCarpet.INSTANCE.reset();
-        StructurePacketHandlerServux.INSTANCE.reset();
+        //StructurePacketHandlerCarpet.INSTANCE.reset();
+        //StructurePacketHandlerServux.INSTANCE.reset();
+        ((ServuxPayloadHandler) ServuxPayloadHandler.getInstance()).reset();
+
         ShapeManager.INSTANCE.clear();
         OverlayRendererBeaconRange.INSTANCE.clear();
         OverlayRendererConduitRange.INSTANCE.clear();
         OverlayRendererBiomeBorders.INSTANCE.clear();
         OverlayRendererLightLevel.reset();
 
-        if (isLogout || Configs.Generic.DONT_RESET_SEED_ON_DIMENSION_CHANGE.getBooleanValue() == false)
+        if (isLogout || !Configs.Generic.DONT_RESET_SEED_ON_DIMENSION_CHANGE.getBooleanValue())
         {
             this.worldSeedValid = false;
             this.worldSeed = 0;
@@ -195,8 +191,6 @@ public class DataStorage
     {
         MiniHUD.printDebug("DataStorage#setIsServuxServer()");
         this.servuxServer = true;
-        // #FIXME
-        //ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerCarpet.INSTANCE);
     }
 
     public void onWorldJoin()
@@ -210,13 +204,13 @@ public class DataStorage
         {
             if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                 this.shouldRegisterStructureChannel = true;
-            // Add servux packets for SpawnChunkRadius, etc
+            // Add servux packets for SpawnChunkRadius, etc?
         }
         else
         {
             // Set Spawn Chunk Radius from game rules.
             setSpawnChunkRadiusIfUnknown(Objects.requireNonNull(mc.getServer()).getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS));
-            MiniHUD.printDebug("DataStorage#oNWorldJoin(): setting Spawn Chunk Radius to: {}", this.spawnChunkRadius);
+            MiniHUD.printDebug("DataStorage#onWorldJoin(): setting Spawn Chunk Radius to: {}", this.spawnChunkRadius);
         }
     }
 
@@ -245,7 +239,7 @@ public class DataStorage
     }
     public void setWorldSpawnIfUnknown(BlockPos spawn)
     {
-        if (this.worldSpawnValid == false)
+        if (!this.worldSpawnValid)
         {
             this.setWorldSpawn(spawn);
         }
@@ -280,7 +274,7 @@ public class DataStorage
 
     public long getWorldSeed(World world)
     {
-        if (this.worldSeedValid == false && this.mc.isIntegratedServerRunning())
+        if (!this.worldSeedValid && this.mc.isIntegratedServerRunning())
         {
             MinecraftServer server = this.mc.getServer();
             ServerWorld worldTmp = server.getWorld(world.getRegistryKey());
@@ -513,7 +507,7 @@ public class DataStorage
     {
         // Carpet server sends the TPS and MSPT values via the player list footer data,
         // and for single player the data is grabbed directly from the integrated server.
-        if (this.carpetServer == false && this.mc.isInSingleplayer() == false)
+        if (!this.carpetServer && !this.mc.isInSingleplayer())
         {
             long currentTime = System.nanoTime();
 
@@ -552,7 +546,7 @@ public class DataStorage
     {
         ArrayListMultimap<StructureType, StructureData> copy = ArrayListMultimap.create();
 
-        if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() == false)
+        if (!RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
         {
             return copy;
         }
@@ -563,7 +557,7 @@ public class DataStorage
             {
                 Collection<StructureData> values = this.structures.get(type);
 
-                if (values.isEmpty() == false)
+                if (!values.isEmpty())
                 {
                     copy.putAll(type, values);
                 }
@@ -605,11 +599,13 @@ public class DataStorage
                     {
                         MiniHUD.printDebug("DataStorage#updateStructureData(): Unregister channels");
                         // (re-)register the structure packet handlers
-                        // #FIXME
-                        //ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerCarpet.INSTANCE);
+                        PacketProvider.unregisterPayloads();
                         //ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerServux.INSTANCE);
 
                         this.registerStructureChannel();
+                        NbtCompound nbt= new NbtCompound();
+                        nbt.putInt("packetType", ServuxPacketType.PACKET_S2C_REFRESH_METADATA);
+                        ((ServuxPayloadHandler) ServuxPayloadHandler.getInstance()).sendServuxPayload(nbt);
                     }
 
                     this.shouldRegisterStructureChannel = false;
@@ -621,16 +617,14 @@ public class DataStorage
     public void registerStructureChannel()
     {
         MiniHUD.printDebug("DataStorage#registerStructureChannel(): Servux");
-        // #FIXME
         //ClientPacketChannelHandler.getInstance().registerClientChannelHandler(StructurePacketHandlerServux.INSTANCE);
+        PacketProvider.registerPayloads();
 
         // Don't register the Carpet structure channel if the server is known to have the Servux mod
-        if (this.servuxServer == false)
+        if (!this.servuxServer)
         {
-            MiniHUD.printDebug("DataStorage#registerStructureChannel(): Carpet");
-
-            // #FIXME
-            //ClientPacketChannelHandler.getInstance().registerClientChannelHandler(StructurePacketHandlerCarpet.INSTANCE);
+            MiniHUD.printDebug("DataStorage#registerStructureChannel(): No ServUX has been detected.");
+            // Carpet no longer provides Structures.
         }
     }
 
@@ -677,7 +671,7 @@ public class DataStorage
         MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): start");
 
         // Ignore the data from QuickCarpet if the Servux mod is also present
-        if (this.servuxServer && isServux == false)
+        if (this.servuxServer && !isServux)
         {
             MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): Ignoring structure data from not Servux");
             return;
@@ -770,16 +764,15 @@ public class DataStorage
 
         this.structureRendererNeedsUpdate = true;
 
-        //MiniHUD.printDebug("Structure data updated from the integrated server ({} structures)", this.structures.size());
+        MiniHUD.printDebug("Structure data updated from the integrated server ({} structures)", this.structures.size());
     }
 
     public void handleCarpetServerTPSData(Text textComponent)
     {
-        if (textComponent.getString().isEmpty() == false)
+        if (!textComponent.getString().isEmpty())
         {
-            MiniHUD.printDebug("DataStorage#handleCarpetServerTPSData(): Did we receive Carpet TPS Data?: hashcode: {}", textComponent.hashCode());
-            MiniHUD.printDebug("DataStorage#handleCarpetServerTPSData(): getLiteralString(): {}", textComponent.getLiteralString());
             String text = Formatting.strip(textComponent.getString());
+            //MiniHUD.printDebug("DataStorage#handleCarpetServerTPSData(): plain text: {}", text);
             String[] lines = text.split("\n");
 
             for (String line : lines)
@@ -803,11 +796,6 @@ public class DataStorage
             }
         }
     }
-    public void handleCarpetServerLoggerData(Text content)
-    {
-        MiniHUD.printDebug("DataStorage#handleCarpetServerLoggerData(): received Server logger data (Carpet?): hashcode: {}", content.hashCode());
-        MiniHUD.printDebug("DataStorage#handleCarpetServerLoggerData(): getLiteralString(): {}", content.getLiteralString());
-    }
 
     public JsonObject toJson()
     {
@@ -818,6 +806,10 @@ public class DataStorage
         if (this.worldSeedValid)
         {
             obj.add("seed", new JsonPrimitive(this.worldSeed));
+        }
+        if (this.isSpawnChunkRadiusKnown())
+        {
+            obj.add("spawn_chunk_radius", new JsonPrimitive(this.spawnChunkRadius));
         }
 
         return obj;
@@ -840,6 +832,11 @@ public class DataStorage
         {
             this.worldSeed = JsonUtils.getLong(obj, "seed");
             this.worldSeedValid = true;
+        }
+        if (JsonUtils.hasInteger(obj, "spawn_chunk_radius"))
+        {
+            this.spawnChunkRadius = JsonUtils.getIntegerOrDefault(obj, "spawn_chunk_radius", 2);
+            this.setSpawnChunkRadius(this.spawnChunkRadius);
         }
     }
 }

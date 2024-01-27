@@ -1,5 +1,7 @@
 package fi.dy.masa.minihud.mixin;
 
+import fi.dy.masa.malilib.network.ClientNetworkPlayInitHandler;
+import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -32,15 +34,12 @@ public abstract class MixinClientPlayNetworkHandler
     @Inject(method = "onGameMessage", at = @At("RETURN"))
     private void onGameMessage(net.minecraft.network.packet.s2c.play.GameMessageS2CPacket packet, CallbackInfo ci)
     {
-        // #FIXME -- Verify Carpet's Logger subscriptions get sent via "GameMessageS2CPackets"
-        DataStorage.getInstance().handleCarpetServerLoggerData(packet.content());
         DataStorage.getInstance().onChatMessage(packet.content());
     }
 
     @Inject(method = "onPlayerListHeader", at = @At("RETURN"))
     private void onHandlePlayerListHeaderFooter(net.minecraft.network.packet.s2c.play.PlayerListHeaderS2CPacket packetIn, CallbackInfo ci)
     {
-        // #FIXME -- Verify that this works
         DataStorage.getInstance().handleCarpetServerTPSData(packetIn.getFooter());
         DataStorage.getInstance().getMobCapData().parsePlayerListFooterMobCapData(packetIn.getFooter());
     }
@@ -55,5 +54,18 @@ public abstract class MixinClientPlayNetworkHandler
     private void onSetSpawn(net.minecraft.network.packet.s2c.play.PlayerSpawnPositionS2CPacket packet, CallbackInfo ci)
     {
         DataStorage.getInstance().setWorldSpawnIfUnknown(packet.getPos());
+    }
+    @Inject(method = "onGameJoin", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/MinecraftClient;joinWorld(" +
+                    "Lnet/minecraft/client/world/ClientWorld;)V"))
+    private void onPreGameJoin(GameJoinS2CPacket packet, CallbackInfo ci)
+    {
+        ClientNetworkPlayInitHandler.registerPlayChannels();
+    }
+
+    @Inject(method = "onGameJoin", at = @At("RETURN"))
+    private void onPostGameJoin(GameJoinS2CPacket packet, CallbackInfo ci)
+    {
+        ClientNetworkPlayInitHandler.registerReceivers();
     }
 }
