@@ -37,7 +37,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
@@ -146,8 +145,6 @@ public class DataStorage
         this.spawnChunkRadius = -1;
         this.clearTasks();
 
-        //StructurePacketHandlerCarpet.INSTANCE.reset();
-        //StructurePacketHandlerServux.INSTANCE.reset();
         ((ServuxPayloadHandler) ServuxPayloadHandler.getInstance()).reset();
 
         ShapeManager.INSTANCE.clear();
@@ -204,13 +201,7 @@ public class DataStorage
         {
             if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                 this.shouldRegisterStructureChannel = true;
-            // Add servux packets for SpawnChunkRadius, etc?
-        }
-        else
-        {
-            // Set Spawn Chunk Radius from game rules.
-            setSpawnChunkRadiusIfUnknown(Objects.requireNonNull(mc.getServer()).getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS));
-            MiniHUD.printDebug("DataStorage#onWorldJoin(): setting Spawn Chunk Radius to: {}", this.spawnChunkRadius);
+            // If we have a Servux server, they will send us the Spawn Metadata packet
         }
     }
 
@@ -224,13 +215,16 @@ public class DataStorage
     {
         this.worldSpawn = spawn;
         this.worldSpawnValid = true;
+        MiniHUD.printDebug("DataStorage#setWorldSpawn(): set to: {}", spawn.toShortString());
     }
 
     public void setSpawnChunkRadius(int radius) {
         if (radius >= 0)
         {
-            OverlayRendererSpawnChunks.setNeedsUpdate();
+            if (this.spawnChunkRadius != radius)
+                OverlayRendererSpawnChunks.setNeedsUpdate();
             this.spawnChunkRadius = radius;
+            MiniHUD.printDebug("DataStorage#setSpawnChunkRadius(): set to: {}", radius);
         }
         else
         {
@@ -260,6 +254,7 @@ public class DataStorage
         else if (this.mc.isIntegratedServerRunning())
         {
             MinecraftServer server = this.mc.getServer();
+            assert server != null;
             World worldTmp = server.getWorld(world.getRegistryKey());
             return worldTmp != null;
         }
@@ -277,6 +272,7 @@ public class DataStorage
         if (!this.worldSeedValid && this.mc.isIntegratedServerRunning())
         {
             MinecraftServer server = this.mc.getServer();
+            assert server != null;
             ServerWorld worldTmp = server.getWorld(world.getRegistryKey());
 
             if (worldTmp != null)
@@ -600,11 +596,10 @@ public class DataStorage
                         MiniHUD.printDebug("DataStorage#updateStructureData(): Unregister channels");
                         // (re-)register the structure packet handlers
                         PacketProvider.unregisterPayloads();
-                        //ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerServux.INSTANCE);
 
                         this.registerStructureChannel();
                         NbtCompound nbt= new NbtCompound();
-                        nbt.putInt("packetType", ServuxPacketType.PACKET_S2C_REFRESH_METADATA);
+                        nbt.putInt("packetType", ServuxPacketType.PACKET_S2C_SPAWN_METADATA);
                         ((ServuxPayloadHandler) ServuxPayloadHandler.getInstance()).sendServuxPayload(nbt);
                     }
 
@@ -638,11 +633,12 @@ public class DataStorage
 
     private void updateStructureDataFromIntegratedServer(final BlockPos playerPos)
     {
+        assert this.mc.player != null;
         final RegistryKey<World> worldId = this.mc.player.getEntityWorld().getRegistryKey();
-        final ServerWorld world = this.mc.getServer().getWorld(worldId);
 
-        if (world != null)
-        {
+        try {
+            final ServerWorld world = Objects.requireNonNull(this.mc.getServer()).getWorld(worldId);
+
             MinecraftServer server = this.mc.getServer();
             final int maxChunkRange = this.mc.options.getViewDistance().getValue() + 2;
 
@@ -654,7 +650,7 @@ public class DataStorage
                 }
             }));
         }
-        else
+        catch (Exception ignored)
         {
             synchronized (this.structures)
             {
@@ -682,6 +678,7 @@ public class DataStorage
             MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): list size: {}", structures.size());
             this.structureDataTimeout = timeout + 200;
 
+            assert this.mc.world != null;
             long currentTime = this.mc.world.getTime();
             final int count = structures.size();
 
@@ -711,10 +708,9 @@ public class DataStorage
 
     private void removeExpiredStructures(long currentTime, int timeout)
     {
-        long maxAge = timeout;
         int countBefore = this.structures.values().size();
 
-        this.structures.values().removeIf(data -> currentTime > (data.getRefreshTime() + maxAge));
+        this.structures.values().removeIf(data -> currentTime > (data.getRefreshTime() + (long) timeout));
 
         int countAfter = this.structures.values().size();
 
@@ -773,6 +769,7 @@ public class DataStorage
         {
             String text = Formatting.strip(textComponent.getString());
             //MiniHUD.printDebug("DataStorage#handleCarpetServerTPSData(): plain text: {}", text);
+            assert text != null;
             String[] lines = text.split("\n");
 
             for (String line : lines)
@@ -819,14 +816,7 @@ public class DataStorage
     {
         Vec3d pos = JsonUtils.vec3dFromJson(obj, "distance_pos");
 
-        if (pos != null)
-        {
-            this.distanceReferencePoint = pos;
-        }
-        else
-        {
-            this.distanceReferencePoint = Vec3d.ZERO;
-        }
+        this.distanceReferencePoint = Objects.requireNonNullElse(pos, Vec3d.ZERO);
 
         if (JsonUtils.hasLong(obj, "seed"))
         {

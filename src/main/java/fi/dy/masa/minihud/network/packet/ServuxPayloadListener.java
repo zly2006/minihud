@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 
 public class ServuxPayloadListener implements IServuxPayloadListener
 {
@@ -67,9 +68,15 @@ public class ServuxPayloadListener implements IServuxPayloadListener
             {
                 this.timeout = data.getInt("timeout");
                 this.registered = true;
+                DataStorage.getInstance().setIsServuxServer();
+                int x = data.getInt("spawnPosX");
+                int y = data.getInt("spawnPosY");
+                int z = data.getInt("spawnPosZ");
+                BlockPos spawnPos = new BlockPos(x, y, z);
+                MiniHUD.printDebug("ServuxPayloadListener#decodeServuxPayload(): SpawnPos: {} versus {}", DataStorage.getInstance().getWorldSpawn().toShortString(), spawnPos.toShortString());
+                DataStorage.getInstance().setWorldSpawn(spawnPos);
                 int radius = data.getInt("spawnChunkRadius");
                 MiniHUD.printDebug("ServuxPayloadListener#decodeServuxPayload(): SpawnChunkRadius: {} versus {}", DataStorage.getInstance().getSpawnChunkRadius(), radius);
-                DataStorage.getInstance().setIsServuxServer();
                 DataStorage.getInstance().setSpawnChunkRadius(radius);
                 MiniHUD.printDebug("ServuxPayloadListener#decodeServuxPayload(): register; timeout: {}", this.timeout);
             }
@@ -77,6 +84,18 @@ public class ServuxPayloadListener implements IServuxPayloadListener
             {
                 MiniHUD.printDebug("ServuxPayloadListener#decodeServuxPayload(): Received invalid Metadata (version: {}, id: {})", version, identifier);
             }
+        }
+        else if (packetType == ServuxPacketType.PACKET_S2C_SPAWN_METADATA)
+        {
+            int x = data.getInt("spawnPosX");
+            int y = data.getInt("spawnPosY");
+            int z = data.getInt("spawnPosZ");
+            BlockPos spawnPos = new BlockPos(x, y, z);
+            MiniHUD.printDebug("ServuxPayloadListener#decodeServuxPayload(): SpawnPos: {} versus {}", DataStorage.getInstance().getWorldSpawn().toShortString(), spawnPos.toShortString());
+            DataStorage.getInstance().setWorldSpawn(spawnPos);
+            int radius = data.getInt("spawnChunkRadius");
+            MiniHUD.printDebug("ServuxPayloadListener#decodeServuxPayload(): SpawnChunkRadius: {} versus {}", DataStorage.getInstance().getSpawnChunkRadius(), radius);
+            DataStorage.getInstance().setSpawnChunkRadius(radius);
         }
     }
 }
