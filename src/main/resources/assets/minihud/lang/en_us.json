@@ -16,7 +16,7 @@
     "minihud.gui.button.shape_renderer_toggle": "Shape Renderer: %s",
     "minihud.gui.button.shape_renderer.toggle_combine_quads": "Combine Quads: %s",
 
-    "minihud.gui.button.hover.shape_renderer.spawn_sphere.toggle_use_quadrants": "§7Corner Quarants uses basically 4 separate spheres at the corners\n§7of the rectangle area defined by the center and the margin distance.\n§7The corner quadrants was the old behavior, and it gets derpy (especially on the\n§7cardinal sides) if the margin increases to more than a few blocks.\n§7The new default is not using the corner quadrants anymore,\n§7but instead to kind of \"slide the sphere around the margin perimeter\"\n§7to create the final shape.",
+    "minihud.gui.button.hover.shape_renderer.spawn_sphere.toggle_use_quadrants": "§7Corner Quadrants uses basically 4 separate spheres at the corners\n§7of the rectangle area defined by the center and the margin distance.\n§7The corner quadrants was the old behavior, and it gets derpy (especially on the\n§7cardinal sides) if the margin increases to more than a few blocks.\n§7The new default is not using the corner quadrants anymore,\n§7but instead to kind of \"slide the sphere around the margin perimeter\"\n§7to create the final shape.",
 
     "minihud.gui.label.center_colon": "Center:",
     "minihud.gui.label.color": "Color:",
@@ -96,7 +96,7 @@
     "minihud.label.light_level_render_condition.dim": "Dim",
     "minihud.label.light_level_render_condition.never": "Never",
     "minihud.label.light_level_render_condition.safe": "Safe",
-    "minihud.label.light_level_render_condition.spawnable": "Spawnable",
+    "minihud.label.light_level_render_condition.spawnable": "Spawn-able",
 
     "minihud.label.shape_render_type.full_block": "Full Block",
     "minihud.label.shape_render_type.inner_edge": "Inner Edge",
@@ -116,7 +116,7 @@
     "minihud.hotkeys.category.renderer_toggle_hotkeys": "Renderer Toggle hotkeys",
     "minihud.hotkeys.category.structure_toggle_hotkeys": "Structure Toggle hotkeys",
 
-    "minihud.message.toggled_debug_mode.collisions": "Toggled Collison Boxes debug rendering to %s",
+    "minihud.message.toggled_debug_mode.collisions": "Toggled Collision Boxes debug rendering to %s",
     "minihud.message.toggled_debug_mode.height_map": "Toggled Height Map debug rendering to %s",
     "minihud.message.toggled_debug_mode.neighbor_updates": "Toggled Neighbor Update debug rendering to %s",
     "minihud.message.toggled_debug_mode.pathfinding": "Toggled Pathfinding debug rendering to %s",

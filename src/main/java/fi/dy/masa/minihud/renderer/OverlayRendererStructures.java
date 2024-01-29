@@ -13,7 +13,7 @@ import fi.dy.masa.malilib.util.Color4f;
 import fi.dy.masa.malilib.util.IntBoundingBox;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.config.StructureToggle;
-import fi.dy.masa.minihud.util.DataStorage;
+import fi.dy.masa.minihud.data.DataStorage;
 import fi.dy.masa.minihud.util.MiscUtils;
 import fi.dy.masa.minihud.util.StructureData;
 import fi.dy.masa.minihud.util.StructureType;
@@ -29,7 +29,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
     @Override
     public boolean shouldRender(MinecraftClient mc)
     {
-        if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() == false)
+        if (!RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
         {
             return false;
         }
@@ -67,7 +67,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
         BUFFER_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
         BUFFER_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
 
-        if (data.isEmpty() == false)
+        if (!data.isEmpty())
         {
             this.renderStructureBoxes(data, cameraPos);
         }
@@ -93,9 +93,9 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
         ImmutableList<IntBoundingBox> components = structure.getComponents();
 
-        if (components.isEmpty() == false)
+        if (!components.isEmpty())
         {
-            if (components.size() > 1 || MiscUtils.areBoxesEqual(components.get(0), structure.getBoundingBox()) == false)
+            if (components.size() > 1 || !MiscUtils.areBoxesEqual(components.get(0), structure.getBoundingBox()))
             {
                 for (IntBoundingBox bb : components)
                 {
@@ -112,7 +112,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
         for (StructureType type : structures.keySet())
         {
-            if (type.isEnabled() == false)
+            if (!type.isEnabled())
             {
                 continue;
             }

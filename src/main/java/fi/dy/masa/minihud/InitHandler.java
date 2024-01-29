@@ -29,13 +29,10 @@ public class InitHandler implements IInitializationHandler
 
         TickHandler.getInstance().registerClientTickHandler(new ClientTickHandler());
 
-        // Register Play Channels
+        // Register network protocols
         ClientNetworkPlayInitHandler.registerPlayChannels();
-        // Register Server Events Listener
         ServerListener serverListener = new ServerListener();
         ServerHandler.getInstance().registerServerHandler(serverListener);
-
-        // Register All Packet Providers
         PacketProvider.registerPayloads();
 
         KeyCallbacks.init();

@@ -3,7 +3,7 @@ package fi.dy.masa.minihud.renderer.worker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.crash.CrashReport;
 import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.util.DataStorage;
+import fi.dy.masa.minihud.data.DataStorage;
 
 public class ThreadWorker implements Runnable
 {

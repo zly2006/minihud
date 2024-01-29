@@ -8,7 +8,7 @@ package fi.dy.masa.minihud.network.legacy;
 //import fi.dy.masa.malilib.network.IPluginChannelHandler;
 //import fi.dy.masa.malilib.util.Constants;
 //import fi.dy.masa.minihud.MiniHUD;
-//import fi.dy.masa.minihud.util.DataStorage;
+//import fi.dy.masa.minihud.data.DataStorage;
 
 @Deprecated
 //public class StructurePacketHandlerCarpet implements IPluginChannelHandler

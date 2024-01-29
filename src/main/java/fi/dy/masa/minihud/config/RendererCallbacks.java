@@ -1,8 +1,12 @@
 package fi.dy.masa.minihud.config;
 
+import fi.dy.masa.malilib.event.ServuxPayloadHandler;
 import fi.dy.masa.minihud.network.packet.PacketProvider;
+import fi.dy.masa.minihud.network.packet.ServuxPacketType;
+import fi.dy.masa.minihud.network.packet.ServuxPayloadListener;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -19,7 +23,7 @@ import fi.dy.masa.minihud.renderer.OverlayRendererRandomTickableChunks;
 import fi.dy.masa.minihud.renderer.OverlayRendererRegion;
 import fi.dy.masa.minihud.renderer.OverlayRendererSlimeChunks;
 import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
-import fi.dy.masa.minihud.util.DataStorage;
+import fi.dy.masa.minihud.data.DataStorage;
 
 public class RendererCallbacks
 {
@@ -108,18 +112,42 @@ public class RendererCallbacks
 
     public static void onSpawnChunksRealToggled(IConfigBoolean config)
     {
-        if (config.getBooleanValue())
-        {
-            OverlayRendererSpawnChunks.setNeedsUpdate();
+        MinecraftClient mc = MinecraftClient.getInstance();
 
-            BlockPos spawn = DataStorage.getInstance().getWorldSpawn();
-            String green = GuiBase.TXT_GREEN;
-            String rst = GuiBase.TXT_RST;
-            String strStatus = green + StringUtils.translate("malilib.message.value.on") + rst;
-            String strPos = String.format("x: %d, y: %d, z: %d", spawn.getX(), spawn.getY(), spawn.getZ());
-            String message = StringUtils.translate("minihud.message.toggled_using_world_spawn", config.getPrettyName(), strStatus, strPos);
+        if (mc != null && mc.player != null) {
+            if (config.getBooleanValue()) {
+                BlockPos spawn = DataStorage.getInstance().getWorldSpawn();
+                int radius = DataStorage.getInstance().getSpawnChunkRadius();
+                String green = GuiBase.TXT_GREEN;
+                String red = GuiBase.TXT_RED;
+                String rst = GuiBase.TXT_RST;
+                String message;
 
-            InfoUtils.printActionbarMessage(message);
+                if (radius != 0) {
+                    // Set Vanilla default if unknown
+                    if (radius < 0)
+                        DataStorage.getInstance().setSpawnChunkRadius(2);
+                    String strStatus = green + StringUtils.translate("malilib.message.value.on") + rst;
+                    String strPos = String.format("x: %d, y: %d, z: %d [R: %d]", spawn.getX(), spawn.getY(), spawn.getZ(), radius);
+                    message = StringUtils.translate("minihud.message.toggled_using_world_spawn", config.getPrettyName(), strStatus, strPos);
+
+                    if (!mc.isIntegratedServerRunning() && DataStorage.getInstance().isServuxServer()) {
+                        // Refresh Spawn Metadata
+                        NbtCompound nbt = new NbtCompound();
+                        nbt.putInt("packetType", ServuxPacketType.PACKET_C2S_REQUEST_SPAWN_METADATA);
+                        ((ServuxPayloadHandler) ServuxPayloadHandler.getInstance()).sendServuxPayload(nbt);
+                    }
+                } else {
+                    OverlayRendererSpawnChunks.setNeedsUpdate();
+
+                    String strStatus = red + StringUtils.translate("malilib.message.value.off") + rst;
+                    String strPos = red + String.format("x: %d, y: %d, z: %d [R: 0]", spawn.getX(), spawn.getY(), spawn.getZ());
+                    message = StringUtils.translate("minihud.message.toggled_using_world_spawn", config.getPrettyName(), strStatus, strPos);
+
+                    RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
+                }
+                InfoUtils.printActionbarMessage(message);
+            }
         }
     }
 
@@ -134,12 +162,16 @@ public class RendererCallbacks
                 if (config.getBooleanValue())
                 {
                     DataStorage.getInstance().registerStructureChannel();
+                    NbtCompound nbt = new NbtCompound();
+                    nbt.putInt("packetType", ServuxPacketType.PACKET_C2S_REQUEST_METADATA);
+                    ((ServuxPayloadHandler) ServuxPayloadHandler.getInstance()).sendServuxPayload(nbt);
                 }
                 else
                 {
-                    PacketProvider.unregisterPayloads();
-                    //ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerCarpet.INSTANCE);
-                    //ClientPacketChannelHandler.getInstance().unregisterClientChannelHandler(StructurePacketHandlerServux.INSTANCE);
+                    NbtCompound nbt = new NbtCompound();
+                    nbt.putInt("packetType", ServuxPacketType.PACKET_C2S_STRUCTURES_DECLINED);
+                    ((ServuxPayloadHandler) ServuxPayloadHandler.getInstance()).sendServuxPayload(nbt);
+                    DataStorage.getInstance().unregisterStructureChannel();
                 }
             }
             else

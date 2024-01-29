@@ -15,7 +15,7 @@ import fi.dy.masa.malilib.util.Color4f;
 import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.util.DataStorage;
+import fi.dy.masa.minihud.data.DataStorage;
 import fi.dy.masa.minihud.util.MiscUtils;
 
 public class OverlayRendererSpawnChunks extends OverlayRendererBase
@@ -109,7 +109,13 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         if (spawnChunkRadius < 0)
             spawnChunkRadius = 2;
         if (spawnChunkRadius == 0)
-            spawnChunkRadius++;
+        {
+            MiniHUD.printDebug("OverlayRendererSpawnChunks#update(): toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0.");
+            RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
+            //InfoUtils.printActionbarMessage("Spawn Chunk Overlay disabled (Radius is set to 0)");
+            needsUpdate = false;
+            return;
+        }
         // Set radius to 1 if 0 is found
         // --> Verify Minecraft's behavior when it's set to 0, so we at least have less visible issues.
 

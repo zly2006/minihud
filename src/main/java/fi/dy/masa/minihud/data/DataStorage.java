@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.util;
+package fi.dy.masa.minihud.data;
 
 import java.util.Collection;
 import java.util.Map;
@@ -16,7 +16,11 @@ import com.google.gson.JsonPrimitive;
 import fi.dy.masa.malilib.event.ServuxPayloadHandler;
 import fi.dy.masa.minihud.network.packet.PacketProvider;
 import fi.dy.masa.minihud.network.packet.ServuxPacketType;
+import fi.dy.masa.minihud.network.packet.ServuxPayloadListener;
 import fi.dy.masa.minihud.renderer.*;
+import fi.dy.masa.minihud.util.MiscUtils;
+import fi.dy.masa.minihud.util.StructureData;
+import fi.dy.masa.minihud.util.StructureType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
@@ -49,7 +53,6 @@ import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.renderer.worker.ChunkTask;
 import fi.dy.masa.minihud.renderer.worker.ThreadWorker;
@@ -201,7 +204,7 @@ public class DataStorage
         {
             if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                 this.shouldRegisterStructureChannel = true;
-            // If we have a Servux server, they will send us the Spawn Metadata packet
+            // If we have a Servux server, they will send us the Metadata packet
         }
     }
 
@@ -213,6 +216,8 @@ public class DataStorage
 
     public void setWorldSpawn(BlockPos spawn)
     {
+        if (this.worldSpawn != spawn)
+            OverlayRendererSpawnChunks.setNeedsUpdate();
         this.worldSpawn = spawn;
         this.worldSpawnValid = true;
         MiniHUD.printDebug("DataStorage#setWorldSpawn(): set to: {}", spawn.toShortString());
@@ -236,12 +241,14 @@ public class DataStorage
         if (!this.worldSpawnValid)
         {
             this.setWorldSpawn(spawn);
+            OverlayRendererSpawnChunks.setNeedsUpdate();
         }
     }
     public void setSpawnChunkRadiusIfUnknown(int radius) {
         if (this.spawnChunkRadius < 0)
         {
             this.setSpawnChunkRadius(radius);
+            OverlayRendererSpawnChunks.setNeedsUpdate();
         }
     }
 
@@ -317,6 +324,8 @@ public class DataStorage
     {
         return this.carpetServer;
     }
+
+    public boolean isServuxServer() { return this.servuxServer; }
 
     public double getServerTPS()
     {
@@ -593,14 +602,23 @@ public class DataStorage
                 {
                     if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                     {
-                        MiniHUD.printDebug("DataStorage#updateStructureData(): Unregister channels");
+                        MiniHUD.printDebug("DataStorage#updateStructureData(): register channels maybe?");
                         // (re-)register the structure packet handlers
-                        PacketProvider.unregisterPayloads();
 
+                        this.unregisterStructureChannel();
                         this.registerStructureChannel();
-                        NbtCompound nbt= new NbtCompound();
-                        nbt.putInt("packetType", ServuxPacketType.PACKET_S2C_SPAWN_METADATA);
+                        this.structuresNeedUpdating = true;
+
+                        /*
+                        // Request SPAWN METADATA
+                        NbtCompound nbt = new NbtCompound();
+                        nbt.putInt("packetType", ServuxPacketType.PACKET_C2S_REQUEST_SPAWN_METADATA);
                         ((ServuxPayloadHandler) ServuxPayloadHandler.getInstance()).sendServuxPayload(nbt);
+                        // Request STRUCTURES Data channel be enabled
+                        NbtCompound nbt = new NbtCompound();
+                        nbt.putInt("packetType", ServuxPacketType.PACKET_C2S_STRUCTURES_ACCEPT);
+                        ((ServuxPayloadHandler) ServuxPayloadHandler.getInstance()).sendServuxPayload(nbt);
+                        */
                     }
 
                     this.shouldRegisterStructureChannel = false;
@@ -611,18 +629,28 @@ public class DataStorage
 
     public void registerStructureChannel()
     {
-        MiniHUD.printDebug("DataStorage#registerStructureChannel(): Servux");
-        //ClientPacketChannelHandler.getInstance().registerClientChannelHandler(StructurePacketHandlerServux.INSTANCE);
-        PacketProvider.registerPayloads();
+        MiniHUD.printDebug("DataStorage#registerStructureChannel(): register Servux");
+        //PacketProvider.registerPayloads();
+        this.shouldRegisterStructureChannel = true;
 
-        // Don't register the Carpet structure channel if the server is known to have the Servux mod
         if (!this.servuxServer)
         {
             MiniHUD.printDebug("DataStorage#registerStructureChannel(): No ServUX has been detected.");
             // Carpet no longer provides Structures.
+            NbtCompound nbt = new NbtCompound();
+            nbt.putInt("packetType", ServuxPacketType.PACKET_C2S_REQUEST_METADATA);
+            ((ServuxPayloadHandler) ServuxPayloadHandler.getInstance()).sendServuxPayload(nbt);
         }
     }
 
+    public void unregisterStructureChannel()
+    {
+        MiniHUD.printDebug("DataStorage#unregisterStructureChannel(): unregister Servux");
+        //PacketProvider.unregisterPayloads();
+        if (this.servuxServer)
+            this.servuxServer = false;
+        this.shouldRegisterStructureChannel = false;
+    }
     private boolean structuresNeedUpdating(BlockPos playerPos, int hysteresis)
     {
         return this.structuresNeedUpdating || this.lastStructureUpdatePos == null ||
