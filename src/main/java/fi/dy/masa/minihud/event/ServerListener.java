@@ -3,8 +3,8 @@ package fi.dy.masa.minihud.event;
 import fi.dy.masa.malilib.interfaces.IServerListener;
 import fi.dy.masa.malilib.network.ClientNetworkPlayInitHandler;
 import fi.dy.masa.malilib.network.ClientNetworkPlayRegister;
+import fi.dy.masa.malilib.network.test.ClientDebugSuite;
 import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.network.test.ClientDebugSuite;
 import net.minecraft.server.MinecraftServer;
 
 public class ServerListener implements IServerListener
@@ -22,7 +22,7 @@ public class ServerListener implements IServerListener
     }
     public void onServerStarted(MinecraftServer minecraftServer)
     {
-        ClientNetworkPlayRegister.registerDefaultReceivers();
+        ClientNetworkPlayRegister.registerReceivers();
         ClientDebugSuite.checkGlobalChannels();
         MiniHUD.printDebug("MinecraftServerEvents#onServerStarted(): invoked.");
     }
@@ -33,7 +33,7 @@ public class ServerListener implements IServerListener
     }
     public void onServerStopped(MinecraftServer minecraftServer)
     {
-        ClientNetworkPlayRegister.unregisterDefaultReceivers();
+        ClientNetworkPlayRegister.unregisterReceivers();
         ClientDebugSuite.checkGlobalChannels();
         MiniHUD.printDebug("MinecraftServerEvents#onServerStopped(): invoked.");
     }

@@ -14,9 +14,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import fi.dy.masa.malilib.event.ServuxPayloadHandler;
-import fi.dy.masa.minihud.network.packet.PacketProvider;
 import fi.dy.masa.minihud.network.packet.ServuxPacketType;
-import fi.dy.masa.minihud.network.packet.ServuxPayloadListener;
 import fi.dy.masa.minihud.renderer.*;
 import fi.dy.masa.minihud.util.MiscUtils;
 import fi.dy.masa.minihud.util.StructureData;
@@ -203,8 +201,12 @@ public class DataStorage
         if (!this.hasIntegratedServer)
         {
             if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
-                this.shouldRegisterStructureChannel = true;
-            // If we have a Servux server, they will send us the Metadata packet
+            {
+                //this.unregisterStructureChannel();
+                this.registerStructureChannel();
+                this.structuresNeedUpdating = true;
+                // register Structures Channel, request METADATA handshake.
+            }
         }
     }
 
@@ -602,23 +604,12 @@ public class DataStorage
                 {
                     if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                     {
-                        MiniHUD.printDebug("DataStorage#updateStructureData(): register channels maybe?");
+                        MiniHUD.printDebug("DataStorage#updateStructureData(): register channels maybe? :)");
                         // (re-)register the structure packet handlers
 
                         this.unregisterStructureChannel();
                         this.registerStructureChannel();
                         this.structuresNeedUpdating = true;
-
-                        /*
-                        // Request SPAWN METADATA
-                        NbtCompound nbt = new NbtCompound();
-                        nbt.putInt("packetType", ServuxPacketType.PACKET_C2S_REQUEST_SPAWN_METADATA);
-                        ((ServuxPayloadHandler) ServuxPayloadHandler.getInstance()).sendServuxPayload(nbt);
-                        // Request STRUCTURES Data channel be enabled
-                        NbtCompound nbt = new NbtCompound();
-                        nbt.putInt("packetType", ServuxPacketType.PACKET_C2S_STRUCTURES_ACCEPT);
-                        ((ServuxPayloadHandler) ServuxPayloadHandler.getInstance()).sendServuxPayload(nbt);
-                        */
                     }
 
                     this.shouldRegisterStructureChannel = false;
@@ -635,7 +626,7 @@ public class DataStorage
 
         if (!this.servuxServer)
         {
-            MiniHUD.printDebug("DataStorage#registerStructureChannel(): No ServUX has been detected.");
+            MiniHUD.printDebug("DataStorage#registerStructureChannel(): No ServUX has been detected --> Request METADATA.");
             // Carpet no longer provides Structures.
             NbtCompound nbt = new NbtCompound();
             nbt.putInt("packetType", ServuxPacketType.PACKET_C2S_REQUEST_METADATA);
@@ -646,7 +637,6 @@ public class DataStorage
     public void unregisterStructureChannel()
     {
         MiniHUD.printDebug("DataStorage#unregisterStructureChannel(): unregister Servux");
-        //PacketProvider.unregisterPayloads();
         if (this.servuxServer)
             this.servuxServer = false;
         this.shouldRegisterStructureChannel = false;
