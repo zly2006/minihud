@@ -168,11 +168,14 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderWorldLast(MatrixStack matrixStack, Matrix4f projMatrix)
+    public void onRenderWorldLast(Matrix4f matrix4f, Matrix4f projMatrix)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
-            this.mc.world != null && this.mc.player != null && this.mc.options.hudHidden == false)
+            this.mc.world != null && this.mc.player != null && !this.mc.options.hudHidden)
         {
+            MatrixStack matrixStack = new MatrixStack();
+            matrixStack.multiplyPositionMatrix(matrix4f);
+
             OverlayRenderer.renderOverlays(matrixStack, projMatrix, this.mc);
         }
     }

@@ -40,8 +40,8 @@ public abstract class MixinClientPlayNetworkHandler
     @Inject(method = "onPlayerListHeader", at = @At("RETURN"))
     private void minihud_onHandlePlayerListHeaderFooter(net.minecraft.network.packet.s2c.play.PlayerListHeaderS2CPacket packetIn, CallbackInfo ci)
     {
-        DataStorage.getInstance().handleCarpetServerTPSData(packetIn.getFooter());
-        DataStorage.getInstance().getMobCapData().parsePlayerListFooterMobCapData(packetIn.getFooter());
+        DataStorage.getInstance().handleCarpetServerTPSData(packetIn.footer());
+        DataStorage.getInstance().getMobCapData().parsePlayerListFooterMobCapData(packetIn.footer());
     }
 
     @Inject(method = "onWorldTimeUpdate", at = @At("RETURN"))

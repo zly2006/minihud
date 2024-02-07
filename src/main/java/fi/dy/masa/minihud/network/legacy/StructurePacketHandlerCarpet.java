@@ -10,6 +10,9 @@ package fi.dy.masa.minihud.network.legacy;
 //import fi.dy.masa.minihud.MiniHUD;
 //import fi.dy.masa.minihud.data.DataStorage;
 
+/**
+ * I wasn't able to find this Channel under the Carpet code.  --> Disabled.
+ */
 @Deprecated
 //public class StructurePacketHandlerCarpet implements IPluginChannelHandler
 public class StructurePacketHandlerCarpet

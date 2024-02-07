@@ -1,18 +1,22 @@
 package fi.dy.masa.minihud.network.packet;
 
-import fi.dy.masa.malilib.event.ServuxPayloadHandler;
+import fi.dy.masa.malilib.event.ServuxMetadataHandler;
+import fi.dy.masa.malilib.event.ServuxStructuresHandler;
 
 public class PacketProvider
 {
-    static ServuxPayloadListener minihud_servuxListener = new ServuxPayloadListener();
+    static ServuxStructuresListener minihud_servuxStructuresListener = new ServuxStructuresListener();
+    static ServuxMetadataListener minihud_servuxMetadataListener = new ServuxMetadataListener();
     public static void registerPayloads()
     {
         // Register Client Payload Listeners
-        ServuxPayloadHandler.getInstance().registerServuxHandler(minihud_servuxListener);
+        ServuxStructuresHandler.getInstance().registerServuxStructuresHandler(minihud_servuxStructuresListener);
+        ServuxMetadataHandler.getInstance().registerServuxMetadataHandler(minihud_servuxMetadataListener);
     }
 
     public static void unregisterPayloads()
     {
-        ServuxPayloadHandler.getInstance().unregisterServuxHandler(minihud_servuxListener);
+        ServuxStructuresHandler.getInstance().unregisterServuxStructuresHandler(minihud_servuxStructuresListener);
+        ServuxMetadataHandler.getInstance().unregisterServuxMetadataHandler(minihud_servuxMetadataListener);
     }
 }
