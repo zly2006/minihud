@@ -82,16 +82,21 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         DataStorage data = DataStorage.getInstance();
         BlockPos spawn;
         int spawnChunkRadius;
+        int outer;
+        int lazy;
+        int ent;
         if (this.isPlayerFollowing)
         {
             // OVERLAY_SPAWN_CHUNK_OVERLAY_PLAYER
             assert entity != null;
             spawn = PositionUtils.getEntityBlockPos(entity);
 
-            // Will need to fetch the Simulation distance from Server Metadata,
-            // but let's just set this to 10 for the moment.
-            //spawnChunkRadius = data.getSpawnChunkRadius();
             spawnChunkRadius = getSimulationDistance();
+
+            // Calc
+            outer = spawnChunkRadius + 1;
+            lazy = spawnChunkRadius;
+            ent = spawnChunkRadius -1;
         }
         else
         {
@@ -119,9 +124,14 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
                 return;
             }
             // --> Verify Minecraft's behavior when it's set to 0, so we at least have less visible issues.
+
+            // Calc
+            outer = spawnChunkRadius + 1;
+            lazy = spawnChunkRadius;
+            ent = spawnChunkRadius -1;
         }
 
-        MiniHUD.printDebug("OverlayRendererSpawnChunks#update(): SpawnChunkRadius calc base: {} // outer: {}, lazy: {}, entity: {}", spawnChunkRadius, spawnChunkRadius + 1, spawnChunkRadius, spawnChunkRadius - 1);
+        MiniHUD.printDebug("OverlayRendererSpawnChunks#update(): SpawnChunkRadius calc base: {} // outer: {}, lazy: {}, entity: {}", spawnChunkRadius, outer, lazy, ent);
 
         RenderObjectBase renderQuads = this.renderObjects.get(0);
         RenderObjectBase renderLines = this.renderObjects.get(1);
@@ -145,17 +155,17 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         // Orig: Base is 10.
         // Org 22 (Outer (10 + 1) * 2) --> Incorrect
         //corners = this.getSpawnChunkCorners(spawn, 22, mc.world);
-        corners = this.getSpawnChunkCorners(spawn, spawnChunkRadius+1, mc.world);
+        corners = this.getSpawnChunkCorners(spawn, outer, mc.world);
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorOuter, BUFFER_1, BUFFER_2);
 
         // Org 11 (Lazy 10 + 1)
         //corners = this.getSpawnChunkCorners(spawn, 11, mc.world);
-        corners = this.getSpawnChunkCorners(spawn, spawnChunkRadius, mc.world);
+        corners = this.getSpawnChunkCorners(spawn, lazy, mc.world);
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorLazy, BUFFER_1, BUFFER_2);
 
         // Org 9 (Entity 10 - 1)
         //corners = this.getSpawnChunkCorners(spawn, 9, mc.world);
-        corners = this.getSpawnChunkCorners(spawn, spawnChunkRadius-1, mc.world);
+        corners = this.getSpawnChunkCorners(spawn, ent, mc.world);
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorEntity, BUFFER_1, BUFFER_2);
 
         renderQuads.uploadData(BUFFER_1);
@@ -186,8 +196,11 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
     }
     protected int getSimulationDistance()
     {
-        // Fetch the actual data, Vanilla default is 10.
-        return 10;
+        if (DataStorage.getInstance().isSimulationDistanceKnown())
+        {
+            return DataStorage.getInstance().getSimulationDistance();
+        }
+        else return 10;
     }
 
     /**

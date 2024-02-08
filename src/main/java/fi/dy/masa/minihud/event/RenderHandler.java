@@ -1,16 +1,12 @@
 package fi.dy.masa.minihud.event;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
+
+import net.minecraft.entity.attribute.EntityAttributes;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
 import net.minecraft.block.BeehiveBlock;
@@ -113,7 +109,7 @@ public class RenderHandler implements IRenderer
     @Override
     public void onRenderGameOverlayPost(DrawContext context)
     {
-        if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() == false)
+        if (!Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue())
         {
             this.resetCachedChunks();
             return;
@@ -158,7 +154,7 @@ public class RenderHandler implements IRenderer
         }
         else if (Configs.Generic.SHULKER_BOX_PREVIEW.getBooleanValue())
         {
-            boolean render = Configs.Generic.SHULKER_DISPLAY_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown();
+            boolean render = !Configs.Generic.SHULKER_DISPLAY_REQUIRE_SHIFT.getBooleanValue() || GuiBase.isShiftDown();
 
             if (render)
             {
@@ -168,13 +164,13 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderWorldLast(Matrix4f matrix4f, Matrix4f projMatrix)
+    public void onRenderWorldLast(MatrixStack matrixStack, Matrix4f projMatrix)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
             this.mc.world != null && this.mc.player != null && !this.mc.options.hudHidden)
         {
-            MatrixStack matrixStack = new MatrixStack();
-            matrixStack.multiplyPositionMatrix(matrix4f);
+            //MatrixStack matrixStack = new MatrixStack();
+            //matrixStack.multiplyPositionMatrix(matrix4f);
 
             OverlayRenderer.renderOverlays(matrixStack, projMatrix, this.mc);
         }
@@ -267,15 +263,17 @@ public class RenderHandler implements IRenderer
     {
         MinecraftClient mc = this.mc;
         Entity entity = mc.getCameraEntity();
+        assert entity != null;
         World world = entity.getEntityWorld();
         double y = entity.getY();
         BlockPos pos = BlockPos.ofFloored(entity.getX(), y, entity.getZ());
         ChunkPos chunkPos = new ChunkPos(pos);
 
+        assert mc.world != null;
         @SuppressWarnings("deprecation")
         boolean isChunkLoaded = mc.world.isChunkLoaded(pos);
 
-        if (isChunkLoaded == false)
+        if (!isChunkLoaded)
         {
             return;
         }
@@ -372,7 +370,7 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.SERVER_TPS)
         {
-            if (mc.isIntegratedServerRunning() && (mc.getServer().getTicks() % 10) == 0)
+            if (mc.isIntegratedServerRunning() && (Objects.requireNonNull(mc.getServer()).getTicks() % 10) == 0)
             {
                 this.data.updateIntegratedServerTPS();
             }
@@ -412,7 +410,7 @@ public class RenderHandler implements IRenderer
         {
             MobCapDataHandler mobCapData = this.data.getMobCapData();
 
-            if (mc.isIntegratedServerRunning() && (mc.getServer().getTicks() % 100) == 0)
+            if (mc.isIntegratedServerRunning() && (Objects.requireNonNull(mc.getServer()).getTicks() % 100) == 0)
             {
                 mobCapData.updateIntegratedServerMobCaps();
             }
@@ -424,6 +422,7 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.PING)
         {
+            assert mc.player != null;
             PlayerListEntry info = mc.player.networkHandler.getPlayerListEntry(mc.player.getUuid());
 
             if (info != null)
@@ -611,7 +610,7 @@ public class RenderHandler implements IRenderer
         {
             WorldChunk clientChunk = this.getClientChunk(chunkPos);
 
-            if (clientChunk.isEmpty() == false)
+            if (!clientChunk.isEmpty())
             {
                 LightingProvider lightingProvider = world.getChunkManager().getLightingProvider();
 
@@ -657,6 +656,7 @@ public class RenderHandler implements IRenderer
                 return;
             }
 
+            assert this.mc.player != null;
             Entity vehicle = this.mc.player.getVehicle();
 
             if ((vehicle instanceof AbstractHorseEntity) == false)
@@ -677,7 +677,8 @@ public class RenderHandler implements IRenderer
 
                 if (InfoToggle.HORSE_JUMP.getBooleanValue())
                 {
-                    double jump = horse.getJumpStrength();
+                    //double jump = horse.getJumpStrength();
+                    double jump = horse.getAttributeValue(EntityAttributes.GENERIC_JUMP_STRENGTH);
                     double calculatedJumpHeight =
                             -0.1817584952d * jump * jump * jump +
                             3.689713992d * jump * jump +
@@ -765,7 +766,7 @@ public class RenderHandler implements IRenderer
 
             if (worldServer != null && worldServer != mc.world)
             {
-                int chunksServer = ((ServerChunkManager) worldServer.getChunkManager()).getLoadedChunkCount();
+                int chunksServer = worldServer.getChunkManager().getLoadedChunkCount();
                 int chunksServerTot = ((ServerChunkManager) worldServer.getChunkManager()).getTotalChunksLoadedCount();
                 this.addLine(String.format("Server: %d / %d - Client: %s", chunksServer, chunksServerTot, chunksClient));
             }
@@ -802,6 +803,7 @@ public class RenderHandler implements IRenderer
             {
                 Biome biome = mc.world.getBiome(pos).value();
                 Identifier id = mc.world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome);
+                assert id != null;
                 this.addLine("Biome: " + StringUtils.translate("biome." + id.toString().replace(":", ".")));
             }
         }
@@ -847,7 +849,7 @@ public class RenderHandler implements IRenderer
                 if (serverWorld instanceof ServerWorld)
                 {
                     IServerEntityManager manager = (IServerEntityManager) ((IMixinServerWorld) serverWorld).minihud_getEntityManager();
-                    int indexSize = manager.getIndexSize();
+                    int indexSize = manager.minihud$getIndexSize();
                     this.addLine(String.format("Entities - Client: %d - Server: %d", countClient, indexSize));
                     return;
                 }
@@ -977,6 +979,7 @@ public class RenderHandler implements IRenderer
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK)
         {
             BlockPos posLooking = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
+            assert mc.world != null;
             return mc.world.getBlockState(posLooking);
         }
 
@@ -988,6 +991,7 @@ public class RenderHandler implements IRenderer
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK)
         {
             BlockPos posLooking = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
+            assert mc.world != null;
             BlockState state = mc.world.getBlockState(posLooking);
             Identifier rl = Registries.BLOCK.getId(state.getBlock());
 
@@ -1020,6 +1024,7 @@ public class RenderHandler implements IRenderer
 
         if (server != null)
         {
+            assert this.mc.world != null;
             ServerWorld world = server.getWorld(this.mc.world.getRegistryKey());
 
             if (world != null)
@@ -1091,7 +1096,7 @@ public class RenderHandler implements IRenderer
         }
 
         @Override
-        public int compareTo(LinePos other)
+        public int compareTo(@NotNull LinePos other)
         {
             if (this.position < 0)
             {

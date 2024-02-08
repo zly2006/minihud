@@ -1,6 +1,7 @@
 package fi.dy.masa.minihud.mixin;
 
 import fi.dy.masa.malilib.network.ClientNetworkPlayInitHandler;
+import fi.dy.masa.minihud.MiniHUD;
 import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -66,6 +67,14 @@ public abstract class MixinClientPlayNetworkHandler
     @Inject(method = "onGameJoin", at = @At("RETURN"))
     private void minihud_onPostGameJoin(GameJoinS2CPacket packet, CallbackInfo ci)
     {
+        final int new_simul = packet.simulationDistance();
+        final int simul = DataStorage.getInstance().getSimulationDistance();
+        if (simul != new_simul)
+        {
+            MiniHUD.printDebug("MixinClientPlayNetworkHandler#minihud_onPostGameJoin(): Simulation Distance change detected {} -> {}", simul, new_simul);
+            DataStorage.getInstance().setSimulationDistance(new_simul);
+        }
+
         ClientNetworkPlayInitHandler.registerReceivers();
     }
 }

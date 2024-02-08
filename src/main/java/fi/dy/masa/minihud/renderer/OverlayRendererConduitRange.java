@@ -70,12 +70,12 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     @Override
     protected void renderBlockRange(World world, BlockPos pos, ConduitBlockEntity be, Vec3d cameraPos)
     {
-        if (be.isActive() == false)
+        if (!be.isActive())
         {
             return;
         }
 
-        int range = ((ConduitExtra) be).getStoredActivatingBlockCount() / 7 * 16;
+        int range = ((ConduitExtra) be).minihud$getStoredActivatingBlockCount() / 7 * 16;
         Color4f color = Configs.Colors.CONDUIT_RANGE_OVERLAY_COLOR.getColor();
 
         LongOpenHashSet positions = new LongOpenHashSet();

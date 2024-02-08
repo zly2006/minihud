@@ -81,6 +81,7 @@ public class DataStorage
     private double serverMSPT;
     private BlockPos worldSpawn = BlockPos.ORIGIN;
     private int spawnChunkRadius = -1;
+    private int simulationDistance = -1;
     private Vec3d distanceReferencePoint = Vec3d.ZERO;
     private final int[] blockBreakCounter = new int[100];
     private final ArrayListMultimap<StructureType, StructureData> structures = ArrayListMultimap.create();
@@ -253,7 +254,19 @@ public class DataStorage
             OverlayRendererSpawnChunks.setNeedsUpdate();
         }
     }
-
+    public void setSimulationDistance(int distance) {
+        if (distance >= 0)
+        {
+            if (this.simulationDistance != distance)
+                OverlayRendererSpawnChunks.setNeedsUpdate();
+            this.simulationDistance = distance;
+            MiniHUD.printDebug("DataStorage#setSimulationDistance(): set to: {}", distance);
+        }
+        else
+        {
+            this.simulationDistance = -1;
+        }
+    }
     public boolean isWorldSeedKnown(World world)
     {
         if (this.worldSeedValid)
@@ -310,6 +323,14 @@ public class DataStorage
     public int getSpawnChunkRadius()
     {
         return this.spawnChunkRadius;
+    }
+    public boolean isSimulationDistanceKnown()
+    {
+        return this.simulationDistance >= 0;
+    }
+    public int getSimulationDistance()
+    {
+        return this.simulationDistance;
     }
 
     public boolean hasIntegratedServer()
@@ -843,8 +864,7 @@ public class DataStorage
         }
         if (JsonUtils.hasInteger(obj, "spawn_chunk_radius"))
         {
-            this.spawnChunkRadius = JsonUtils.getIntegerOrDefault(obj, "spawn_chunk_radius", 2);
-            this.setSpawnChunkRadius(this.spawnChunkRadius);
+            this.setSpawnChunkRadius(JsonUtils.getIntegerOrDefault(obj, "spawn_chunk_radius", 2));
         }
     }
 }

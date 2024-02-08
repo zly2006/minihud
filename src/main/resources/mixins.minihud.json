@@ -32,6 +32,7 @@
     "defaultRequire": 1
   },
   "mixins": [
+    "MixinChunkTicketManager",
     "MixinServerWorld"
   ]
 }
