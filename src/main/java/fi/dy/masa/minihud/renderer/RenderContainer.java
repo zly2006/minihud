@@ -7,7 +7,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import fi.dy.masa.malilib.render.RenderUtils;
 import org.joml.Matrix4f;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 import fi.dy.masa.malilib.util.JsonUtils;
@@ -118,16 +117,14 @@ public class RenderContainer
                 {
                     Vec3d updatePos = renderer.getUpdatePosition();
 
-                    // FIXME: MatrixStack push/pop() is probably required here also, even though draw() accepts a Matrix4f
-                    MatrixStack matrixStack = new MatrixStack();
-                    matrixStack.multiplyPositionMatrix(matrix4f);
+                    //MatrixStack matrixStack = new MatrixStack();
+                    //matrixStack.multiplyPositionMatrix(matrix4f);
+                    //matrixStack.push();
 
-                    matrixStack.push();
-                    matrixStack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+                    matrix4f.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+                    renderer.draw(matrix4f, projMatrix);
 
-                    renderer.draw(matrixStack, projMatrix);
-
-                    matrixStack.pop();
+                    //matrixStack.pop();
                 }
 
                 mc.getProfiler().pop();

@@ -2,7 +2,6 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.function.Supplier;
 
-import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.BufferBuilder;
@@ -31,7 +30,7 @@ public abstract class RenderObjectBase
 
     public abstract void uploadData(BufferBuilder buffer);
 
-    public abstract void draw(MatrixStack matrixStack, Matrix4f projMatrix);
+    public abstract void draw(Matrix4f matrix4f, Matrix4f projMatrix);
 
     public abstract void deleteGlResources();
 }

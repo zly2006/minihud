@@ -2,7 +2,6 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.function.Supplier;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.gl.VertexBuffer;
@@ -58,14 +57,14 @@ public class RenderObjectVbo extends RenderObjectBase
     }
 
     @Override
-    public void draw(MatrixStack matrixStack, Matrix4f projMatrix)
+    public void draw(Matrix4f matrix4f, Matrix4f projMatrix)
     {
         if (this.hasData)
         {
             RenderSystem.setShader(this.getShader());
             this.vertexBuffer.bind();
-            this.vertexBuffer.draw(matrixStack.peek().getPositionMatrix(), projMatrix, this.getShader().get());
-            //this.vertexBuffer.draw(matrix4fStack, projMatrix, this.getShader().get());
+            //this.vertexBuffer.draw(matrixStack.peek().getPositionMatrix(), projMatrix, this.getShader().get());
+            this.vertexBuffer.draw(matrix4f, projMatrix, this.getShader().get());
             VertexBuffer.unbind();
         }
     }
