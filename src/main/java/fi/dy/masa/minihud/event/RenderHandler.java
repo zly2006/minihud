@@ -63,6 +63,7 @@ import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.data.DataStorage;
 import fi.dy.masa.minihud.util.IServerEntityManager;
 import fi.dy.masa.minihud.util.MiscUtils;
+import org.joml.Matrix4fStack;
 
 public class RenderHandler implements IRenderer
 {
@@ -164,7 +165,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderWorldLast(MatrixStack matrixStack, Matrix4f projMatrix)
+    public void onRenderWorldLast(Matrix4f matrix4f, Matrix4f projMatrix)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
             this.mc.world != null && this.mc.player != null && !this.mc.options.hudHidden)
@@ -172,7 +173,7 @@ public class RenderHandler implements IRenderer
             //MatrixStack matrixStack = new MatrixStack();
             //matrixStack.multiplyPositionMatrix(matrix4f);
 
-            OverlayRenderer.renderOverlays(matrixStack, projMatrix, this.mc);
+            OverlayRenderer.renderOverlays(matrix4f, projMatrix, this.mc);
         }
     }
 

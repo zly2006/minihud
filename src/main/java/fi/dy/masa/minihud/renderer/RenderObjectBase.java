@@ -1,11 +1,13 @@
 package fi.dy.masa.minihud.renderer;
 
 import java.util.function.Supplier;
+
+import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.util.math.MatrixStack;
+import org.joml.Matrix4fStack;
 
 public abstract class RenderObjectBase
 {

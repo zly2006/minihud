@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
+import fi.dy.masa.malilib.render.RenderUtils;
 import org.joml.Matrix4f;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
@@ -12,6 +13,7 @@ import net.minecraft.util.math.Vec3d;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.minihud.config.RendererToggle;
+import org.joml.Matrix4fStack;
 
 public class RenderContainer
 {
@@ -58,12 +60,12 @@ public class RenderContainer
         }
     }
 
-    public void render(Entity entity, MatrixStack matrixStack, Matrix4f projMatrix, MinecraftClient mc)
+    public void render(Entity entity, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc)
     {
         Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
 
         this.update(cameraPos, entity, mc);
-        this.draw(cameraPos, matrixStack, projMatrix, mc);
+        this.draw(cameraPos, matrix4f, projMatrix, mc);
     }
 
     protected void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
@@ -94,7 +96,7 @@ public class RenderContainer
         mc.getProfiler().pop();
     }
 
-    protected void draw(Vec3d cameraPos, MatrixStack matrixStack, Matrix4f projMatrix, MinecraftClient mc)
+    protected void draw(Vec3d cameraPos, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc)
     {
         if (this.resourcesAllocated && this.countActive > 0)
         {
@@ -106,8 +108,8 @@ public class RenderContainer
             RenderSystem.polygonOffset(-3f, -3f);
             RenderSystem.enablePolygonOffset();
 
-            fi.dy.masa.malilib.render.RenderUtils.setupBlend();
-            fi.dy.masa.malilib.render.RenderUtils.color(1f, 1f, 1f, 1f);
+            RenderUtils.setupBlend();
+            RenderUtils.color(1f, 1f, 1f, 1f);
 
             for (IOverlayRenderer renderer : this.renderers)
             {
@@ -116,8 +118,13 @@ public class RenderContainer
                 if (renderer.shouldRender(mc))
                 {
                     Vec3d updatePos = renderer.getUpdatePosition();
+
+                    // FIXME: MatrixStack push/pop() is probably required here also, even though draw() accepts a Matrix4f
+                    MatrixStack matrixStack = new MatrixStack();
+                    matrixStack.multiplyPositionMatrix(matrix4f);
+
                     matrixStack.push();
-                    matrixStack.translate(updatePos.x - cameraPos.x, updatePos.y - cameraPos.y, updatePos.z - cameraPos.z);
+                    matrixStack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
 
                     renderer.draw(matrixStack, projMatrix);
 
@@ -129,7 +136,7 @@ public class RenderContainer
 
             RenderSystem.polygonOffset(0f, 0f);
             RenderSystem.disablePolygonOffset();
-            fi.dy.masa.malilib.render.RenderUtils.color(1f, 1f, 1f, 1f);
+            RenderUtils.color(1f, 1f, 1f, 1f);
             RenderSystem.disableBlend();
             RenderSystem.enableDepthTest();
             RenderSystem.enableCull();

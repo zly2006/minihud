@@ -29,7 +29,7 @@ public class OverlayRenderer
         loginTime = System.currentTimeMillis();
     }
 
-    public static void renderOverlays(MatrixStack matrixStack, Matrix4f projMatrix, MinecraftClient mc)
+    public static void renderOverlays(Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc)
     {
         Entity entity = EntityUtils.getCameraEntity();
 
@@ -60,7 +60,7 @@ public class OverlayRenderer
             mc.getProfiler().pop();
         }
 
-        RenderContainer.INSTANCE.render(entity, matrixStack, projMatrix, mc);
+        RenderContainer.INSTANCE.render(entity, matrix4f, projMatrix, mc);
     }
 
 
