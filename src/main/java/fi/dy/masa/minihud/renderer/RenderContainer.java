@@ -13,7 +13,6 @@ import net.minecraft.util.math.Vec3d;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.minihud.config.RendererToggle;
-import org.joml.Matrix4fStack;
 
 public class RenderContainer
 {

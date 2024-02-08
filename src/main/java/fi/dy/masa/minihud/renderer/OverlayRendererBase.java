@@ -15,7 +15,6 @@ import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import org.joml.Matrix4fStack;
 
 public abstract class OverlayRendererBase implements IOverlayRenderer
 {

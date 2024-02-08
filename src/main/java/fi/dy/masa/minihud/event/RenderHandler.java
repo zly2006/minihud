@@ -17,7 +17,6 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -63,7 +62,6 @@ import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.data.DataStorage;
 import fi.dy.masa.minihud.util.IServerEntityManager;
 import fi.dy.masa.minihud.util.MiscUtils;
-import org.joml.Matrix4fStack;
 
 public class RenderHandler implements IRenderer
 {

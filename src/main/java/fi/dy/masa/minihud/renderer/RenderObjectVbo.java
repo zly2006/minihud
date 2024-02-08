@@ -9,7 +9,6 @@ import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormatElement;
-import org.joml.Matrix4fStack;
 
 public class RenderObjectVbo extends RenderObjectBase
 {

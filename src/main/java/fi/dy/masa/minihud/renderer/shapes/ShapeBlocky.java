@@ -7,7 +7,6 @@ import com.google.gson.JsonPrimitive;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 import org.lwjgl.opengl.GL11;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexFormat;

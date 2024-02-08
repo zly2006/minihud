@@ -7,7 +7,6 @@ import org.joml.Matrix4f;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormat;
-import org.joml.Matrix4fStack;
 
 public abstract class RenderObjectBase
 {
