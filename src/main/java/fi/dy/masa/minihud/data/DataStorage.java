@@ -14,7 +14,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import fi.dy.masa.malilib.event.ServuxStructuresHandler;
-import fi.dy.masa.minihud.network.packet.ServuxPacketType;
+import fi.dy.masa.minihud.network.packet.PacketType;
 import fi.dy.masa.minihud.renderer.*;
 import fi.dy.masa.minihud.util.MiscUtils;
 import fi.dy.masa.minihud.util.StructureData;
@@ -650,7 +650,7 @@ public class DataStorage
             MiniHUD.printDebug("DataStorage#registerStructureChannel(): No ServUX has been detected --> Request METADATA.");
             // Carpet no longer provides Structures.
             NbtCompound nbt = new NbtCompound();
-            nbt.putInt("packetType", ServuxPacketType.Structures.PACKET_C2S_REQUEST_METADATA);
+            nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
             ((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
         }
     }

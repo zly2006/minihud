@@ -1,6 +1,6 @@
 package fi.dy.masa.minihud.network.packet;
 
-public class ServuxPacketType
+public class PacketType
 {
     public record Structures() {
         public static final int PROTOCOL_VERSION = 2;
@@ -11,5 +11,9 @@ public class ServuxPacketType
         public static final int PACKET_C2S_STRUCTURES_ACCEPT = 5;
         public static final int PACKET_C2S_STRUCTURES_DECLINED = 6;
         public static final int PACKET_S2C_STRUCTURE_DATA = 7;
+    }
+    public record Metadata()
+    {
+        public static final int PROTOCOL_VERSION = 1;
     }
 }

@@ -1,7 +1,7 @@
 package fi.dy.masa.minihud.config;
 
 import fi.dy.masa.malilib.event.ServuxStructuresHandler;
-import fi.dy.masa.minihud.network.packet.ServuxPacketType;
+import fi.dy.masa.minihud.network.packet.PacketType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
@@ -132,7 +132,7 @@ public class RendererCallbacks
                     if (!mc.isIntegratedServerRunning() && DataStorage.getInstance().isServuxServer()) {
                         // Refresh Spawn Metadata
                         NbtCompound nbt = new NbtCompound();
-                        nbt.putInt("packetType", ServuxPacketType.Structures.PACKET_C2S_REQUEST_SPAWN_METADATA);
+                        nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_SPAWN_METADATA);
                         ((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
                     }
                 } else {
@@ -161,13 +161,13 @@ public class RendererCallbacks
                 {
                     DataStorage.getInstance().registerStructureChannel();
                     NbtCompound nbt = new NbtCompound();
-                    nbt.putInt("packetType", ServuxPacketType.Structures.PACKET_C2S_REQUEST_METADATA);
+                    nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
                     ((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
                 }
                 else
                 {
                     NbtCompound nbt = new NbtCompound();
-                    nbt.putInt("packetType", ServuxPacketType.Structures.PACKET_C2S_STRUCTURES_DECLINED);
+                    nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_DECLINED);
                     ((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
                     DataStorage.getInstance().unregisterStructureChannel();
                 }
