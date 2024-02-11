@@ -3,11 +3,10 @@ package fi.dy.masa.minihud;
 import fi.dy.masa.malilib.config.ConfigManager;
 import fi.dy.masa.malilib.event.*;
 import fi.dy.masa.malilib.interfaces.IInitializationHandler;
-import fi.dy.masa.malilib.network.ClientNetworkPlayInitHandler;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.event.*;
 import fi.dy.masa.minihud.hotkeys.KeyCallbacks;
-import fi.dy.masa.minihud.network.packet.PacketProvider;
+import fi.dy.masa.minihud.network.PacketUtils;
 
 public class InitHandler implements IInitializationHandler
 {
@@ -30,10 +29,10 @@ public class InitHandler implements IInitializationHandler
         TickHandler.getInstance().registerClientTickHandler(new ClientTickHandler());
 
         // Register network protocols
-        ClientNetworkPlayInitHandler.registerPlayChannels();
+        //ClientNetworkPlayInitHandler.registerPlayChannels();
         ServerListener serverListener = new ServerListener();
         ServerHandler.getInstance().registerServerHandler(serverListener);
-        PacketProvider.registerPayloads();
+        PacketUtils.registerPayloads();
 
         KeyCallbacks.init();
     }

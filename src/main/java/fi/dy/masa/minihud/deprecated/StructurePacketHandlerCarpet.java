@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.network.legacy;
+package fi.dy.masa.minihud.deprecated;
 
 //import net.minecraft.nbt.NbtCompound;
 //import net.minecraft.nbt.NbtList;

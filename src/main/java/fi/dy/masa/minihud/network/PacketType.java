@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.network.packet;
+package fi.dy.masa.minihud.network;
 
 public class PacketType
 {

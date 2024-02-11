@@ -13,8 +13,9 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-import fi.dy.masa.malilib.event.ServuxStructuresHandler;
-import fi.dy.masa.minihud.network.packet.PacketType;
+import fi.dy.masa.malilib.network.payload.PayloadType;
+import fi.dy.masa.minihud.network.PacketType;
+import fi.dy.masa.minihud.network.handlers.ServuxStructuresPlayListener;
 import fi.dy.masa.minihud.renderer.*;
 import fi.dy.masa.minihud.util.MiscUtils;
 import fi.dy.masa.minihud.util.StructureData;
@@ -147,7 +148,9 @@ public class DataStorage
         this.spawnChunkRadius = -1;
         this.clearTasks();
 
-        ((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).reset();
+        // FIXME
+        //((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).reset();
+        ServuxStructuresPlayListener.INSTANCE.reset(PayloadType.SERVUX_STRUCTURES);
 
         ShapeManager.INSTANCE.clear();
         OverlayRendererBeaconRange.INSTANCE.clear();
@@ -642,7 +645,7 @@ public class DataStorage
     public void registerStructureChannel()
     {
         MiniHUD.printDebug("DataStorage#registerStructureChannel(): register Servux");
-        //PacketProvider.registerPayloads();
+        //PacketUtils.registerPayloads();
         this.shouldRegisterStructureChannel = true;
 
         if (!this.servuxServer)
@@ -651,7 +654,9 @@ public class DataStorage
             // Carpet no longer provides Structures.
             NbtCompound nbt = new NbtCompound();
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
-            ((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
+            // FIXME
+            //((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
+            ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
         }
     }
 

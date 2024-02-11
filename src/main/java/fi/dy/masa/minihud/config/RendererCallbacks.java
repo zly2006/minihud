@@ -1,7 +1,8 @@
 package fi.dy.masa.minihud.config;
 
-import fi.dy.masa.malilib.event.ServuxStructuresHandler;
-import fi.dy.masa.minihud.network.packet.PacketType;
+import fi.dy.masa.malilib.network.payload.PayloadType;
+import fi.dy.masa.minihud.network.PacketType;
+import fi.dy.masa.minihud.network.handlers.ServuxStructuresPlayListener;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
@@ -133,7 +134,9 @@ public class RendererCallbacks
                         // Refresh Spawn Metadata
                         NbtCompound nbt = new NbtCompound();
                         nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_SPAWN_METADATA);
-                        ((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
+                        // FIXME
+                        //((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
+                        ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
                     }
                 } else {
                     OverlayRendererSpawnChunks.setNeedsUpdate();
@@ -162,13 +165,17 @@ public class RendererCallbacks
                     DataStorage.getInstance().registerStructureChannel();
                     NbtCompound nbt = new NbtCompound();
                     nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
-                    ((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
+                    // FIXME
+                    //((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
+                    ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
                 }
                 else
                 {
                     NbtCompound nbt = new NbtCompound();
                     nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_DECLINED);
-                    ((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
+                    // FIXME
+                    //((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
+                    ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
                     DataStorage.getInstance().unregisterStructureChannel();
                 }
             }

@@ -1,32 +1,32 @@
-package fi.dy.masa.minihud.network.packet;
+package fi.dy.masa.minihud.deprecated;
 
-import fi.dy.masa.malilib.interfaces.IServuxMetadataListener;
-import fi.dy.masa.malilib.network.ClientNetworkPlayHandler;
 import fi.dy.masa.malilib.network.payload.channel.ServuxMetadataPayload;
 import fi.dy.masa.minihud.MiniHUD;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 
-public class ServuxMetadataListener implements IServuxMetadataListener
+@Deprecated(forRemoval = true)
+public class ServuxMetadataListener
+        //implements IServuxMetadataListener
 {
     //private int timeout = -1;
     private boolean registered = false;
-    @Override
+    //@Override
     public void reset() { this.registered = false; }
-    @Override
+    //@Override
     public void sendServuxMetadata(NbtCompound data)
     {
         ServuxMetadataPayload payload = new ServuxMetadataPayload(data);
         MiniHUD.printDebug("ServuxMetadataListener#sendServuxMetadata(): sending payload of size {} bytes.", data.getSizeInBytes());
-        ClientNetworkPlayHandler.sendServuxMetadata(payload);
+        //ClientNetworkPlayHandler.sendServuxMetadata(payload);
     }
-    @Override
+    //@Override
     public void receiveServuxMetadata(NbtCompound data, ClientPlayNetworking.Context ctx, Identifier id)
     {
         decodeServuxMetadata(data, id);
     }
-    @Override
+    //@Override
     public void encodeServuxMetadata(NbtCompound data, Identifier id)
     {
         // Encode packet.
@@ -36,7 +36,7 @@ public class ServuxMetadataListener implements IServuxMetadataListener
         MiniHUD.printDebug("ServuxMetadataListener#encodeServuxMetadata(): nbt.putByteArray() size in bytes: {}", nbt.getSizeInBytes());
         sendServuxMetadata(nbt);
     }
-    @Override
+    //@Override
     public void decodeServuxMetadata(NbtCompound data, Identifier id)
     {
         int packetType = data.getInt("packetType");

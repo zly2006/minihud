@@ -1,19 +1,20 @@
-package fi.dy.masa.minihud.network.packet;
+package fi.dy.masa.minihud.deprecated;
 
-import fi.dy.masa.malilib.interfaces.IServuxStructuresListener;
-import fi.dy.masa.malilib.network.ClientNetworkPlayHandler;
 import fi.dy.masa.malilib.network.payload.channel.ServuxStructuresPayload;
 import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.DataStorage;
+import fi.dy.masa.minihud.network.PacketType;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
-public class ServuxStructuresListener implements IServuxStructuresListener
+@Deprecated(forRemoval = true)
+public class ServuxStructuresListener
+        //implements IServuxStructuresListener
 {
     /**
      * StructureDataPacketHandler (Replaced), etc. using new networking API, and greatly simplifies the work flow.
@@ -26,21 +27,21 @@ public class ServuxStructuresListener implements IServuxStructuresListener
      */
     private int timeout;
     private boolean registered;
-    @Override
+    //@Override
     public void reset() { this.registered = false; }
-    @Override
+    //@Override
     public void sendServuxStructures(NbtCompound data)
     {
         ServuxStructuresPayload payload = new ServuxStructuresPayload(data);
         MiniHUD.printDebug("ServuxStructuresListener#sendServuxStructures(): sending payload of size {} bytes.", data.getSizeInBytes());
-        ClientNetworkPlayHandler.sendServuxStructures(payload);
+        //ClientNetworkPlayHandler.sendServuxStructures(payload);
     }
-    @Override
+    //@Override
     public void receiveServuxStructures(NbtCompound data, ClientPlayNetworking.Context ctx, Identifier id)
     {
         decodeServuxStructures(data, id);
     }
-    @Override
+    //@Override
     public void encodeServuxStructures(NbtCompound data, Identifier id)
     {
         // Encode packet.
@@ -50,7 +51,7 @@ public class ServuxStructuresListener implements IServuxStructuresListener
         MiniHUD.printDebug("ServuxStructuresListener#encodeServuxStructures(): nbt.putByteArray() size in bytes: {}", nbt.getSizeInBytes());
         sendServuxStructures(nbt);
     }
-    @Override
+    //@Override
     public void decodeServuxStructures(NbtCompound data, Identifier id)
     {
         int packetType = data.getInt("packetType");
