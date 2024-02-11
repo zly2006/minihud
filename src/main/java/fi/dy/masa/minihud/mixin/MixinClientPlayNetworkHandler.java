@@ -55,6 +55,8 @@ public abstract class MixinClientPlayNetworkHandler
     {
         DataStorage.getInstance().setWorldSpawnIfUnknown(packet.getPos());
     }
+    /*
+    // TODO unnecessary call for old API code
     @Inject(method = "onGameJoin", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/MinecraftClient;joinWorld(" +
                     "Lnet/minecraft/client/world/ClientWorld;)V"))
@@ -64,6 +66,7 @@ public abstract class MixinClientPlayNetworkHandler
 
         //PacketUtils.registerPayloads();
     }
+     */
 
     @Inject(method = "onGameJoin", at = @At("RETURN"))
     private void minihud_onPostGameJoin(GameJoinS2CPacket packet, CallbackInfo ci)
@@ -76,8 +79,7 @@ public abstract class MixinClientPlayNetworkHandler
             DataStorage.getInstance().setSimulationDistance(new_simul);
         }
 
-        //ClientNetworkPlayInitHandler.registerReceivers();
-
+        // TODO MaLiLib handles this for us currently
         //PayloadTypeRegister.getInstance().registerAllHandlers();
     }
 }
