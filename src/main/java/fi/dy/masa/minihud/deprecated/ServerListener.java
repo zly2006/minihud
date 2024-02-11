@@ -1,11 +1,12 @@
-package fi.dy.masa.minihud.event;
+package fi.dy.masa.minihud.deprecated;
 
-import fi.dy.masa.malilib.interfaces.IServerListener;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.network.PacketUtils;
 import net.minecraft.server.MinecraftServer;
 
-public class ServerListener implements IServerListener
+@Deprecated(forRemoval = true)
+public class ServerListener
+        //implements IServerListener
 {
     /**
      * This interface for IntegratedServers() works much more reliably than invoking a WorldLoadHandler

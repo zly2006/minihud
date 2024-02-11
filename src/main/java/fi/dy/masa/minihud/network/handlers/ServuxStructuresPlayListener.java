@@ -28,7 +28,8 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         @Override
         public void receive(ServuxStructuresPayload payload, ClientPlayNetworking.Context context) {
             //MiniHUD.printDebug("ServuxStructuresPlayListener#receive(): received Servux Structures payload.");
-            ((ClientPlayHandler<?>) ClientPlayHandler.getInstance()).receiveS2CPlayPayload(PayloadType.SERVUX_STRUCTURES, payload, context);
+            //((ClientPlayHandler<?>) ClientPlayHandler.getInstance()).receiveS2CPlayPayload(PayloadType.SERVUX_STRUCTURES, payload, context);
+            ServuxStructuresPlayListener.INSTANCE.receiveS2CPlayPayload(PayloadType.SERVUX_STRUCTURES, payload, context);
         }
     };
     private final Map<PayloadType, Boolean> registered = new HashMap<>();
