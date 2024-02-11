@@ -3,7 +3,7 @@ package fi.dy.masa.minihud.network;
 
 import fi.dy.masa.malilib.network.handler.ClientPlayHandler;
 import fi.dy.masa.malilib.network.payload.channel.ServuxStructuresPayload;
-import fi.dy.masa.minihud.network.listeners.ServuxStructuresPlayListener;
+import fi.dy.masa.minihud.network.handlers.ServuxStructuresPlayListener;
 
 public class PacketUtils
 {

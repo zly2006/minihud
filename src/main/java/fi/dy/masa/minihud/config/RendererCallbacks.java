@@ -2,7 +2,7 @@ package fi.dy.masa.minihud.config;
 
 import fi.dy.masa.malilib.network.payload.PayloadType;
 import fi.dy.masa.minihud.network.PacketType;
-import fi.dy.masa.minihud.network.listeners.ServuxStructuresPlayListener;
+import fi.dy.masa.minihud.network.handlers.ServuxStructuresPlayListener;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
