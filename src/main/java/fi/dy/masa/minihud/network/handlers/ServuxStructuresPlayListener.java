@@ -27,7 +27,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
     public final static ServuxStructuresPlayListener<ServuxStructuresPayload> INSTANCE = new ServuxStructuresPlayListener<>() {
         @Override
         public void receive(ServuxStructuresPayload payload, ClientPlayNetworking.Context context) {
-            MiniHUD.printDebug("ServuxStructuresPlayListener#receive(): received Servux Structures payload.");
+            //MiniHUD.printDebug("ServuxStructuresPlayListener#receive(): received Servux Structures payload.");
             ((ClientPlayHandler<?>) ClientPlayHandler.getInstance()).receiveS2CPlayPayload(PayloadType.SERVUX_STRUCTURES, payload, context);
         }
     };
@@ -172,7 +172,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         {
             PayloadTypeRegister.getInstance().registerPlayChannel(type, ClientCommonHandlerRegister.getInstance().getPayloadType(type), ClientCommonHandlerRegister.getInstance().getPacketCodec(type));
         }
-        ClientDebugSuite.checkGlobalChannels();
+        ClientDebugSuite.checkGlobalPlayChannels();
     }
     @Override
     @SuppressWarnings("unchecked")
@@ -193,7 +193,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
             else
                 this.registered.put(type, true);
         }
-        ClientDebugSuite.checkGlobalChannels();
+        ClientDebugSuite.checkGlobalPlayChannels();
     }
 
     @Override
