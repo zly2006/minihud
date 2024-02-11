@@ -1,9 +1,11 @@
 package fi.dy.masa.minihud.deprecated;
 
 import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.network.PacketUtils;
 import net.minecraft.server.MinecraftServer;
 
+/**
+ * MaLiLib handles this for us when we register the Handler.
+ */
 @Deprecated(forRemoval = true)
 public class ServerListener
         //implements IServerListener
@@ -14,7 +16,7 @@ public class ServerListener
 
     public void onServerStarting(MinecraftServer minecraftServer)
     {
-        PacketUtils.registerPayloads();
+        //PacketUtils.registerPayloads();
 
         //ClientNetworkPlayInitHandler.registerPlayChannels();
         //ClientDebugSuite.checkGlobalChannels();

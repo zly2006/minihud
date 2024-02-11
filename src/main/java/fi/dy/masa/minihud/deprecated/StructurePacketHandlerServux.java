@@ -11,11 +11,11 @@ import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.data.DataStorage;
 
 /**
- * Old method, PROTOCOL_VERSION 1,
+ * Original Handler method, PROTOCOL_VERSION 1,
  * as we cannot send a PacketByteBuf directly, but we can "cast" a dummy class to it, (Like I did for Syncmatica)
  * but why bother when it unwraps the NbtCompound tag anyway?
  */
-@Deprecated
+@Deprecated(forRemoval = false)
 //public class StructurePacketHandlerServux implements IPluginChannelHandler
 public class StructurePacketHandlerServux
 {

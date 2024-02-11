@@ -12,6 +12,9 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
+/**
+ * Old Handler interface method.
+ */
 @Deprecated(forRemoval = true)
 public class ServuxStructuresListener
         //implements IServuxStructuresListener

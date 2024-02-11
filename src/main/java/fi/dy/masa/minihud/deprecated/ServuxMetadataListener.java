@@ -6,6 +6,9 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 
+/**
+ * Old Handler interface method.
+ */
 @Deprecated(forRemoval = true)
 public class ServuxMetadataListener
         //implements IServuxMetadataListener

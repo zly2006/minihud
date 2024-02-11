@@ -12,10 +12,10 @@ public class PacketType
         public static final int PACKET_C2S_STRUCTURES_DECLINED = 6;
         public static final int PACKET_S2C_STRUCTURE_DATA = 7;
     }
+    // TODO -- For future expansion from Servux
     /*
     public record Metadata()
     {
-        // TODO -- For future expansion from Servux
         public static final int PROTOCOL_VERSION = 1;
     }
      */

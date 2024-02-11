@@ -12,8 +12,9 @@ package fi.dy.masa.minihud.deprecated;
 
 /**
  * I wasn't able to find this Channel under the Carpet code.  --> Disabled.
+ * If I am wrong, I'll put it back and re-implement it.
  */
-@Deprecated
+@Deprecated(forRemoval = false)
 //public class StructurePacketHandlerCarpet implements IPluginChannelHandler
 public class StructurePacketHandlerCarpet
 {
