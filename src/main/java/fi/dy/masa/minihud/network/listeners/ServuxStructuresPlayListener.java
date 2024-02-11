@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.network.handlers;
+package fi.dy.masa.minihud.network.listeners;
 
 import fi.dy.masa.malilib.network.handler.ClientCommonHandlerRegister;
 import fi.dy.masa.malilib.network.handler.ClientPlayHandler;
