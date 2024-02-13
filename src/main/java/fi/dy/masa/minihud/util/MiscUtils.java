@@ -82,30 +82,20 @@ public class MiscUtils
 
     public static boolean isStructureWithinRange(@Nullable BlockBox bb, BlockPos playerPos, int maxRange)
     {
-        if (bb == null ||
-            playerPos.getX() < (bb.getMinX() - maxRange) ||
-            playerPos.getX() > (bb.getMaxX() + maxRange) ||
-            playerPos.getZ() < (bb.getMinZ() - maxRange) ||
-            playerPos.getZ() > (bb.getMaxZ() + maxRange))
-        {
-            return false;
-        }
-
-        return true;
+        return bb != null &&
+                playerPos.getX() >= (bb.getMinX() - maxRange) &&
+                playerPos.getX() <= (bb.getMaxX() + maxRange) &&
+                playerPos.getZ() >= (bb.getMinZ() - maxRange) &&
+                playerPos.getZ() <= (bb.getMaxZ() + maxRange);
     }
 
     public static boolean isStructureWithinRange(@Nullable IntBoundingBox bb, BlockPos playerPos, int maxRange)
     {
-        if (bb == null ||
-            playerPos.getX() < (bb.minX - maxRange) ||
-            playerPos.getX() > (bb.maxX + maxRange) ||
-            playerPos.getZ() < (bb.minZ - maxRange) ||
-            playerPos.getZ() > (bb.maxZ + maxRange))
-        {
-            return false;
-        }
-
-        return true;
+        return bb != null &&
+                playerPos.getX() >= (bb.minX - maxRange) &&
+                playerPos.getX() <= (bb.maxX + maxRange) &&
+                playerPos.getZ() >= (bb.minZ - maxRange) &&
+                playerPos.getZ() <= (bb.maxZ + maxRange);
     }
 
     public static boolean areBoxesEqual(IntBoundingBox bb1, IntBoundingBox bb2)
@@ -210,6 +200,7 @@ public class MiscUtils
 
         for (Object2IntMap.Entry<Identifier> entry : recipes.object2IntEntrySet())
         {
+            assert world != null;
             Optional<RecipeEntry<?>> recipeOpt = world.getRecipeManager().get(entry.getKey());
 
             if (recipeOpt.isPresent() && recipeOpt.get().value() instanceof AbstractCookingRecipe recipe)

@@ -125,7 +125,7 @@ public class WorldLoadListener implements IWorldLoadListener
     {
         File dir = getCurrentConfigDirectory();
 
-        if (dir.exists() == false && dir.mkdirs() == false)
+        if (!dir.exists() && !dir.mkdirs())
         {
             MiniHUD.logger.warn("Failed to create the config directory '{}'", dir.getAbsolutePath());
         }

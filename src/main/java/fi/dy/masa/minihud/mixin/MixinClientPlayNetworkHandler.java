@@ -55,15 +55,15 @@ public abstract class MixinClientPlayNetworkHandler
     {
         DataStorage.getInstance().setWorldSpawnIfUnknown(packet.getPos());
     }
+
     /*
-    // TODO unnecessary call for old API code
+    // Unnecessary call for old API code
+
     @Inject(method = "onGameJoin", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/MinecraftClient;joinWorld(" +
                     "Lnet/minecraft/client/world/ClientWorld;)V"))
     private void minihud_onPreGameJoin(GameJoinS2CPacket packet, CallbackInfo ci)
     {
-        //ClientNetworkPlayInitHandler.registerPlayChannels();
-
         //PacketUtils.registerPayloads();
     }
      */
@@ -78,8 +78,5 @@ public abstract class MixinClientPlayNetworkHandler
             MiniHUD.printDebug("MixinClientPlayNetworkHandler#minihud_onPostGameJoin(): Simulation Distance change detected {} -> {}", simul, new_simul);
             DataStorage.getInstance().setSimulationDistance(new_simul);
         }
-
-        // TODO MaLiLib handles this for us currently
-        //PayloadTypeRegister.getInstance().registerAllHandlers();
     }
 }

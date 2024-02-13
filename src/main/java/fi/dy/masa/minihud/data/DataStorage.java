@@ -148,8 +148,6 @@ public class DataStorage
         this.spawnChunkRadius = -1;
         this.clearTasks();
 
-        // FIXME
-        //((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).reset();
         ServuxStructuresPlayListener.INSTANCE.reset(PayloadType.SERVUX_STRUCTURES);
 
         ShapeManager.INSTANCE.clear();
@@ -644,25 +642,23 @@ public class DataStorage
 
     public void registerStructureChannel()
     {
-        MiniHUD.printDebug("DataStorage#registerStructureChannel(): register Servux");
-        //PacketUtils.registerPayloads();
+        //MiniHUD.printDebug("DataStorage#registerStructureChannel(): register Servux");
         this.shouldRegisterStructureChannel = true;
 
         if (!this.servuxServer)
         {
-            MiniHUD.printDebug("DataStorage#registerStructureChannel(): No ServUX has been detected --> Request METADATA.");
-            // Carpet no longer provides Structures.
+            MiniHUD.printDebug("DataStorage#registerStructureChannel(): Attempting to request METADATA.");
+
             NbtCompound nbt = new NbtCompound();
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
-            // FIXME
-            //((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
+
             ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
         }
     }
 
     public void unregisterStructureChannel()
     {
-        MiniHUD.printDebug("DataStorage#unregisterStructureChannel(): unregister Servux");
+        //MiniHUD.printDebug("DataStorage#unregisterStructureChannel(): unregister Servux");
         if (this.servuxServer)
             this.servuxServer = false;
         this.shouldRegisterStructureChannel = false;
@@ -708,7 +704,7 @@ public class DataStorage
 
     public void addOrUpdateStructuresFromServer(NbtList structures, int timeout, boolean isServux)
     {
-        MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): start");
+        //MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): start");
 
         // Ignore the data from QuickCarpet if the Servux mod is also present
         if (this.servuxServer && !isServux)
@@ -870,6 +866,14 @@ public class DataStorage
         if (JsonUtils.hasInteger(obj, "spawn_chunk_radius"))
         {
             this.setSpawnChunkRadius(JsonUtils.getIntegerOrDefault(obj, "spawn_chunk_radius", 2));
+
+            // Force RenderToggle OFF if SPAWN_CHUNK_RADIUS is set to 0.
+            // Because we have nothing to render.
+            if (this.getSpawnChunkRadius() == 0 && RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.getBooleanValue())
+            {
+                MiniHUD.logger.warn("overlaySpawnChunkReal: toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0.");
+                RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
+            }
         }
     }
 }

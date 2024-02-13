@@ -35,6 +35,7 @@ public class RenderUtils
         final int boxMaxX = Math.max(posStart.getX(), posEnd.getX());
         final int boxMaxZ = Math.max(posStart.getZ(), posEnd.getZ());
 
+        assert entity != null;
         final int centerX = (int) Math.floor(entity.getX());
         final int centerZ = (int) Math.floor(entity.getZ());
         final int maxDist = MinecraftClient.getInstance().options.getViewDistance().getValue() * 32; // double the view distance in blocks
@@ -226,7 +227,7 @@ public class RenderUtils
 
         for (long posLong : positions)
         {
-            if (range.isPositionWithinRange(posLong) == false)
+            if (!range.isPositionWithinRange(posLong))
             {
                 continue;
             }
@@ -242,13 +243,13 @@ public class RenderUtils
 
                 boolean render = full;
 
-                if (full == false)
+                if (!full)
                 {
                     int adjX = BlockPos.unpackLongX(adjPosLong);
                     int adjY = BlockPos.unpackLongY(adjPosLong);
                     int adjZ = BlockPos.unpackLongZ(adjPosLong);
                     boolean onOrIn = test.isInsideOrCloserThan(adjX, adjY, adjZ, side);
-                    render = ((outer && onOrIn == false) || (inner && onOrIn));
+                    render = ((outer && !onOrIn) || (inner && onOrIn));
                 }
 
                 if (render)
@@ -272,7 +273,7 @@ public class RenderUtils
         //int count = 0;
         for (long posLong : positions)
         {
-            if (range.isPositionWithinRange(posLong) == false)
+            if (!range.isPositionWithinRange(posLong))
             {
                 continue;
             }

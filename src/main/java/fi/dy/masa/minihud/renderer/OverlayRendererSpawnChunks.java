@@ -85,6 +85,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         int outer;
         int lazy;
         int ent;
+
         if (this.isPlayerFollowing)
         {
             // OVERLAY_SPAWN_CHUNK_OVERLAY_PLAYER
@@ -93,22 +94,25 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
 
             spawnChunkRadius = getSimulationDistance();
 
-            // Calc
+            // Do the correct math
             outer = spawnChunkRadius + 1;
             lazy = spawnChunkRadius;
-            ent = spawnChunkRadius -1;
+            ent = spawnChunkRadius - 1;
         }
         else
         {
             // OVERLAY_SPAWN_CHUNK_OVERLAY_REAL
             spawn = data.getWorldSpawn();
             spawnChunkRadius = data.getSpawnChunkRadius();
-            if (spawnChunkRadius < 0) {
-                // For Integrated server, and for whatever reason, the value isn't yet set
-                if (data.hasIntegratedServer()) {
+            if (spawnChunkRadius < 0)
+            {
+                if (data.hasIntegratedServer())
+                {
                     spawnChunkRadius = getSpawnChunkRadius(mc.getServer());
                     data.setSpawnChunkRadius(spawnChunkRadius);
-                } else {
+                }
+                else
+                {
                     spawnChunkRadius = 2;
                     data.setSpawnChunkRadiusIfUnknown(spawnChunkRadius);
                     // Sets default 24w03b spawn chunk radius of 2 if not found.
@@ -116,19 +120,22 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
             }
             if (spawnChunkRadius < 0)
                 spawnChunkRadius = 2;
-            if (spawnChunkRadius == 0) {
-                MiniHUD.printDebug("OverlayRendererSpawnChunks#update(): toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0.");
+            if (spawnChunkRadius == 0)
+            {
+                // Minecraft does not perm-load World Spawn when the SPAWN_CHUNK_RADIUS is set to 0,
+                // So the bounding box should be turned off when spawnChunkRadius is set to 0,
+                // Because we have nothing to render.
+                MiniHUD.logger.warn("overlaySpawnChunkReal: toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0.");
+
                 RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
-                //InfoUtils.printActionbarMessage("Spawn Chunk Overlay disabled (Radius is set to 0)");
                 needsUpdate = false;
                 return;
             }
-            // --> Verify Minecraft's behavior when it's set to 0, so we at least have less visible issues.
 
-            // Calc
+            // Do the correct math
             outer = spawnChunkRadius + 1;
             lazy = spawnChunkRadius;
-            ent = spawnChunkRadius -1;
+            ent = spawnChunkRadius - 1;
         }
 
         MiniHUD.printDebug("OverlayRendererSpawnChunks#update(): SpawnChunkRadius calc base: {} // outer: {}, lazy: {}, entity: {}", spawnChunkRadius, outer, lazy, ent);
@@ -152,19 +159,16 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         drawBlockBoundingBoxSidesBatchedQuads(spawn, cameraPos, colorEntity, 0.001, BUFFER_1);
 
         Pair<BlockPos, BlockPos> corners;
-        // Orig: Base is 10.
+
         // Org 22 (Outer (10 + 1) * 2) --> Incorrect
-        //corners = this.getSpawnChunkCorners(spawn, 22, mc.world);
         corners = this.getSpawnChunkCorners(spawn, outer, mc.world);
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorOuter, BUFFER_1, BUFFER_2);
 
         // Org 11 (Lazy 10 + 1)
-        //corners = this.getSpawnChunkCorners(spawn, 11, mc.world);
         corners = this.getSpawnChunkCorners(spawn, lazy, mc.world);
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorLazy, BUFFER_1, BUFFER_2);
 
         // Org 9 (Entity 10 - 1)
-        //corners = this.getSpawnChunkCorners(spawn, 9, mc.world);
         corners = this.getSpawnChunkCorners(spawn, ent, mc.world);
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorEntity, BUFFER_1, BUFFER_2);
 

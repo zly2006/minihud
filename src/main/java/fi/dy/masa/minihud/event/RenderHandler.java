@@ -114,9 +114,9 @@ public class RenderHandler implements IRenderer
             return;
         }
 
-        if (this.mc.getDebugHud().shouldShowDebugHud() == false &&
-            this.mc.player != null && this.mc.options.hudHidden == false &&
-            (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || this.mc.player.isSneaking()) &&
+        if (!this.mc.getDebugHud().shouldShowDebugHud() &&
+            this.mc.player != null && !this.mc.options.hudHidden &&
+            (!Configs.Generic.REQUIRE_SNEAK.getBooleanValue() || this.mc.player.isSneaking()) &&
             Configs.Generic.REQUIRED_KEY.getKeybind().isKeybindHeld())
         {
 
@@ -169,9 +169,6 @@ public class RenderHandler implements IRenderer
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
             this.mc.world != null && this.mc.player != null && !this.mc.options.hudHidden)
         {
-            //MatrixStack matrixStack = new MatrixStack();
-            //matrixStack.multiplyPositionMatrix(matrix4f);
-
             OverlayRenderer.renderOverlays(matrix4f, projMatrix, this.mc);
         }
     }
@@ -212,7 +209,7 @@ public class RenderHandler implements IRenderer
         }
 
         // Get the info line order based on the configs
-        List<LinePos> positions = new ArrayList<LinePos>();
+        List<LinePos> positions = new ArrayList<>();
 
         for (InfoToggle toggle : InfoToggle.values())
         {
@@ -659,7 +656,7 @@ public class RenderHandler implements IRenderer
             assert this.mc.player != null;
             Entity vehicle = this.mc.player.getVehicle();
 
-            if ((vehicle instanceof AbstractHorseEntity) == false)
+            if (!(vehicle instanceof AbstractHorseEntity))
             {
                 return;
             }
@@ -799,7 +796,7 @@ public class RenderHandler implements IRenderer
         {
             WorldChunk clientChunk = this.getClientChunk(chunkPos);
 
-            if (clientChunk.isEmpty() == false)
+            if (!clientChunk.isEmpty())
             {
                 Biome biome = mc.world.getBiome(pos).value();
                 Identifier id = mc.world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome);
@@ -811,7 +808,7 @@ public class RenderHandler implements IRenderer
         {
             WorldChunk clientChunk = this.getClientChunk(chunkPos);
 
-            if (clientChunk.isEmpty() == false)
+            if (!clientChunk.isEmpty())
             {
                 Biome biome = mc.world.getBiome(pos).value();
                 Identifier rl = mc.world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome);
@@ -859,7 +856,7 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.SLIME_CHUNK)
         {
-            if (MiscUtils.isOverworld(world) == false)
+            if (!MiscUtils.isOverworld(world))
             {
                 return;
             }
@@ -1046,8 +1043,9 @@ public class RenderHandler implements IRenderer
 
     private WorldChunk getClientChunk(ChunkPos chunkPos)
     {
-        if (this.cachedClientChunk == null || this.cachedClientChunk.getPos().equals(chunkPos) == false)
+        if (this.cachedClientChunk == null || !this.cachedClientChunk.getPos().equals(chunkPos))
         {
+            assert this.mc.world != null;
             this.cachedClientChunk = this.mc.world.getChunk(chunkPos.x, chunkPos.z);
         }
 

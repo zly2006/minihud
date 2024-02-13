@@ -63,7 +63,6 @@ public class RenderObjectVbo extends RenderObjectBase
         {
             RenderSystem.setShader(this.getShader());
             this.vertexBuffer.bind();
-            //this.vertexBuffer.draw(matrixStack.peek().getPositionMatrix(), projMatrix, this.getShader().get());
             this.vertexBuffer.draw(matrix4f, projMatrix, this.getShader().get());
             VertexBuffer.unbind();
         }

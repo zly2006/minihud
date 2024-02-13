@@ -52,7 +52,6 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     @Override
     public void draw(Matrix4f matrix4f, Matrix4f projMatrix)
     {
-        // FIXME Matrix4f
         this.preRender();
 
         this.renderObjects.get(0).draw(matrix4f, projMatrix);
