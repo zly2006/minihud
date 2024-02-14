@@ -110,6 +110,9 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
                 // Accept / Decline Structure Data based on Render toggle.
                 if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                 {
+                    // Send list of toggled structures
+                    DataStorage.getInstance().updateStructureToggles();
+
                     NbtCompound nbt = new NbtCompound();
                     nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_ACCEPT);
                     MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): sending STRUCTURES_ACCEPT packet");

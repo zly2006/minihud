@@ -134,8 +134,6 @@ public class RendererCallbacks
                         // Refresh Spawn Metadata
                         NbtCompound nbt = new NbtCompound();
                         nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_SPAWN_METADATA);
-                        // FIXME
-                        //((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
                         ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
                     }
                 } else {
@@ -165,16 +163,12 @@ public class RendererCallbacks
                     DataStorage.getInstance().registerStructureChannel();
                     NbtCompound nbt = new NbtCompound();
                     nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
-                    // FIXME
-                    //((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
                     ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
                 }
                 else
                 {
                     NbtCompound nbt = new NbtCompound();
                     nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_DECLINED);
-                    // FIXME
-                    //((ServuxStructuresHandler) ServuxStructuresHandler.getInstance()).sendServuxStructures(nbt);
                     ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
                     DataStorage.getInstance().unregisterStructureChannel();
                 }

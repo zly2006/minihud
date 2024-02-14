@@ -91,6 +91,7 @@ public class DataStorage
     private final PriorityBlockingQueue<ChunkTask> taskQueue = Queues.newPriorityBlockingQueue();
     private final Thread workerThread;
     private final ThreadWorker worker;
+    private NbtCompound STRUCTURE_TOGGLES = new NbtCompound();
 
     private DataStorage()
     {
@@ -162,6 +163,7 @@ public class DataStorage
             this.worldSeed = 0;
         }
 
+        this.STRUCTURE_TOGGLES = new NbtCompound();
         if (isLogout)
         {
             this.servuxServer = false;
@@ -651,8 +653,10 @@ public class DataStorage
 
             NbtCompound nbt = new NbtCompound();
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
-
             ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
+
+            // Build STRUCTURE_TOGGLES data to send to Servux
+            updateStructureToggles();
         }
     }
 
@@ -663,6 +667,32 @@ public class DataStorage
             this.servuxServer = false;
         this.shouldRegisterStructureChannel = false;
     }
+
+    /**
+     * For sending to Servux
+     */
+    public void updateStructureToggles()
+    {
+        NbtCompound toggles = new NbtCompound();
+        for (StructureType type : StructureType.VALUES)
+        {
+            toggles.putBoolean(type.name(), type.isEnabled());
+        }
+        this.STRUCTURE_TOGGLES.copyFrom(toggles);
+
+        if (this.servuxServer)
+        {
+            // Send toggle updates packet
+            toggles.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURE_TOGGLE);
+            MiniHUD.printDebug("DataStorage#updateStructureToggles(): sending STRUCTURE_TOGGLE packet");
+            ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, toggles);
+        }
+    }
+    public NbtCompound getStructureToggles()
+    {
+        return this.STRUCTURE_TOGGLES;
+    }
+
     private boolean structuresNeedUpdating(BlockPos playerPos, int hysteresis)
     {
         return this.structuresNeedUpdating || this.lastStructureUpdatePos == null ||
