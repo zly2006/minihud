@@ -74,7 +74,6 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     @Override
     public void draw(Matrix4f matrix4f, Matrix4f projMatrix)
     {
-        // FIXME to Matrix4f
         this.preRender();
 
         for (RenderObjectBase obj : this.renderObjects)
