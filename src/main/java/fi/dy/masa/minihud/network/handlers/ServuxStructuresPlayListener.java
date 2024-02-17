@@ -176,7 +176,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         ServuxStructuresPayload payload = new ServuxStructuresPayload(data);
 
         // TODO -- In case you want to use the networkHandler interface to send packets,
-        //  instead of the Fabric Networking API, this is how you can do it easily.
+        //  instead of the Fabric Networking API, this is how you can do it using this API.
         //ClientPlayNetworkHandler handler = MinecraftClient.getInstance().getNetworkHandler();
         //if (handler != null)
         //{
