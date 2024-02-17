@@ -17,6 +17,19 @@ public class MiniHUD implements ModInitializer
         InitializationHandler.getInstance().registerInitializationHandler(new InitHandler());
     }
 
+    public static String getModVersionString(String modId)
+    {
+        for (net.fabricmc.loader.api.ModContainer container : net.fabricmc.loader.api.FabricLoader.getInstance().getAllMods())
+        {
+            if (container.getMetadata().getId().equals(modId))
+            {
+                return container.getMetadata().getVersion().getFriendlyString();
+            }
+        }
+
+        return "?";
+    }
+
     public static void printDebug(String key, Object... args)
     {
         if (Configs.Generic.DEBUG_MESSAGES.getBooleanValue())

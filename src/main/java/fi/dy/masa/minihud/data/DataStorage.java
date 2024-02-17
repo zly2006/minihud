@@ -14,6 +14,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import fi.dy.masa.malilib.network.payload.PayloadType;
+import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.network.PacketType;
 import fi.dy.masa.minihud.network.handlers.ServuxStructuresPlayListener;
 import fi.dy.masa.minihud.renderer.*;
@@ -68,6 +69,7 @@ public class DataStorage
     private boolean hasSyncedTime;
     private boolean carpetServer;
     private boolean servuxServer;
+    private String serverVersion;
     private boolean worldSpawnValid;
     private boolean hasStructureDataFromServer;
     private boolean structureRendererNeedsUpdate;
@@ -193,6 +195,19 @@ public class DataStorage
     {
         MiniHUD.printDebug("DataStorage#setIsServuxServer()");
         this.servuxServer = true;
+    }
+    public void setServerVersion(String ver)
+    {
+        MiniHUD.printDebug("DataStorage#setServerVersion()");
+        if (ver != null && !ver.isEmpty())
+        {
+            MiniHUD.logger.info("Accepting structures server version: {}", ver);
+            this.serverVersion = ver;
+        }
+        else
+        {
+            this.serverVersion = "unknown";
+        }
     }
 
     public void onWorldJoin()
@@ -653,6 +668,7 @@ public class DataStorage
 
             NbtCompound nbt = new NbtCompound();
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
+            nbt.putString("version", Reference.MOD_ID+"-"+Reference.MOD_VERSION);
             ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
 
             // Build STRUCTURE_TOGGLES data to send to Servux
@@ -664,7 +680,13 @@ public class DataStorage
     {
         //MiniHUD.printDebug("DataStorage#unregisterStructureChannel(): unregister Servux");
         if (this.servuxServer)
+        {
+            MiniHUD.printDebug("unregisterStructureChannel(): sending STRUCTURES_DECLINED packet");
+            NbtCompound nbt = new NbtCompound();
+            nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_DECLINED);
+            ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
             this.servuxServer = false;
+        }
         this.shouldRegisterStructureChannel = false;
     }
 

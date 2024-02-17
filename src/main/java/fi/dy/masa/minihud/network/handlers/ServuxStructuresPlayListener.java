@@ -96,6 +96,11 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
                 this.timeout = data.getInt("timeout");
                 this.register = true;
                 DataStorage.getInstance().setIsServuxServer();
+                if (data.contains("servux"))
+                {
+                    String servux = data.getString("servux");
+                    DataStorage.getInstance().setServerVersion(servux);
+                }
                 int x = data.getInt("spawnPosX");
                 int y = data.getInt("spawnPosY");
                 int z = data.getInt("spawnPosZ");
@@ -113,6 +118,9 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
                     // Send list of toggled structures
                     DataStorage.getInstance().updateStructureToggles();
 
+                    // TODO implement this in a usable way under Servux,
+                    //  but this is just informing them of our enabled structures
+                    //  that we'd like to receive.
                     NbtCompound nbt = new NbtCompound();
                     nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_ACCEPT);
                     MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): sending STRUCTURES_ACCEPT packet");
@@ -132,6 +140,11 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         else if (packetType == PacketType.Structures.PACKET_S2C_SPAWN_METADATA)
         {
             MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): received SPAWN_METADATA packet, of size in bytes: {}.", data.getSizeInBytes());
+            if (data.contains("servux"))
+            {
+                String servux = data.getString("servux");
+                DataStorage.getInstance().setServerVersion(servux);
+            }
             int x = data.getInt("spawnPosX");
             int y = data.getInt("spawnPosY");
             int z = data.getInt("spawnPosZ");
@@ -144,6 +157,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         }
         else if (packetType == PacketType.Structures.PACKET_S2C_STRUCTURE_DATA)
         {
+            // It's safe to accept the data, even if our Structure Renderer is off.
             MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): received STRUCTURE_DATA packet, of size in bytes: {}.", data.getSizeInBytes());
             NbtList structures = data.getList("Structures", Constants.NBT.TAG_COMPOUND);
             MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): structures; list size: {}", structures.size());

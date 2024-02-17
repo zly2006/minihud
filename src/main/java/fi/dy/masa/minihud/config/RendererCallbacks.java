@@ -1,6 +1,7 @@
 package fi.dy.masa.minihud.config;
 
 import fi.dy.masa.malilib.network.payload.PayloadType;
+import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.network.PacketType;
 import fi.dy.masa.minihud.network.handlers.ServuxStructuresPlayListener;
 import net.minecraft.client.MinecraftClient;
@@ -134,6 +135,7 @@ public class RendererCallbacks
                         // Refresh Spawn Metadata
                         NbtCompound nbt = new NbtCompound();
                         nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_SPAWN_METADATA);
+                        nbt.putString("version", Reference.MOD_ID+"-"+Reference.MOD_VERSION);
                         ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
                     }
                 } else {
@@ -161,15 +163,21 @@ public class RendererCallbacks
                 if (config.getBooleanValue())
                 {
                     DataStorage.getInstance().registerStructureChannel();
+                    /*
+                    MiniHUD.printDebug("onStructuresToggled(): sending REQUEST_METADATA packet");
                     NbtCompound nbt = new NbtCompound();
                     nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
                     ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
+                     */
                 }
                 else
                 {
+                    /*
+                    MiniHUD.printDebug("onStructuresToggled(): sending STRUCTURES_DECLINED packet");
                     NbtCompound nbt = new NbtCompound();
                     nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_DECLINED);
                     ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
+                     */
                     DataStorage.getInstance().unregisterStructureChannel();
                 }
             }
