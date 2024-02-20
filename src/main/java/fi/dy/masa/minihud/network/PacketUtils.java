@@ -2,12 +2,12 @@ package fi.dy.masa.minihud.network;
 
 
 import fi.dy.masa.malilib.network.handler.ClientPlayHandler;
-import fi.dy.masa.malilib.network.payload.channel.ServuxStructuresPayload;
+import fi.dy.masa.malilib.network.payload.channel.ServuxS2CStructuresPayload;
 import fi.dy.masa.minihud.network.handlers.ServuxStructuresPlayListener;
 
 public class PacketUtils
 {
-    static ServuxStructuresPlayListener<ServuxStructuresPayload> minihud_servuxStructuresListener = ServuxStructuresPlayListener.INSTANCE;
+    static ServuxStructuresPlayListener<ServuxS2CStructuresPayload> minihud_servuxStructuresListener = ServuxStructuresPlayListener.INSTANCE;
     private static boolean payloadsRegistered = false;
 
     public static void registerPayloads()
