@@ -29,9 +29,6 @@ public class InitHandler implements IInitializationHandler
         TickHandler.getInstance().registerClientTickHandler(new ClientTickHandler());
 
         // Register network protocols
-        //ClientNetworkPlayInitHandler.registerPlayChannels();
-        //ServerListener serverListener = new ServerListener();
-        //ServerHandler.getInstance().registerServerHandler(serverListener);
         PacketUtils.registerPayloads();
 
         KeyCallbacks.init();

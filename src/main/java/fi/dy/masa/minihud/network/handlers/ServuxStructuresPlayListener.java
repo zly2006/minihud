@@ -1,18 +1,19 @@
 package fi.dy.masa.minihud.network.handlers;
 
 import fi.dy.masa.malilib.network.handler.ClientCommonHandlerRegister;
-import fi.dy.masa.malilib.network.handler.ClientPlayHandler;
-import fi.dy.masa.malilib.network.handler.IPluginPlayHandler;
+import fi.dy.masa.malilib.network.handler.play.ClientPlayHandler;
+import fi.dy.masa.malilib.network.handler.play.IPluginPlayHandler;
 import fi.dy.masa.malilib.network.payload.PayloadCodec;
 import fi.dy.masa.malilib.network.payload.PayloadType;
 import fi.dy.masa.malilib.network.payload.PayloadTypeRegister;
-import fi.dy.masa.malilib.network.payload.channel.ServuxS2CStructuresPayload;
+import fi.dy.masa.malilib.network.payload.channel.ServuxStructuresPayload;
 import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.DataStorage;
 import fi.dy.masa.minihud.network.PacketType;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
@@ -27,9 +28,9 @@ import java.util.Map;
 
 public abstract class ServuxStructuresPlayListener<T extends CustomPayload> implements IPluginPlayHandler<T>
 {
-    public final static ServuxStructuresPlayListener<ServuxS2CStructuresPayload> INSTANCE = new ServuxStructuresPlayListener<>() {
+    public final static ServuxStructuresPlayListener<ServuxStructuresPayload> INSTANCE = new ServuxStructuresPlayListener<>() {
         @Override
-        public void receive(ServuxS2CStructuresPayload payload, ClientPlayNetworking.Context context)
+        public void receive(ServuxStructuresPayload payload, ClientPlayNetworking.Context context)
         {
             //ClientPlayNetworkHandler handler = MinecraftClient.getInstance().getNetworkHandler();
             CallbackInfo ci = new CallbackInfo("ServuxStructuresPlayListener",false);
@@ -37,7 +38,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
             //if (handler != null)
             //{
                 //ServuxStructuresPlayListener.INSTANCE.receiveS2CPlayPayload(PayloadType.SERVUX_STRUCTURES, payload, handler, ci);
-                // TODO --> Servux doesn't need to use the networkHandler interface.
+                // Servux doesn't need to use the networkHandler interface.
             //}
             //else
                 ServuxStructuresPlayListener.INSTANCE.receiveS2CPlayPayload(PayloadType.SERVUX_STRUCTURES, payload, context);
@@ -55,7 +56,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
     {
         // Don't unregister
         this.register = false;
-        ServuxStructuresPlayListener.INSTANCE.unregisterPlayHandler(type);
+        //ServuxStructuresPlayListener.INSTANCE.unregisterPlayHandler(type);
         if (this.registered.containsKey(type))
             this.registered.replace(type, false);
         else
@@ -64,8 +65,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
     @Override
     public <P extends CustomPayload> void receiveS2CPlayPayload(PayloadType type, P payload, ClientPlayNetworking.Context ctx)
     {
-        //IPluginPlayHandler.super.receiveS2CPlayPayload(type, payload, ctx);
-        ServuxS2CStructuresPayload packet = (ServuxS2CStructuresPayload) payload;
+        ServuxStructuresPayload packet = (ServuxStructuresPayload) payload;
         MiniHUD.printDebug("ServuxStructuresPlayListener#receiveS2CPlayPayload(): handling packet via Fabric Network API.");
 
         ((ClientPlayHandler<?>) ClientPlayHandler.getInstance()).decodeS2CNbtCompound(PayloadType.SERVUX_STRUCTURES, packet.data());
@@ -74,7 +74,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
     public <P extends CustomPayload> void receiveS2CPlayPayload(PayloadType type, P payload, ClientPlayNetworkHandler handler, CallbackInfo ci)
     {
         // Can store the network handler here if wanted
-        ServuxS2CStructuresPayload packet = (ServuxS2CStructuresPayload) payload;
+        ServuxStructuresPayload packet = (ServuxStructuresPayload) payload;
         MiniHUD.printDebug("ServuxStructuresPlayListener#receiveS2CPlayPayload(): handling packet via network handler.");
 
         ((ClientPlayHandler<?>) ClientPlayHandler.getInstance()).decodeS2CNbtCompound(PayloadType.SERVUX_STRUCTURES, packet.data());
@@ -120,12 +120,12 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
                 // Accept / Decline Structure Data based on Render toggle.
                 if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                 {
-                    // Send list of toggled structures
+                    // Send a list of toggled structures
                     DataStorage.getInstance().updateStructureToggles();
-
                     // TODO implement this in a usable way under Servux,
                     //  but this is just informing them of our enabled structures
                     //  that we'd like to receive.
+
                     NbtCompound nbt = new NbtCompound();
                     nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_ACCEPT);
                     MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): sending STRUCTURES_ACCEPT packet");
@@ -178,7 +178,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
     public void encodeC2SNbtCompound(PayloadType type, NbtCompound data)
     {
         // Encode Payload
-        ServuxS2CStructuresPayload payload = new ServuxS2CStructuresPayload(data);
+        ServuxStructuresPayload payload = new ServuxStructuresPayload(data);
 
         // TODO -- In case you want to use the networkHandler interface to send packets,
         //  instead of the Fabric Networking API, this is how you can do it using this API.
@@ -191,7 +191,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
             ServuxStructuresPlayListener.INSTANCE.sendC2SPlayPayload(type, payload);
     }
     //@Override
-    public void sendC2SPlayPayload(PayloadType type, ServuxS2CStructuresPayload payload)
+    public void sendC2SPlayPayload(PayloadType type, ServuxStructuresPayload payload)
     {
         if (ClientPlayNetworking.canSend(payload.getId()))
         {
@@ -201,7 +201,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
             MiniHUD.printDebug("ServuxStructuresPlayListener#sendC2SPlayPayload(): [ERROR] CanSend() is false");
     }
     //@Override
-    public void sendC2SPlayPayload(PayloadType type, ServuxS2CStructuresPayload payload, ClientPlayNetworkHandler handler)
+    public void sendC2SPlayPayload(PayloadType type, ServuxStructuresPayload payload, ClientPlayNetworkHandler handler)
     {
         Packet<?> packet = new CustomPayloadS2CPacket(payload);
 
@@ -229,6 +229,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         }
         if (!codec.isPlayRegistered())
         {
+            MiniHUD.printDebug("ServuxStructuresPlayListener#registerPlayPayload(): received for type {}", type.toString());
             PayloadTypeRegister.getInstance().registerPlayChannel(type, ClientCommonHandlerRegister.getInstance().getPayloadType(type), ClientCommonHandlerRegister.getInstance().getPacketCodec(type));
         }
     }
@@ -244,8 +245,9 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         }
         if (codec.isPlayRegistered())
         {
-            //MiniHUD.printDebug("ServuxStructuresPlayListener#registerPlayHandler(): received for type {}", type.toString());
-            ClientCommonHandlerRegister.getInstance().registerPlayHandler((CustomPayload.Id<T>) ServuxS2CStructuresPayload.TYPE, this);
+            MiniHUD.printDebug("ServuxStructuresPlayListener#registerPlayHandler(): received for type {}", type.toString());
+
+            ClientCommonHandlerRegister.getInstance().registerPlayHandler((CustomPayload.Id<T>) ServuxStructuresPayload.TYPE, this);
             if (this.registered.containsKey(type))
                 this.registered.replace(type, true);
             else
@@ -265,9 +267,9 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         }
         if (codec.isPlayRegistered())
         {
-            //MiniHUD.printDebug("ServuxStructuresPlayListener#unregisterPlayHandler(): received for type {}", type.toString());
-            //PayloadTypeRegister.getInstance().registerPlayChannel(type, ClientCommonHandlerRegister.getInstance().getPayload(type), ClientCommonHandlerRegister.getInstance().getPacketCodec(type));
-            ClientCommonHandlerRegister.getInstance().unregisterPlayHandler((CustomPayload.Id<T>) ServuxS2CStructuresPayload.TYPE);
+            MiniHUD.printDebug("ServuxStructuresPlayListener#unregisterPlayHandler(): received for type {}", type.toString());
+
+            ClientCommonHandlerRegister.getInstance().unregisterPlayHandler((CustomPayload.Id<T>) ServuxStructuresPayload.TYPE);
             if (this.registered.containsKey(type))
                 this.registered.replace(type, false);
             else
