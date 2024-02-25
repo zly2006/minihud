@@ -15,6 +15,7 @@ package fi.dy.masa.minihud.deprecated;
  * As we cannot send a PacketByteBuf directly, but we can "cast" a dummy class to it, (Like I did for Syncmatica)
  * but why bother when it unwraps the NbtCompound tag anyway?
  */
+ 
 @Deprecated(forRemoval = false)
 //public class StructurePacketHandlerServux implements IPluginChannelHandler
 public class StructurePacketHandlerServux

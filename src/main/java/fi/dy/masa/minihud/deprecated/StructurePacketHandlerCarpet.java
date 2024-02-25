@@ -14,6 +14,7 @@ package fi.dy.masa.minihud.deprecated;
  * I wasn't able to find this Channel under the Main Carpet code, but I only found it under QuickCarpet,
  * which doesn't appear to have been maintained in over 12 months.
  */
+ 
 @Deprecated(forRemoval = false)
 //public class StructurePacketHandlerCarpet implements IPluginChannelHandler
 public class StructurePacketHandlerCarpet
