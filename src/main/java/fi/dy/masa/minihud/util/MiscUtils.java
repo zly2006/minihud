@@ -2,11 +2,15 @@ package fi.dy.masa.minihud.util;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Random;
 import javax.annotation.Nullable;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.class_9275;
+import net.minecraft.class_9323;
+import net.minecraft.class_9334;
 import net.minecraft.entity.passive.AxolotlEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -128,9 +132,12 @@ public class MiscUtils
 
     public static void addBeeTooltip(ItemStack stack, List<Text> lines)
     {
-        NbtCompound stackTag = stack.getNbt();
+        //NbtCompound stackTag = stack.getNbt();
+        // FIXME --> class_9323 == DataComponentMap class via Mojang Mappings
+        class_9323 data = stack.method_57353();
 
-        if (stackTag != null && stackTag.contains("BlockEntityTag", Constants.NBT.TAG_COMPOUND))
+        //if (stackTag != null && stackTag.contains("BlockEntityTag", Constants.NBT.TAG_COMPOUND))
+        if (data != null && data.method_57832(class_9334.BLOCK_ENTITY_DATA))
         {
             NbtCompound beTag = stackTag.getCompound("BlockEntityTag");
             NbtList bees = beTag.getList("Bees", Constants.NBT.TAG_COMPOUND);
@@ -172,12 +179,28 @@ public class MiscUtils
 
     public static void addHoneyTooltip(ItemStack stack, List<Text> lines)
     {
-        NbtCompound tag = stack.getNbt();
+        //NbtCompound tag = stack.getNbt();
 
-        if (tag != null && tag.contains("BlockStateTag", Constants.NBT.TAG_COMPOUND))
+        // FIXME --> class_9323 == DataComponentMap class via Mojang Mappings
+        class_9323 data = stack.method_57353();
+
+        //if (tag != null && tag.contains("BlockStateTag", Constants.NBT.TAG_COMPOUND))
+        if (data != null && data.method_57832(class_9334.BLOCK_STATE))
         {
+            class_9275 blockItemState = stack.method_57825(class_9334.BLOCK_STATE, class_9275.field_49284);
+
+            if (!blockItemState.method_57414())
+            {
+                //net.minecraft.state.property.Properties.HONEY_LEVEL.getName();
+                int honey = blockItemState.method_57418(net.minecraft.state.property.Properties.HONEY_LEVEL);
+
+                String honeyLevel = "0";
+
+                if (honey >= 0 && honey <= 5)
+                    honeyLevel = String.valueOf(honey);
+
+            /*
             tag = tag.getCompound("BlockStateTag");
-            String honeyLevel = "0";
 
             if (tag != null && tag.contains("honey_level", Constants.NBT.TAG_STRING))
             {
@@ -187,8 +210,10 @@ public class MiscUtils
             {
                 honeyLevel = String.valueOf(tag.getInt("honey_level"));
             }
+            */
 
-            lines.add(Math.min(1, lines.size()), Text.translatable("minihud.label.honey_info.level", honeyLevel));
+                lines.add(Math.min(1, lines.size()), Text.translatable("minihud.label.honey_info.level", honeyLevel));
+            }
         }
     }
 
