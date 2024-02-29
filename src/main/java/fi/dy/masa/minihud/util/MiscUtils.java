@@ -1,20 +1,16 @@
 package fi.dy.masa.minihud.util;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
 import javax.annotation.Nullable;
+
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.minecraft.*;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
-import net.minecraft.class_9275;
-import net.minecraft.class_9323;
-import net.minecraft.class_9334;
+import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.entity.passive.AxolotlEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.text.MutableText;
@@ -110,10 +106,16 @@ public class MiscUtils
 
     public static void addAxolotlTooltip(ItemStack stack, List<Text> lines)
     {
-        NbtCompound tag = stack.getNbt();
+        //NbtCompound tag = stack.getNbt();
+        // FIXME --> class_9323 == DataComponentMap class via Mojang Mappings
+        class_9323 data = stack.method_57353();
 
-        if (tag != null && tag.contains(AxolotlEntity.VARIANT_KEY, Constants.NBT.TAG_INT))
+        //if (tag != null && tag.contains(AxolotlEntity.VARIANT_KEY, Constants.NBT.TAG_INT))
+        if (data != null && data.method_57832(class_9334.BUCKET_ENTITY_DATA))
         {
+            class_9279 entityData = stack.method_57825(class_9334.BUCKET_ENTITY_DATA, class_9279.field_49302);
+            NbtCompound tag = entityData.method_57461();
+
             int variantId = tag.getInt(AxolotlEntity.VARIANT_KEY);
             // FIXME 1.19.3+ this is not validated now... with AIOOB it will return the entry for ID 0
             AxolotlEntity.Variant variant = AxolotlEntity.Variant.byId(variantId);
@@ -133,13 +135,58 @@ public class MiscUtils
     public static void addBeeTooltip(ItemStack stack, List<Text> lines)
     {
         //NbtCompound stackTag = stack.getNbt();
-        // FIXME --> class_9323 == DataComponentMap class via Mojang Mappings
+        // FIXME --> class_9323 == DataComponentMap class via Mojang Mappings,
         class_9323 data = stack.method_57353();
 
         //if (stackTag != null && stackTag.contains("BlockEntityTag", Constants.NBT.TAG_COMPOUND))
-        if (data != null && data.method_57832(class_9334.BLOCK_ENTITY_DATA))
+        if (data != null && data.method_57832(class_9334.BEES))
         {
-            NbtCompound beTag = stackTag.getCompound("BlockEntityTag");
+            List<BeehiveBlockEntity.class_9309> beeList = new ArrayList<>();
+            beeList = stack.method_57825(class_9334.BEES, beeList);
+
+            int count = beeList.size();
+            int babyCount = 0;
+
+            for (BeehiveBlockEntity.class_9309 beeOccupant : beeList)
+            {
+                class_9279 beeData = beeOccupant.entityData();
+                NbtCompound beeTag = beeData.method_57461();
+
+                int beeTicks = beeOccupant.ticksInHive();
+                //String beeId = beeTag.getString("id");
+                // always equals minecraft:bee
+                String beeName = "";
+                int beeAge = -1;
+
+                if (beeTag.contains("CustomName", Constants.NBT.TAG_STRING))
+                    beeName = beeTag.getString("CustomName");
+                if (beeTag.contains("Age", Constants.NBT.TAG_INT))
+                    beeAge = beeTag.getInt("Age");
+                if (beeAge + beeTicks < 0)
+                    babyCount++;
+
+                //MiniHUD.printDebug("addBeeTooltip() beeId {} // beeName {}, age {}, babies: {}", beeId, beeName, beeAge, babyCount);
+
+                if (!beeName.isEmpty()) {
+                    lines.add(Math.min(1, lines.size()), Text.translatable("minihud.label.bee_tooltip.name", Text.of(beeName).getString()));
+                }
+            }
+            Text text;
+
+            if (babyCount > 0)
+            {
+                text = Text.translatable("minihud.label.bee_tooltip.count_babies", String.valueOf(count), String.valueOf(babyCount));
+            }
+            else
+            {
+                text = Text.translatable("minihud.label.bee_tooltip.count", String.valueOf(count));
+            }
+
+            lines.add(Math.min(1, lines.size()), text);
+        }
+    }
+
+/*            NbtCompound beTag = stackTag.getCompound("BlockEntityTag");
             NbtList bees = beTag.getList("Bees", Constants.NBT.TAG_COMPOUND);
             int count = bees.size();
             int babyCount = 0;
@@ -161,21 +208,7 @@ public class MiscUtils
                     ++babyCount;
                 }
             }
-
-            Text text;
-
-            if (babyCount > 0)
-            {
-                text = Text.translatable("minihud.label.bee_tooltip.count_babies", String.valueOf(count), String.valueOf(babyCount));
-            }
-            else
-            {
-                text = Text.translatable("minihud.label.bee_tooltip.count", String.valueOf(count));
-            }
-
-            lines.add(Math.min(1, lines.size()), text);
-        }
-    }
+ */
 
     public static void addHoneyTooltip(ItemStack stack, List<Text> lines)
     {
@@ -187,35 +220,37 @@ public class MiscUtils
         //if (tag != null && tag.contains("BlockStateTag", Constants.NBT.TAG_COMPOUND))
         if (data != null && data.method_57832(class_9334.BLOCK_STATE))
         {
+            // FIXME class_9275 == BlockItemStateProperties under Mojang Mappings
             class_9275 blockItemState = stack.method_57825(class_9334.BLOCK_STATE, class_9275.field_49284);
 
             if (!blockItemState.method_57414())
             {
-                //net.minecraft.state.property.Properties.HONEY_LEVEL.getName();
-                int honey = blockItemState.method_57418(net.minecraft.state.property.Properties.HONEY_LEVEL);
-
+                // FIXME method_57418 == get() under Mojang Mappings
+                Integer honey = blockItemState.method_57418(net.minecraft.state.property.Properties.HONEY_LEVEL);
                 String honeyLevel = "0";
 
-                if (honey >= 0 && honey <= 5)
-                    honeyLevel = String.valueOf(honey);
-
-            /*
-            tag = tag.getCompound("BlockStateTag");
-
-            if (tag != null && tag.contains("honey_level", Constants.NBT.TAG_STRING))
-            {
-                honeyLevel = tag.getString("honey_level");
-            }
-            else if (tag != null && tag.contains("honey_level", Constants.NBT.TAG_INT))
-            {
-                honeyLevel = String.valueOf(tag.getInt("honey_level"));
-            }
-            */
-
+                if (honey != null)
+                {
+                    if (honey >= 0 && honey <= 5)
+                        honeyLevel = String.valueOf(honey);
+                }
                 lines.add(Math.min(1, lines.size()), Text.translatable("minihud.label.honey_info.level", honeyLevel));
             }
         }
     }
+
+    /*
+    tag = tag.getCompound("BlockStateTag");
+
+    if (tag != null && tag.contains("honey_level", Constants.NBT.TAG_STRING))
+    {
+        honeyLevel = tag.getString("honey_level");
+    }
+    else if (tag != null && tag.contains("honey_level", Constants.NBT.TAG_INT))
+    {
+        honeyLevel = String.valueOf(tag.getInt("honey_level"));
+    }
+    */
 
     public static int getFurnaceXpAmount(AbstractFurnaceBlockEntity be)
     {
