@@ -53,6 +53,7 @@ public class WorldLoadListener implements IWorldLoadListener
             this.readStoredDataPerDimension();
             OverlayRenderer.resetRenderTimeout();
             DataStorage.getInstance().onWorldJoin();
+            DataStorage.getInstance().setWorldRegistryManager(worldAfter.getRegistryManager());
         }
     }
 

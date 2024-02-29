@@ -25,6 +25,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
@@ -89,6 +90,7 @@ public class DataStorage
     private final int[] blockBreakCounter = new int[100];
     private final ArrayListMultimap<StructureType, StructureData> structures = ArrayListMultimap.create();
     private final MinecraftClient mc = MinecraftClient.getInstance();
+    private DynamicRegistryManager registryManager;
     private final boolean hasIntegratedServer = mc.isIntegratedServerRunning();
     private final PriorityBlockingQueue<ChunkTask> taskQueue = Queues.newPriorityBlockingQueue();
     private final Thread workerThread;
@@ -149,6 +151,7 @@ public class DataStorage
         this.structures.clear();
         this.worldSpawn = BlockPos.ORIGIN;
         this.spawnChunkRadius = -1;
+        this.registryManager = DynamicRegistryManager.EMPTY;
         this.clearTasks();
 
         ServuxStructuresPlayListener.INSTANCE.reset(PayloadType.SERVUX_STRUCTURES);
@@ -227,6 +230,27 @@ public class DataStorage
                 // register Structures Channel, request METADATA handshake.
             }
         }
+    }
+
+    /**
+     * Store's the world registry manager for Dynamic Lookup
+     * Set this at WorldLoadPost
+     * @param manager
+     */
+    public void setWorldRegistryManager(DynamicRegistryManager manager)
+    {
+        if (manager != null && manager != DynamicRegistryManager.EMPTY)
+            this.registryManager = manager;
+        else
+            this.registryManager = DynamicRegistryManager.EMPTY;
+    }
+
+    public DynamicRegistryManager getWorldRegistryManager()
+    {
+        if (this.registryManager != DynamicRegistryManager.EMPTY)
+            return this.registryManager;
+        else
+            return DynamicRegistryManager.EMPTY;
     }
 
     public void setWorldSeed(long seed)
