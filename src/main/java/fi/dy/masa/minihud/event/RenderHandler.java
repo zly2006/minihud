@@ -5,10 +5,10 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 
-import net.minecraft.class_9259;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.BundleItem;
 import net.minecraft.item.Item;
+import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.world.chunk.Chunk;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
@@ -75,7 +75,7 @@ public class RenderHandler implements IRenderer
     private final DataStorage data;
     private final Date date;
     //private final Map<ChunkPos, CompletableFuture<WorldChunk>> chunkFutures = new HashMap<>();
-    private final Map<ChunkPos, CompletableFuture<class_9259<Chunk>>> chunkFutures = new HashMap<>();
+    private final Map<ChunkPos, CompletableFuture<OptionalChunk<Chunk>>> chunkFutures = new HashMap<>();
     private final Set<InfoToggle> addedTypes = new HashSet<>();
     @Nullable private WorldChunk cachedClientChunk;
     private long infoUpdateTime;
@@ -1014,20 +1014,19 @@ public class RenderHandler implements IRenderer
     @Nullable
     private WorldChunk getChunk(ChunkPos chunkPos)
     {
-        CompletableFuture<class_9259<Chunk>> future = this.chunkFutures.get(chunkPos);
+        CompletableFuture<OptionalChunk<Chunk>> future = this.chunkFutures.get(chunkPos);
 
         if (future == null)
         {
             future = this.setupChunkFuture(chunkPos);
         }
 
-        // FIXME class_9259 is called "ChunkResult" under the Mojang Mappings.
-        class_9259<Chunk> chunkResult = future.getNow(null);
+        OptionalChunk<Chunk> chunkResult = future.getNow(null);
         if (chunkResult == null)
             return null;
         else
         {
-            Chunk chunk = chunkResult.method_57130(null);
+            Chunk chunk = chunkResult.orElse(null);
             if (chunk instanceof WorldChunk)
                 return (WorldChunk) chunk;
             else
@@ -1035,10 +1034,10 @@ public class RenderHandler implements IRenderer
         }
     }
 
-    private CompletableFuture<class_9259<Chunk>> setupChunkFuture(ChunkPos chunkPos)
+    private CompletableFuture<OptionalChunk<Chunk>> setupChunkFuture(ChunkPos chunkPos)
     {
         IntegratedServer server = this.mc.getServer();
-        CompletableFuture<class_9259<Chunk>> future = null;
+        CompletableFuture<OptionalChunk<Chunk>> future = null;
 
         if (server != null)
         {
@@ -1048,15 +1047,13 @@ public class RenderHandler implements IRenderer
             if (world != null)
             {
                 future = world.getChunkManager().getChunkFutureSyncOnMainThread(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false)
-                        .thenApply((either) -> either.method_57127((chunk) -> (WorldChunk) chunk) );
+                        .thenApply((either) -> either.map((chunk) -> (WorldChunk) chunk) );
             }
         }
 
         if (future == null)
         {
-            //future = CompletableFuture.completedFuture(this.getClientChunk(chunkPos));
-
-            future = CompletableFuture.completedFuture(class_9259.method_57124(this.getClientChunk(chunkPos)));
+            future = CompletableFuture.completedFuture(OptionalChunk.of(this.getClientChunk(chunkPos)));
         }
 
         this.chunkFutures.put(chunkPos, future);
