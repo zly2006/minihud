@@ -64,7 +64,7 @@ public abstract class MixinClientPlayNetworkHandler
                     "Lnet/minecraft/client/world/ClientWorld;)V"))
     private void minihud_onPreGameJoin(GameJoinS2CPacket packet, CallbackInfo ci)
     {
-        //PacketUtils.registerPayloads();
+        //PacketListenerRegister.registerPayloads();
     }
      */
 

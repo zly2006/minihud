@@ -1,16 +1,18 @@
 package fi.dy.masa.minihud.network;
 
 
-import fi.dy.masa.malilib.network.handler.play.ClientPlayHandler;
+import fi.dy.masa.malilib.network.handler.client.ClientPlayHandler;
 import fi.dy.masa.malilib.network.payload.channel.ServuxStructuresPayload;
-import fi.dy.masa.minihud.network.handlers.ServuxStructuresPlayListener;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
-public class PacketUtils
+@Environment(EnvType.CLIENT)
+public class PacketListenerRegister
 {
     static ServuxStructuresPlayListener<ServuxStructuresPayload> minihud_servuxStructuresListener = ServuxStructuresPlayListener.INSTANCE;
     private static boolean payloadsRegistered = false;
 
-    public static void registerPayloads()
+    public static void registerListeners()
     {
         if (payloadsRegistered)
             return;
@@ -21,7 +23,8 @@ public class PacketUtils
         payloadsRegistered = true;
     }
 
-    public static void unregisterPayloads()
+
+    public static void unregisterListeners()
     {
         ClientPlayHandler.getInstance().unregisterClientPlayHandler(minihud_servuxStructuresListener);
 

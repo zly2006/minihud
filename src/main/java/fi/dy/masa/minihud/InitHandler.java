@@ -6,7 +6,7 @@ import fi.dy.masa.malilib.interfaces.IInitializationHandler;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.event.*;
 import fi.dy.masa.minihud.hotkeys.KeyCallbacks;
-import fi.dy.masa.minihud.network.PacketUtils;
+import fi.dy.masa.minihud.network.PacketListenerRegister;
 
 public class InitHandler implements IInitializationHandler
 {
@@ -29,7 +29,7 @@ public class InitHandler implements IInitializationHandler
         TickHandler.getInstance().registerClientTickHandler(new ClientTickHandler());
 
         // Register network protocols
-        PacketUtils.registerPayloads();
+        PacketListenerRegister.registerListeners();
 
         KeyCallbacks.init();
     }
