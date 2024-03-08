@@ -114,8 +114,10 @@ public class RendererCallbacks
     {
         MinecraftClient mc = MinecraftClient.getInstance();
 
-        if (mc != null && mc.player != null) {
-            if (config.getBooleanValue()) {
+        if (mc != null && mc.player != null)
+        {
+            if (config.getBooleanValue())
+            {
                 BlockPos spawn = DataStorage.getInstance().getWorldSpawn();
                 int radius = DataStorage.getInstance().getSpawnChunkRadius();
                 String green = GuiBase.TXT_GREEN;
@@ -123,22 +125,32 @@ public class RendererCallbacks
                 String rst = GuiBase.TXT_RST;
                 String message;
 
-                if (radius != 0) {
+                if (radius != 0)
+                {
                     // Set Vanilla default if unknown
                     if (radius < 0)
+                    {
                         DataStorage.getInstance().setSpawnChunkRadius(2);
+                    }
                     String strStatus = green + StringUtils.translate("malilib.message.value.on") + rst;
                     String strPos = String.format("x: %d, y: %d, z: %d [R: %d]", spawn.getX(), spawn.getY(), spawn.getZ(), radius);
                     message = StringUtils.translate("minihud.message.toggled_using_world_spawn", config.getPrettyName(), strStatus, strPos);
 
-                    if (!mc.isIntegratedServerRunning() && DataStorage.getInstance().isServuxServer()) {
+                    if (!mc.isIntegratedServerRunning() && DataStorage.getInstance().isServuxServer())
+                    {
                         // Refresh Spawn Metadata
                         NbtCompound nbt = new NbtCompound();
                         nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_SPAWN_METADATA);
                         nbt.putString("version", Reference.MOD_ID+"-"+Reference.MOD_VERSION);
                         ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
                     }
-                } else {
+                    else
+                    {
+                        OverlayRendererSpawnChunks.setNeedsUpdate();
+                    }
+                }
+                else
+                {
                     OverlayRendererSpawnChunks.setNeedsUpdate();
 
                     String strStatus = red + StringUtils.translate("malilib.message.value.off") + rst;
@@ -147,6 +159,7 @@ public class RendererCallbacks
 
                     RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
                 }
+
                 InfoUtils.printActionbarMessage(message);
             }
         }

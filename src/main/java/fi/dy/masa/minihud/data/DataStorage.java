@@ -289,18 +289,22 @@ public class DataStorage
             OverlayRendererSpawnChunks.setNeedsUpdate();
         }
     }
-    public void setSpawnChunkRadiusIfUnknown(int radius) {
+    public void setSpawnChunkRadiusIfUnknown(int radius)
+    {
         if (this.spawnChunkRadius < 0)
         {
             this.setSpawnChunkRadius(radius);
             OverlayRendererSpawnChunks.setNeedsUpdate();
         }
     }
-    public void setSimulationDistance(int distance) {
+    public void setSimulationDistance(int distance)
+    {
         if (distance >= 0)
         {
             if (this.simulationDistance != distance)
+            {
                 OverlayRendererSpawnChunks.setNeedsUpdate();
+            }
             this.simulationDistance = distance;
             MiniHUD.printDebug("DataStorage#setSimulationDistance(): set to: {}", distance);
         }

@@ -160,7 +160,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
 
         Pair<BlockPos, BlockPos> corners;
 
-        // Org 22 (Outer (10 + 1) * 2) --> Incorrect
+        // Org 22 (Outer (10 + 1) * 2) --> Incorrect?
         corners = this.getSpawnChunkCorners(spawn, outer, mc.world);
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorOuter, BUFFER_1, BUFFER_2);
 

@@ -12,6 +12,7 @@ import net.minecraft.util.math.Vec3d;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.minihud.config.RendererToggle;
+import org.joml.Matrix4fStack;
 
 public class RenderContainer
 {
@@ -109,6 +110,8 @@ public class RenderContainer
             RenderUtils.setupBlend();
             RenderUtils.color(1f, 1f, 1f, 1f);
 
+            Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
+
             for (IOverlayRenderer renderer : this.renderers)
             {
                 mc.getProfiler().push(() -> renderer.getClass().getName());
@@ -117,14 +120,25 @@ public class RenderContainer
                 {
                     Vec3d updatePos = renderer.getUpdatePosition();
 
+                    // Technically, this works with the Matrix4f with a single renderer on.
+                    // However, the translations don't get applied properly when blending multiple render overlays,
+                    //  such as SPAWN CHUNKS and STRUCTURES being on at the same time,
+                    //  so we need to use the Matrix4fStack or MatrixStack.
+
                     //MatrixStack matrixStack = new MatrixStack();
                     //matrixStack.multiplyPositionMatrix(matrix4f);
                     //matrixStack.push();
 
-                    matrix4f.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
-                    renderer.draw(matrix4f, projMatrix);
+                    matrix4fstack.pushMatrix();
+
+                    matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+                    renderer.draw(matrix4fstack, projMatrix);
+
+                    //matrixStack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+                    //renderer.draw(matrixStack.peek().getPositionMatrix(), projMatrix);
 
                     //matrixStack.pop();
+                    matrix4fstack.popMatrix();
                 }
 
                 mc.getProfiler().pop();
