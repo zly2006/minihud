@@ -136,12 +136,12 @@ public class RendererCallbacks
                     String strPos = String.format("x: %d, y: %d, z: %d [R: %d]", spawn.getX(), spawn.getY(), spawn.getZ(), radius);
                     message = StringUtils.translate("minihud.message.toggled_using_world_spawn", config.getPrettyName(), strStatus, strPos);
 
-                    if (!mc.isIntegratedServerRunning() && DataStorage.getInstance().isServuxServer())
+                    if (!mc.isIntegratedServerRunning() && DataStorage.getInstance().hasServuxServer())
                     {
                         // Refresh Spawn Metadata
                         NbtCompound nbt = new NbtCompound();
                         nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_SPAWN_METADATA);
-                        nbt.putString("version", Reference.MOD_ID+"-"+Reference.MOD_VERSION);
+                        nbt.putString("version", Reference.MOD_STRING);
                         ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
                     }
                     else

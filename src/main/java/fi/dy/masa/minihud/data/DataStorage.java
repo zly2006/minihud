@@ -200,6 +200,7 @@ public class DataStorage
         MiniHUD.printDebug("DataStorage#setIsServuxServer()");
         this.servuxServer = true;
     }
+
     public void setServerVersion(String ver)
     {
         MiniHUD.printDebug("DataStorage#setServerVersion()");
@@ -282,6 +283,7 @@ public class DataStorage
             this.spawnChunkRadius = -1;
         }
     }
+
     public void setWorldSpawnIfUnknown(BlockPos spawn)
     {
         if (!this.worldSpawnValid)
@@ -290,6 +292,7 @@ public class DataStorage
             OverlayRendererSpawnChunks.setNeedsUpdate();
         }
     }
+
     public void setSpawnChunkRadiusIfUnknown(int radius)
     {
         if (this.spawnChunkRadius < 0)
@@ -298,6 +301,7 @@ public class DataStorage
             OverlayRendererSpawnChunks.setNeedsUpdate();
         }
     }
+
     public void setSimulationDistance(int distance)
     {
         if (distance >= 0)
@@ -367,14 +371,17 @@ public class DataStorage
     {
         return this.spawnChunkRadius >= 0;
     }
+
     public int getSpawnChunkRadius()
     {
         return this.spawnChunkRadius;
     }
+
     public boolean isSimulationDistanceKnown()
     {
         return this.simulationDistance >= 0;
     }
+
     public int getSimulationDistance()
     {
         return this.simulationDistance;
@@ -385,17 +392,14 @@ public class DataStorage
         return this.hasIntegratedServer;
     }
 
-    public void setHasIntegratedServer(boolean toggle)
-    {
-        this.hasIntegratedServer = toggle;
-    }
+    public void setIntegratedServer(boolean toggle) { this.hasIntegratedServer = toggle; }
 
-    public boolean isHasOpenToLan()
+    public boolean hasOpenToLan()
     {
         return this.hasOpenToLan;
     }
 
-    public void setHasOpenToLan(boolean toggle)
+    public void setOpenToLan(boolean toggle)
     {
         this.hasOpenToLan = toggle;
     }
@@ -405,12 +409,12 @@ public class DataStorage
         return this.serverTPSValid;
     }
 
-    public boolean isCarpetServer()
+    public boolean hasCarpetServer()
     {
         return this.carpetServer;
     }
 
-    public boolean isServuxServer() { return this.servuxServer; }
+    public boolean hasServuxServer() { return this.servuxServer; }
 
     public double getServerTPS()
     {
@@ -712,7 +716,7 @@ public class DataStorage
 
             NbtCompound nbt = new NbtCompound();
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
-            nbt.putString("version", Reference.MOD_ID+"-"+Reference.MOD_VERSION);
+            nbt.putString("version", Reference.MOD_STRING);
             ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
 
             // Build STRUCTURE_TOGGLES data to send to Servux

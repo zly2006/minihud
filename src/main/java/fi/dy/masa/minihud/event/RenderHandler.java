@@ -391,7 +391,7 @@ public class RenderHandler implements IRenderer
                 String preMspt;
 
                 // Carpet server and integrated server have actual meaningful MSPT data available
-                if (this.data.isCarpetServer() || mc.isInSingleplayer())
+                if (this.data.hasCarpetServer() || mc.isInSingleplayer())
                 {
                     if      (mspt <= 40) { preMspt = GuiBase.TXT_GREEN; }
                     else if (mspt <= 45) { preMspt = GuiBase.TXT_YELLOW; }

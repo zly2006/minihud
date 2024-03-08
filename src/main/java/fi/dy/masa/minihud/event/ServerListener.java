@@ -1,8 +1,6 @@
 package fi.dy.masa.minihud.event;
 
 import fi.dy.masa.malilib.interfaces.IServerListener;
-import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.data.DataStorage;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
@@ -22,9 +20,9 @@ public class ServerListener implements IServerListener
     {
         if (server.isSingleplayer())
         {
-            DataStorage.getInstance().setHasIntegratedServer(true);
-            DataStorage.getInstance().setHasOpenToLan(false);
-            MiniHUD.printDebug("[{}] Single Player Mode detected", Reference.MOD_ID);
+            DataStorage.getInstance().setIntegratedServer(true);
+            DataStorage.getInstance().setOpenToLan(false);
+            //MiniHUD.printDebug("[{}] Single Player Mode detected", Reference.MOD_ID);
         }
     }
 
@@ -37,30 +35,30 @@ public class ServerListener implements IServerListener
     @Override
     public void onServerIntegratedSetup(IntegratedServer server)
     {
-        MiniHUD.printDebug("[{}] Integrated Server Mode detected", Reference.MOD_ID);
-        DataStorage.getInstance().setHasIntegratedServer(true);
-        DataStorage.getInstance().setHasOpenToLan(false);
+        //MiniHUD.printDebug("[{}] Integrated Server Mode detected", Reference.MOD_ID);
+        DataStorage.getInstance().setIntegratedServer(true);
+        DataStorage.getInstance().setOpenToLan(false);
     }
 
     @Override
     public void onServerOpenToLan(IntegratedServer server)
     {
-        MiniHUD.printDebug("[{}] OpenToLan Mode detected [Serving on localhost:{}]", Reference.MOD_ID, server.getServerPort());
-        DataStorage.getInstance().setHasIntegratedServer(true);
-        DataStorage.getInstance().setHasOpenToLan(true);
+        //MiniHUD.printDebug("[{}] OpenToLan Mode detected [Serving on localhost:{}]", Reference.MOD_ID, server.getServerPort());
+        DataStorage.getInstance().setIntegratedServer(true);
+        DataStorage.getInstance().setOpenToLan(true);
     }
 
     @Override
     public void onServerStopping(MinecraftServer minecraftServer)
     {
-        MiniHUD.printDebug("[{}] server is stopping", Reference.MOD_ID);
+        //MiniHUD.printDebug("[{}] server is stopping", Reference.MOD_ID);
     }
 
     @Override
     public void onServerStopped(MinecraftServer minecraftServer)
     {
-        MiniHUD.printDebug("[{}] server has stopped", Reference.MOD_ID);
-        DataStorage.getInstance().setHasIntegratedServer(false);
-        DataStorage.getInstance().setHasOpenToLan(false);
+        //MiniHUD.printDebug("[{}] server has stopped", Reference.MOD_ID);
+        DataStorage.getInstance().setIntegratedServer(false);
+        DataStorage.getInstance().setOpenToLan(false);
     }
 }
