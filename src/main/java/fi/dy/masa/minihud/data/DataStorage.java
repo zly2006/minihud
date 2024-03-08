@@ -21,6 +21,7 @@ import fi.dy.masa.minihud.renderer.*;
 import fi.dy.masa.minihud.util.MiscUtils;
 import fi.dy.masa.minihud.util.StructureData;
 import fi.dy.masa.minihud.util.StructureType;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
@@ -63,35 +64,36 @@ public class DataStorage
     private static final ThreadFactory THREAD_FACTORY = (new ThreadFactoryBuilder()).setNameFormat("MiniHUD Worker Thread %d").setDaemon(true).build();
     private static final Pattern PATTERN_CARPET_TPS = Pattern.compile("TPS: (?<tps>[0-9]+[\\.,][0-9]) MSPT: (?<mspt>[0-9]+[\\.,][0-9])");
 
-    public static final DataStorage INSTANCE = new DataStorage();
+    private static final DataStorage INSTANCE = new DataStorage();
     private final MobCapDataHandler mobCapData = new MobCapDataHandler();
-    private boolean worldSeedValid;
+    private boolean worldSeedValid = false;
+    private boolean hasIntegratedServer = false;
+    private boolean hasOpenToLan = false;
+    private boolean carpetServer = false;
+    private boolean servuxServer = false;
+    private int spawnChunkRadius = -1;
+    private int simulationDistance = -1;
+    private boolean worldSpawnValid = false;
+    private int structureDataTimeout = 30 * 20;
     private boolean serverTPSValid;
     private boolean hasSyncedTime;
-    private boolean carpetServer;
-    private boolean servuxServer;
     private String serverVersion;
-    private boolean worldSpawnValid;
     private boolean hasStructureDataFromServer;
     private boolean structureRendererNeedsUpdate;
     private boolean structuresNeedUpdating;
     private boolean shouldRegisterStructureChannel;
-    private int structureDataTimeout = 30 * 20;
     private long worldSeed;
     private long lastServerTick;
     private long lastServerTimeUpdate;
     private BlockPos lastStructureUpdatePos;
     private double serverTPS;
     private double serverMSPT;
-    private BlockPos worldSpawn = BlockPos.ORIGIN;
-    private int spawnChunkRadius = -1;
-    private int simulationDistance = -1;
     private Vec3d distanceReferencePoint = Vec3d.ZERO;
     private final int[] blockBreakCounter = new int[100];
     private final ArrayListMultimap<StructureType, StructureData> structures = ArrayListMultimap.create();
     private final MinecraftClient mc = MinecraftClient.getInstance();
-    private DynamicRegistryManager registryManager;
-    private final boolean hasIntegratedServer = mc.isIntegratedServerRunning();
+    private DynamicRegistryManager registryManager = DynamicRegistryManager.EMPTY;
+    private BlockPos worldSpawn = BlockPos.ORIGIN;
     private final PriorityBlockingQueue<ChunkTask> taskQueue = Queues.newPriorityBlockingQueue();
     private final Thread workerThread;
     private final ThreadWorker worker;
@@ -132,6 +134,15 @@ public class DataStorage
                 MiniHUD.logger.warn("Interrupted whilst waiting for worker thread to die", e);
             }
             */
+            this.hasIntegratedServer = false;
+            this.hasOpenToLan = false;
+            this.servuxServer = false;
+            this.structureDataTimeout = 30 * 20;
+            this.spawnChunkRadius = -1;
+            this.registryManager = DynamicRegistryManager.EMPTY;
+            this.worldSpawn = BlockPos.ORIGIN;
+            this.carpetServer = false;
+            this.worldSpawnValid = false;
         }
         else
         {
@@ -141,17 +152,12 @@ public class DataStorage
         this.mobCapData.clear();
         this.serverTPSValid = false;
         this.hasSyncedTime = false;
-        this.carpetServer = false;
-        this.worldSpawnValid = false;
         this.structuresNeedUpdating = true;
         this.hasStructureDataFromServer = false;
         this.structureRendererNeedsUpdate = true;
 
         this.lastStructureUpdatePos = null;
         this.structures.clear();
-        this.worldSpawn = BlockPos.ORIGIN;
-        this.spawnChunkRadius = -1;
-        this.registryManager = DynamicRegistryManager.EMPTY;
         this.clearTasks();
 
         ServuxStructuresPlayListener.INSTANCE.reset(PayloadType.SERVUX_STRUCTURES);
@@ -169,11 +175,6 @@ public class DataStorage
         }
 
         this.STRUCTURE_TOGGLES = new NbtCompound();
-        if (isLogout)
-        {
-            this.servuxServer = false;
-            this.structureDataTimeout = 30 * 20;
-        }
     }
 
     public void clearTasks()
@@ -382,6 +383,21 @@ public class DataStorage
     public boolean hasIntegratedServer()
     {
         return this.hasIntegratedServer;
+    }
+
+    public void setHasIntegratedServer(boolean toggle)
+    {
+        this.hasIntegratedServer = toggle;
+    }
+
+    public boolean isHasOpenToLan()
+    {
+        return this.hasOpenToLan;
+    }
+
+    public void setHasOpenToLan(boolean toggle)
+    {
+        this.hasOpenToLan = toggle;
     }
 
     public boolean hasTPSData()
@@ -690,7 +706,7 @@ public class DataStorage
         //MiniHUD.printDebug("DataStorage#registerStructureChannel(): register Servux");
         this.shouldRegisterStructureChannel = true;
 
-        if (!this.servuxServer)
+        if (!this.servuxServer && !this.hasIntegratedServer())
         {
             MiniHUD.printDebug("DataStorage#registerStructureChannel(): Attempting to request METADATA.");
 

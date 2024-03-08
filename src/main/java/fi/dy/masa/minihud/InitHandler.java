@@ -26,6 +26,9 @@ public class InitHandler implements IInitializationHandler
         WorldLoadHandler.getInstance().registerWorldLoadPreHandler(listener);
         WorldLoadHandler.getInstance().registerWorldLoadPostHandler(listener);
 
+        ServerListener serverListener = new ServerListener();
+        ServerHandler.getInstance().registerServerHandler(serverListener);
+
         TickHandler.getInstance().registerClientTickHandler(new ClientTickHandler());
 
         // Register network protocols
