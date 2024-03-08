@@ -14,7 +14,6 @@ import fi.dy.masa.minihud.data.DataStorage;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
@@ -40,7 +39,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
             //if (handler != null)
             //{
                 //ServuxStructuresPlayListener.INSTANCE.receiveS2CPlayPayload(PayloadType.SERVUX_STRUCTURES, payload, handler, ci);
-                // Servux doesn't need to use the networkHandler interface.
+                //Servux doesn't need to use the networkHandler interface.
             //}
             //else
                 ServuxStructuresPlayListener.INSTANCE.receiveS2CPlayPayload(PayloadType.SERVUX_STRUCTURES, payload, context);
@@ -202,6 +201,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         else
         {
             MiniHUD.printDebug("ServuxStructuresPlayListener#sendC2SPlayPayload(): [ERROR] CanSend() is false");
+/*
             if (!DataStorage.getInstance().hasIntegratedServer())
             {
                 // Try networkHandler when not in Single Player
@@ -212,6 +212,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
                     ServuxStructuresPlayListener.INSTANCE.sendC2SPlayPayload(type, payload, handler);
                 }
             }
+ */
         }
     }
     //@Override
