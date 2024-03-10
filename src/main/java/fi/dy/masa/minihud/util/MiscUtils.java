@@ -159,7 +159,7 @@ public class MiscUtils
                     NbtCompound beeTag = beeData.copyNbt();
 
                     int beeTicks = beeOccupant.ticksInHive();
-                    //String beeId = beeTag.getString("id");
+                    String beeId = beeTag.getString("id");
                     // always equals minecraft:bee
                     String beeName = "";
                     int beeAge = -1;
