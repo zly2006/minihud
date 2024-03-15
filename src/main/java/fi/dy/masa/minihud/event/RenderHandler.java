@@ -5,6 +5,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 
+import net.minecraft.block.entity.*;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.BundleItem;
 import net.minecraft.item.Item;
@@ -15,9 +17,6 @@ import org.joml.Matrix4f;
 
 import net.minecraft.block.BeehiveBlock;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
-import net.minecraft.block.entity.BeehiveBlockEntity;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.PlayerListEntry;
@@ -166,11 +165,14 @@ public class RenderHandler implements IRenderer
                 fi.dy.masa.malilib.render.RenderUtils.renderBundlePreview(stack, x, y, Configs.Colors.BUNDLE_DISPLAY_BACKGROUND_COLOR.getColor(), drawContext);
             }
         }
-        else if (Configs.Generic.SHULKER_BOX_PREVIEW.getBooleanValue() &&
-                (!Configs.Generic.SHULKER_DISPLAY_REQUIRE_SHIFT.getBooleanValue() || GuiBase.isShiftDown()))
+        else if (stack.getComponents().contains(DataComponentTypes.CONTAINER) && item.toString().contains("shulker"))
+        {
+            if (Configs.Generic.SHULKER_BOX_PREVIEW.getBooleanValue() &&
+                    (!Configs.Generic.SHULKER_DISPLAY_REQUIRE_SHIFT.getBooleanValue() || GuiBase.isShiftDown()))
             {
                 fi.dy.masa.malilib.render.RenderUtils.renderShulkerBoxPreview(stack, x, y, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue(), drawContext);
             }
+        }
     }
 
     @Override
