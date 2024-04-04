@@ -16,7 +16,7 @@ import com.google.gson.JsonPrimitive;
 import fi.dy.masa.malilib.network.payload.PayloadType;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.network.PacketType;
-import fi.dy.masa.minihud.network.ServuxStructuresPlayListener;
+import fi.dy.masa.minihud.network.listeners.ServuxStructuresPlayListener;
 import fi.dy.masa.minihud.renderer.*;
 import fi.dy.masa.minihud.util.MiscUtils;
 import fi.dy.masa.minihud.util.StructureData;

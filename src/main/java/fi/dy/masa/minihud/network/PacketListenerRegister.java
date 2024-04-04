@@ -3,6 +3,7 @@ package fi.dy.masa.minihud.network;
 
 import fi.dy.masa.malilib.network.handler.client.ClientPlayHandler;
 import fi.dy.masa.malilib.network.payload.channel.ServuxStructuresPayload;
+import fi.dy.masa.minihud.network.listeners.ServuxStructuresPlayListener;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
