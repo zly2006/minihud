@@ -69,7 +69,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     @Override
     protected void renderBlockRange(World world, BlockPos pos, ConduitBlockEntity be, Vec3d cameraPos)
     {
-        if (!be.isActive())
+        if (be.isActive() == false)
         {
             return;
         }

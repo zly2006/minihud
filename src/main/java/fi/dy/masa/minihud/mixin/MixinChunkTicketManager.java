@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinChunkTicketManager
 {
     @Inject(method = "setSimulationDistance", at = @At("TAIL"))
-    private void minihud_getSimulationDistance(int distance, CallbackInfo ci)
+    private void minihud$getSimulationDistance(int distance, CallbackInfo ci)
     {
         if (distance > 0)
         {

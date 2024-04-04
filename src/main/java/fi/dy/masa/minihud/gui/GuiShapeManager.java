@@ -21,8 +21,6 @@ import fi.dy.masa.minihud.renderer.shapes.ShapeBase;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.renderer.shapes.ShapeType;
 
-import java.util.Objects;
-
 public class GuiShapeManager extends GuiListBase<ShapeBase, WidgetShapeEntry, WidgetListShapes>
                              implements ISelectionListener<ShapeBase>
 {
@@ -64,7 +62,7 @@ public class GuiShapeManager extends GuiListBase<ShapeBase, WidgetShapeEntry, Wi
         this.clearWidgets();
         this.clearButtons();
         this.createTabButtons();
-        Objects.requireNonNull(this.getListWidget()).refreshEntries();
+        this.getListWidget().refreshEntries();
     }
 
     protected void createTabButtons()
@@ -114,7 +112,7 @@ public class GuiShapeManager extends GuiListBase<ShapeBase, WidgetShapeEntry, Wi
             if (shape != null)
             {
                 ShapeManager.INSTANCE.addShape(shape.createShape());
-                Objects.requireNonNull(this.getListWidget()).refreshEntries();
+                this.getListWidget().refreshEntries();
             }
             else
             {

@@ -41,7 +41,6 @@ public interface IOverlayRenderer
     /**
      * Draw the buffer contents to screen
      */
-    // FIXME Matrix4f
     void draw(Matrix4f matrix4f, Matrix4f projMatrix);
 
     /**

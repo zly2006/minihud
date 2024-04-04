@@ -120,24 +120,10 @@ public class RenderContainer
                 {
                     Vec3d updatePos = renderer.getUpdatePosition();
 
-                    // Technically, this works with the Matrix4f with a single renderer on.
-                    // However, the translations don't get applied properly when blending multiple render overlays,
-                    //  such as SPAWN CHUNKS and STRUCTURES being on at the same time,
-                    //  so we need to use the Matrix4fStack or MatrixStack.
-
-                    //MatrixStack matrixStack = new MatrixStack();
-                    //matrixStack.multiplyPositionMatrix(matrix4f);
-                    //matrixStack.push();
-
                     matrix4fstack.pushMatrix();
-
                     matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
                     renderer.draw(matrix4fstack, projMatrix);
 
-                    //matrixStack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
-                    //renderer.draw(matrixStack.peek().getPositionMatrix(), projMatrix);
-
-                    //matrixStack.pop();
                     matrix4fstack.popMatrix();
                 }
 

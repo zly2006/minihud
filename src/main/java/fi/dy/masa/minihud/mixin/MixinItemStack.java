@@ -1,7 +1,6 @@
 package fi.dy.masa.minihud.mixin;
 
 import java.util.List;
-import javax.annotation.Nullable;
 
 import net.minecraft.client.item.TooltipType;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,7 +26,7 @@ public abstract class MixinItemStack
     public abstract Item getItem();
 
     @Inject(method = "getTooltip", at = @At("RETURN"), locals = LocalCapture.CAPTURE_FAILSOFT)
-    private void onGetTooltip(Item.TooltipContext context, PlayerEntity player, TooltipType type, CallbackInfoReturnable<List<Text>> cir)
+    private void minihud$onGetTooltip(Item.TooltipContext context, PlayerEntity player, TooltipType type, CallbackInfoReturnable<List<Text>> cir)
     {
         List<Text> list = cir.getReturnValue();
 

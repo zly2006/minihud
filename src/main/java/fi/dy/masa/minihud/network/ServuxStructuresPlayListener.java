@@ -4,8 +4,8 @@ import fi.dy.masa.malilib.network.handler.ClientCommonHandlerRegister;
 import fi.dy.masa.malilib.network.handler.client.ClientPlayHandler;
 import fi.dy.masa.malilib.network.handler.client.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.network.payload.PayloadCodec;
+import fi.dy.masa.malilib.network.payload.PayloadManager;
 import fi.dy.masa.malilib.network.payload.PayloadType;
-import fi.dy.masa.malilib.network.payload.PayloadTypeRegister;
 import fi.dy.masa.malilib.network.payload.channel.ServuxStructuresPayload;
 import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.minihud.MiniHUD;
@@ -201,18 +201,6 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         else
         {
             MiniHUD.printDebug("ServuxStructuresPlayListener#sendC2SPlayPayload(): [ERROR] CanSend() is false");
-/*
-            if (!DataStorage.getInstance().hasIntegratedServer())
-            {
-                // Try networkHandler when not in Single Player
-                ClientPlayNetworkHandler handler = MinecraftClient.getInstance().getNetworkHandler();
-                if (handler != null)
-                {
-                    MiniHUD.printDebug("ServuxStructuresPlayListener#sendC2SPlayPayload(): trying to fall back to using networkHandler");
-                    ServuxStructuresPlayListener.INSTANCE.sendC2SPlayPayload(type, payload, handler);
-                }
-            }
- */
         }
     }
     //@Override
@@ -236,7 +224,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
     @Override
     public void registerPlayPayload(PayloadType type)
     {
-        PayloadCodec codec = PayloadTypeRegister.getInstance().getPayloadCodec(type);
+        PayloadCodec codec = PayloadManager.getInstance().getPayloadCodec(type);
 
         if (codec == null)
         {
@@ -244,15 +232,14 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         }
         if (!codec.isPlayRegistered())
         {
-            //MiniHUD.printDebug("ServuxStructuresPlayListener#registerPlayPayload(): received for type {}", type.toString());
-            PayloadTypeRegister.getInstance().registerPlayChannel(type, ClientCommonHandlerRegister.getInstance().getPayloadType(type), ClientCommonHandlerRegister.getInstance().getPacketCodec(type));
+            PayloadManager.getInstance().registerPlayChannel(type, ClientCommonHandlerRegister.getInstance().getPayloadType(type), ClientCommonHandlerRegister.getInstance().getPacketCodec(type));
         }
     }
     @Override
     @SuppressWarnings("unchecked")
     public void registerPlayHandler(PayloadType type)
     {
-        PayloadCodec codec = PayloadTypeRegister.getInstance().getPayloadCodec(type);
+        PayloadCodec codec = PayloadManager.getInstance().getPayloadCodec(type);
 
         if (codec == null)
         {
@@ -260,8 +247,6 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         }
         if (codec.isPlayRegistered())
         {
-            //MiniHUD.printDebug("ServuxStructuresPlayListener#registerPlayHandler(): received for type {}", type.toString());
-
             ClientCommonHandlerRegister.getInstance().registerPlayHandler((CustomPayload.Id<T>) ServuxStructuresPayload.TYPE, this);
             if (this.registered.containsKey(type))
                 this.registered.replace(type, true);
@@ -274,7 +259,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
     @SuppressWarnings("unchecked")
     public void unregisterPlayHandler(PayloadType type)
     {
-        PayloadCodec codec = PayloadTypeRegister.getInstance().getPayloadCodec(type);
+        PayloadCodec codec = PayloadManager.getInstance().getPayloadCodec(type);
 
         if (codec == null)
         {
@@ -282,8 +267,6 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         }
         if (codec.isPlayRegistered())
         {
-            //MiniHUD.printDebug("ServuxStructuresPlayListener#unregisterPlayHandler(): received for type {}", type.toString());
-
             ClientCommonHandlerRegister.getInstance().unregisterPlayHandler((CustomPayload.Id<T>) ServuxStructuresPayload.TYPE);
             if (this.registered.containsKey(type))
                 this.registered.replace(type, false);

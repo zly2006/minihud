@@ -3,6 +3,7 @@ package fi.dy.masa.minihud.event;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.minecraft.block.entity.*;
@@ -12,7 +13,6 @@ import net.minecraft.item.BundleItem;
 import net.minecraft.item.Item;
 import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.world.chunk.Chunk;
-import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
 import net.minecraft.block.BeehiveBlock;
@@ -112,15 +112,15 @@ public class RenderHandler implements IRenderer
     @Override
     public void onRenderGameOverlayPost(DrawContext context)
     {
-        if (!Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue())
+        if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() == false)
         {
             this.resetCachedChunks();
             return;
         }
 
-        if (!this.mc.getDebugHud().shouldShowDebugHud() &&
-            this.mc.player != null && !this.mc.options.hudHidden &&
-            (!Configs.Generic.REQUIRE_SNEAK.getBooleanValue() || this.mc.player.isSneaking()) &&
+        if (this.mc.getDebugHud().shouldShowDebugHud() == false &&
+            this.mc.player != null && this.mc.options.hudHidden == false &&
+            (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || this.mc.player.isSneaking()) &&
             Configs.Generic.REQUIRED_KEY.getKeybind().isKeybindHeld())
         {
 
@@ -152,7 +152,7 @@ public class RenderHandler implements IRenderer
         if (item instanceof FilledMapItem)
         {
             if (Configs.Generic.MAP_PREVIEW.getBooleanValue() &&
-                    (!Configs.Generic.MAP_PREVIEW_REQUIRE_SHIFT.getBooleanValue() || GuiBase.isShiftDown()))
+                    (Configs.Generic.MAP_PREVIEW_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
             {
                 fi.dy.masa.malilib.render.RenderUtils.renderMapPreview(stack, x, y, Configs.Generic.MAP_PREVIEW_SIZE.getIntegerValue(), false);
             }
@@ -160,7 +160,7 @@ public class RenderHandler implements IRenderer
         else if (item instanceof BundleItem)
         {
             if (Configs.Generic.BUNDLE_PREVIEW.getBooleanValue() &&
-                    (!Configs.Generic.BUNDLE_PREVIEW_REQUIRE_SHIFT.getBooleanValue() || GuiBase.isShiftDown()))
+                    (Configs.Generic.BUNDLE_PREVIEW_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
             {
                 fi.dy.masa.malilib.render.RenderUtils.renderBundlePreview(stack, x, y, Configs.Colors.BUNDLE_DISPLAY_BACKGROUND_COLOR.getColor(), drawContext);
             }
@@ -168,7 +168,7 @@ public class RenderHandler implements IRenderer
         else if (stack.getComponents().contains(DataComponentTypes.CONTAINER) && item.toString().contains("shulker"))
         {
             if (Configs.Generic.SHULKER_BOX_PREVIEW.getBooleanValue() &&
-                    (!Configs.Generic.SHULKER_DISPLAY_REQUIRE_SHIFT.getBooleanValue() || GuiBase.isShiftDown()))
+                    (Configs.Generic.SHULKER_DISPLAY_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
             {
                 fi.dy.masa.malilib.render.RenderUtils.renderShulkerBoxPreview(stack, x, y, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue(), drawContext);
             }
@@ -179,7 +179,7 @@ public class RenderHandler implements IRenderer
     public void onRenderWorldLast(Matrix4f matrix4f, Matrix4f projMatrix)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
-            this.mc.world != null && this.mc.player != null && !this.mc.options.hudHidden)
+            this.mc.world != null && this.mc.player != null && this.mc.options.hudHidden == false)
         {
             OverlayRenderer.renderOverlays(matrix4f, projMatrix, this.mc);
         }
@@ -282,7 +282,7 @@ public class RenderHandler implements IRenderer
         @SuppressWarnings("deprecation")
         boolean isChunkLoaded = mc.world.isChunkLoaded(pos);
 
-        if (!isChunkLoaded)
+        if (isChunkLoaded == false)
         {
             return;
         }
@@ -379,7 +379,7 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.SERVER_TPS)
         {
-            if (mc.isIntegratedServerRunning() && (Objects.requireNonNull(mc.getServer()).getTicks() % 10) == 0)
+            if (mc.isIntegratedServerRunning() && (mc.getServer().getTicks() % 10) == 0)
             {
                 this.data.updateIntegratedServerTPS();
             }
@@ -419,7 +419,7 @@ public class RenderHandler implements IRenderer
         {
             MobCapDataHandler mobCapData = this.data.getMobCapData();
 
-            if (mc.isIntegratedServerRunning() && (Objects.requireNonNull(mc.getServer()).getTicks() % 100) == 0)
+            if (mc.isIntegratedServerRunning() && (mc.getServer().getTicks() % 100) == 0)
             {
                 mobCapData.updateIntegratedServerMobCaps();
             }
@@ -431,7 +431,6 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.PING)
         {
-            assert mc.player != null;
             PlayerListEntry info = mc.player.networkHandler.getPlayerListEntry(mc.player.getUuid());
 
             if (info != null)
@@ -619,7 +618,7 @@ public class RenderHandler implements IRenderer
         {
             WorldChunk clientChunk = this.getClientChunk(chunkPos);
 
-            if (!clientChunk.isEmpty())
+            if (clientChunk.isEmpty() == false)
             {
                 LightingProvider lightingProvider = world.getChunkManager().getLightingProvider();
 
@@ -665,10 +664,9 @@ public class RenderHandler implements IRenderer
                 return;
             }
 
-            assert this.mc.player != null;
             Entity vehicle = this.mc.player.getVehicle();
 
-            if (!(vehicle instanceof AbstractHorseEntity))
+            if ((vehicle instanceof AbstractHorseEntity) == false)
             {
                 return;
             }
@@ -758,7 +756,7 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.CHUNK_SECTIONS)
         {
-            this.addLine(String.format("C: %d", ((IMixinWorldRenderer) mc.worldRenderer).getRenderedChunksInvoker()));
+            this.addLine(String.format("C: %d", ((IMixinWorldRenderer) mc.worldRenderer).minihud$getRenderedChunksInvoker()));
         }
         else if (type == InfoToggle.CHUNK_SECTIONS_FULL)
         {
@@ -808,11 +806,10 @@ public class RenderHandler implements IRenderer
         {
             WorldChunk clientChunk = this.getClientChunk(chunkPos);
 
-            if (!clientChunk.isEmpty())
+            if (clientChunk.isEmpty() == false)
             {
                 Biome biome = mc.world.getBiome(pos).value();
                 Identifier id = mc.world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome);
-                assert id != null;
                 this.addLine("Biome: " + StringUtils.translate("biome." + id.toString().replace(":", ".")));
             }
         }
@@ -820,7 +817,7 @@ public class RenderHandler implements IRenderer
         {
             WorldChunk clientChunk = this.getClientChunk(chunkPos);
 
-            if (!clientChunk.isEmpty())
+            if (clientChunk.isEmpty() == false)
             {
                 Biome biome = mc.world.getBiome(pos).value();
                 Identifier rl = mc.world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome);
@@ -857,7 +854,7 @@ public class RenderHandler implements IRenderer
 
                 if (serverWorld instanceof ServerWorld)
                 {
-                    IServerEntityManager manager = (IServerEntityManager) ((IMixinServerWorld) serverWorld).minihud_getEntityManager();
+                    IServerEntityManager manager = (IServerEntityManager) ((IMixinServerWorld) serverWorld).minihud$getEntityManager();
                     int indexSize = manager.minihud$getIndexSize();
                     this.addLine(String.format("Entities - Client: %d - Server: %d", countClient, indexSize));
                     return;
@@ -868,7 +865,7 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.SLIME_CHUNK)
         {
-            if (!MiscUtils.isOverworld(world))
+            if (MiscUtils.isOverworld(world) == false)
             {
                 return;
             }
@@ -988,7 +985,6 @@ public class RenderHandler implements IRenderer
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK)
         {
             BlockPos posLooking = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
-            assert mc.world != null;
             return mc.world.getBlockState(posLooking);
         }
 
@@ -1000,7 +996,6 @@ public class RenderHandler implements IRenderer
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK)
         {
             BlockPos posLooking = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
-            assert mc.world != null;
             BlockState state = mc.world.getBlockState(posLooking);
             Identifier rl = Registries.BLOCK.getId(state.getBlock());
 
@@ -1043,7 +1038,6 @@ public class RenderHandler implements IRenderer
 
         if (server != null)
         {
-            assert this.mc.world != null;
             ServerWorld world = server.getWorld(this.mc.world.getRegistryKey());
 
             if (world != null)
@@ -1067,7 +1061,6 @@ public class RenderHandler implements IRenderer
     {
         if (this.cachedClientChunk == null || !this.cachedClientChunk.getPos().equals(chunkPos))
         {
-            assert this.mc.world != null;
             this.cachedClientChunk = this.mc.world.getChunk(chunkPos.x, chunkPos.z);
         }
 
@@ -1116,7 +1109,7 @@ public class RenderHandler implements IRenderer
         }
 
         @Override
-        public int compareTo(@NotNull LinePos other)
+        public int compareTo(@Nonnull LinePos other)
         {
             if (this.position < 0)
             {

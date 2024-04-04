@@ -79,7 +79,6 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
 
         int ex = (int) Math.floor(entity.getX());
         int ez = (int) Math.floor(entity.getZ());
-        assert this.lastUpdatePos != null;
         int lx = this.lastUpdatePos.getX();
         int lz = this.lastUpdatePos.getZ();
 

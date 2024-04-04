@@ -286,7 +286,7 @@ public class DataStorage
 
     public void setWorldSpawnIfUnknown(BlockPos spawn)
     {
-        if (!this.worldSpawnValid)
+        if (this.worldSpawnValid == false)
         {
             this.setWorldSpawn(spawn);
             OverlayRendererSpawnChunks.setNeedsUpdate();
@@ -327,7 +327,6 @@ public class DataStorage
         else if (this.mc.isIntegratedServerRunning())
         {
             MinecraftServer server = this.mc.getServer();
-            assert server != null;
             World worldTmp = server.getWorld(world.getRegistryKey());
             return worldTmp != null;
         }
@@ -601,7 +600,7 @@ public class DataStorage
     {
         // Carpet server sends the TPS and MSPT values via the player list footer data,
         // and for single player the data is grabbed directly from the integrated server.
-        if (!this.carpetServer && !this.mc.isInSingleplayer())
+        if (this.carpetServer == false && this.mc.isInSingleplayer() == false)
         {
             long currentTime = System.nanoTime();
 
@@ -640,7 +639,7 @@ public class DataStorage
     {
         ArrayListMultimap<StructureType, StructureData> copy = ArrayListMultimap.create();
 
-        if (!RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
+        if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() == false)
         {
             return copy;
         }
@@ -651,7 +650,7 @@ public class DataStorage
             {
                 Collection<StructureData> values = this.structures.get(type);
 
-                if (!values.isEmpty())
+                if (values.isEmpty() == false)
                 {
                     copy.putAll(type, values);
                 }
@@ -691,7 +690,7 @@ public class DataStorage
                 {
                     if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                     {
-                        MiniHUD.printDebug("DataStorage#updateStructureData(): register channels maybe? :)");
+                        MiniHUD.printDebug("DataStorage#updateStructureData(): re-register channels");
                         // (re-)register the structure packet handlers
 
                         this.unregisterStructureChannel();
@@ -707,10 +706,9 @@ public class DataStorage
 
     public void registerStructureChannel()
     {
-        //MiniHUD.printDebug("DataStorage#registerStructureChannel(): register Servux");
         this.shouldRegisterStructureChannel = true;
 
-        if (!this.servuxServer && !this.hasIntegratedServer())
+        if (!this.servuxServer && this.hasIntegratedServer() == false)
         {
             MiniHUD.printDebug("DataStorage#registerStructureChannel(): Attempting to request METADATA.");
 
@@ -719,14 +717,12 @@ public class DataStorage
             nbt.putString("version", Reference.MOD_STRING);
             ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
 
-            // Build STRUCTURE_TOGGLES data to send to Servux
             updateStructureToggles();
         }
     }
 
     public void unregisterStructureChannel()
     {
-        //MiniHUD.printDebug("DataStorage#unregisterStructureChannel(): unregister Servux");
         if (this.servuxServer)
         {
             MiniHUD.printDebug("unregisterStructureChannel(): sending STRUCTURES_DECLINED packet");
@@ -739,7 +735,7 @@ public class DataStorage
     }
 
     /**
-     * For sending to Servux
+     * For sending to ServUX to filter out unwanted structure data
      */
     public void updateStructureToggles()
     {
@@ -752,7 +748,6 @@ public class DataStorage
 
         if (this.servuxServer)
         {
-            // Send toggle updates packet
             toggles.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURE_TOGGLE);
             MiniHUD.printDebug("DataStorage#updateStructureToggles(): sending STRUCTURE_TOGGLE packet");
             ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, toggles);
@@ -773,7 +768,6 @@ public class DataStorage
 
     private void updateStructureDataFromIntegratedServer(final BlockPos playerPos)
     {
-        assert this.mc.player != null;
         final RegistryKey<World> worldId = this.mc.player.getEntityWorld().getRegistryKey();
 
         try {
@@ -804,12 +798,10 @@ public class DataStorage
 
     public void addOrUpdateStructuresFromServer(NbtList structures, int timeout, boolean isServux)
     {
-        //MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): start");
-
         // Ignore the data from QuickCarpet if the Servux mod is also present
-        if (this.servuxServer && !isServux)
+        if (this.servuxServer && isServux == false)
         {
-            MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): Ignoring structure data from not Servux");
+            MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): Ignoring structure data from not ServUX");
             return;
         }
 
@@ -818,7 +810,6 @@ public class DataStorage
             MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): list size: {}", structures.size());
             this.structureDataTimeout = timeout + 200;
 
-            assert this.mc.world != null;
             long currentTime = this.mc.world.getTime();
             final int count = structures.size();
 
@@ -905,11 +896,9 @@ public class DataStorage
 
     public void handleCarpetServerTPSData(Text textComponent)
     {
-        if (!textComponent.getString().isEmpty())
+        if (textComponent.getString().isEmpty() == false)
         {
             String text = Formatting.strip(textComponent.getString());
-            //MiniHUD.printDebug("DataStorage#handleCarpetServerTPSData(): plain text: {}", text);
-            assert text != null;
             String[] lines = text.split("\n");
 
             for (String line : lines)
@@ -926,9 +915,7 @@ public class DataStorage
                         this.carpetServer = true;
                         return;
                     }
-                    catch (NumberFormatException ignore)
-                    {
-                    }
+                    catch (NumberFormatException ignore) {}
                 }
             }
         }

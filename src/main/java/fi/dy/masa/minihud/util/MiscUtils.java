@@ -160,7 +160,7 @@ public class MiscUtils
 
                     int beeTicks = beeOccupant.ticksInHive();
                     String beeId = beeTag.getString("id");
-                    // always equals minecraft:bee
+                    // should always equal minecraft:bee
                     String beeName = "";
                     int beeAge = -1;
 
@@ -176,7 +176,6 @@ public class MiscUtils
                     {
                         babyCount++;
                     }
-
                     //MiniHUD.printDebug("addBeeTooltip() beeId {} // beeName {}, age {}, babies: {}", beeId, beeName, beeAge, babyCount);
 
                     if (!beeName.isEmpty())
@@ -241,13 +240,12 @@ public class MiscUtils
 
     public static int getFurnaceXpAmount(AbstractFurnaceBlockEntity be)
     {
-        Object2IntOpenHashMap<Identifier> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
+        Object2IntOpenHashMap<Identifier> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud$getUsedRecipes();
         World world = be.getWorld();
         double xp = 0.0;
 
         for (Object2IntMap.Entry<Identifier> entry : recipes.object2IntEntrySet())
         {
-            assert world != null;
             Optional<RecipeEntry<?>> recipeOpt = world.getRecipeManager().get(entry.getKey());
 
             if (recipeOpt.isPresent() && recipeOpt.get().value() instanceof AbstractCookingRecipe recipe)

@@ -24,16 +24,17 @@ public abstract class MixinMinecraftServer
     @Shadow public abstract ServerWorld getOverworld();
 
     @Inject(method = "tick", at = @At("TAIL"))
-    public void onServerTickPost(BooleanSupplier supplier, CallbackInfo ci)
+    public void minihud$onServerTickPost(BooleanSupplier supplier, CallbackInfo ci)
     {
         DebugInfoUtils.onServerTickEnd((MinecraftServer) (Object) this);
     }
     @Inject(method = "prepareStartRegion", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setSpawnPos(Lnet/minecraft/util/math/BlockPos;F)V", shift = At.Shift.AFTER))
-    private void minihud_checkSpawnChunkRadius(WorldGenerationProgressListener worldGenerationProgressListener, CallbackInfo ci)
+    private void minihud$checkSpawnChunkRadius(WorldGenerationProgressListener worldGenerationProgressListener, CallbackInfo ci)
     {
         BlockPos spawnPos = this.getOverworld().getSpawnPos();
         int radius = this.getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
         MiniHUD.printDebug("MixinMinecraftServer#minihud_checkSpawnChunkRadius(): Spawn Position: {}, SPAWN_CHUNK_RADIUS: {}", spawnPos.toShortString(), radius);
+
         if (spawnPos != DataStorage.getInstance().getWorldSpawn())
             DataStorage.getInstance().setWorldSpawn(spawnPos);
         if (radius != DataStorage.getInstance().getSpawnChunkRadius())

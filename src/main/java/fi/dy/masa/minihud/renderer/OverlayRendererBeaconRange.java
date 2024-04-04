@@ -22,7 +22,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     @Override
     protected void renderBlockRange(World world, BlockPos pos, BeaconBlockEntity be, Vec3d cameraPos)
     {
-        int level = ((IMixinBeaconBlockEntity) be).minihud_getLevel();
+        int level = ((IMixinBeaconBlockEntity) be).minihud$getLevel();
 
         if (level >= 1 && level <= 4)
         {
@@ -50,12 +50,12 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
     public static Color4f getColorForLevel(int level)
     {
-        switch (level)
+        return switch (level)
         {
-            case 1: return Configs.Colors.BEACON_RANGE_LVL1_OVERLAY_COLOR.getColor();
-            case 2: return Configs.Colors.BEACON_RANGE_LVL2_OVERLAY_COLOR.getColor();
-            case 3: return Configs.Colors.BEACON_RANGE_LVL3_OVERLAY_COLOR.getColor();
-            default: return Configs.Colors.BEACON_RANGE_LVL4_OVERLAY_COLOR.getColor();
-        }
+            case 1 -> Configs.Colors.BEACON_RANGE_LVL1_OVERLAY_COLOR.getColor();
+            case 2 -> Configs.Colors.BEACON_RANGE_LVL2_OVERLAY_COLOR.getColor();
+            case 3 -> Configs.Colors.BEACON_RANGE_LVL3_OVERLAY_COLOR.getColor();
+            default -> Configs.Colors.BEACON_RANGE_LVL4_OVERLAY_COLOR.getColor();
+        };
     }
 }

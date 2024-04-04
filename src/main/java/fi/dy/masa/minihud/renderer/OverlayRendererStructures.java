@@ -67,7 +67,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
         BUFFER_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
         BUFFER_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
 
-        if (!data.isEmpty())
+        if (data.isEmpty() == false)
         {
             this.renderStructureBoxes(data, cameraPos);
         }
@@ -93,7 +93,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
         ImmutableList<IntBoundingBox> components = structure.getComponents();
 
-        if (!components.isEmpty())
+        if (components.isEmpty() == false)
         {
             if (components.size() > 1 || !MiscUtils.areBoxesEqual(components.get(0), structure.getBoundingBox()))
             {
@@ -112,7 +112,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
         for (StructureType type : structures.keySet())
         {
-            if (!type.isEnabled())
+            if (type.isEnabled() == false)
             {
                 continue;
             }

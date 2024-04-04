@@ -132,7 +132,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         {
             ChunkPos posAdj = new ChunkPos(pos.x + side.getOffsetX(), pos.z + side.getOffsetZ());
 
-            if (!chunks.contains(posAdj))
+            if (chunks.contains(posAdj) == false)
             {
                 this.renderChunkEdge(pos, side, cameraPos, color, world);
             }

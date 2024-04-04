@@ -171,26 +171,14 @@ public class RendererCallbacks
 
         if (mc != null && mc.player != null)
         {
-            if (!mc.isIntegratedServerRunning())
+            if (mc.isIntegratedServerRunning() == false)
             {
                 if (config.getBooleanValue())
                 {
                     DataStorage.getInstance().registerStructureChannel();
-                    /*
-                    MiniHUD.printDebug("onStructuresToggled(): sending REQUEST_METADATA packet");
-                    NbtCompound nbt = new NbtCompound();
-                    nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
-                    ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
-                     */
                 }
                 else
                 {
-                    /*
-                    MiniHUD.printDebug("onStructuresToggled(): sending STRUCTURES_DECLINED packet");
-                    NbtCompound nbt = new NbtCompound();
-                    nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_DECLINED);
-                    ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
-                     */
                     DataStorage.getInstance().unregisterStructureChannel();
                 }
             }

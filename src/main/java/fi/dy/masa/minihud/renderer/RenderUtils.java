@@ -227,7 +227,7 @@ public class RenderUtils
 
         for (long posLong : positions)
         {
-            if (!range.isPositionWithinRange(posLong))
+            if (range.isPositionWithinRange(posLong) == false)
             {
                 continue;
             }
@@ -243,13 +243,13 @@ public class RenderUtils
 
                 boolean render = full;
 
-                if (!full)
+                if (full == false)
                 {
                     int adjX = BlockPos.unpackLongX(adjPosLong);
                     int adjY = BlockPos.unpackLongY(adjPosLong);
                     int adjZ = BlockPos.unpackLongZ(adjPosLong);
                     boolean onOrIn = test.isInsideOrCloserThan(adjX, adjY, adjZ, side);
-                    render = ((outer && !onOrIn) || (inner && onOrIn));
+                    render = ((outer && onOrIn == false) || (inner && onOrIn));
                 }
 
                 if (render)
@@ -273,7 +273,7 @@ public class RenderUtils
         //int count = 0;
         for (long posLong : positions)
         {
-            if (!range.isPositionWithinRange(posLong))
+            if (range.isPositionWithinRange(posLong) == false)
             {
                 continue;
             }

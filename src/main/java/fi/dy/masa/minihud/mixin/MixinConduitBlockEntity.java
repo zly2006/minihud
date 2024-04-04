@@ -44,7 +44,7 @@ public abstract class MixinConduitBlockEntity implements ConduitExtra
     @Inject(method = "clientTick",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/block/entity/ConduitBlockEntity;openEye(Lnet/minecraft/block/entity/ConduitBlockEntity;Ljava/util/List;)V"))
-    private static void minihud_postActiveBlockScan(World world, BlockPos pos, BlockState state,
+    private static void minihud$postActiveBlockScan(World world, BlockPos pos, BlockState state,
                                                     ConduitBlockEntity blockEntity, CallbackInfo ci)
     {
         if (RendererToggle.OVERLAY_CONDUIT_RANGE.getBooleanValue())

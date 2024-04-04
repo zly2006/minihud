@@ -5,7 +5,7 @@ public abstract class MixinCollisionDebugRenderer
 {
     /*
     @Inject(method = "render", at = @At("HEAD"))
-    public void fixDebugRendererState(CallbackInfo ci)
+    public void minihud$fixDebugRendererState(CallbackInfo ci)
     {
         RenderHandler.fixDebugRendererState();
     }

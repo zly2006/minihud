@@ -10,7 +10,7 @@ import fi.dy.masa.minihud.data.DataStorage;
 public abstract class MixinMinecraftClient
 {
     @Inject(method = "tick", at = @At("HEAD"))
-    private void onClientTickPre(CallbackInfo ci)
+    private void minihud$onClientTickPre(CallbackInfo ci)
     {
         DataStorage.getInstance().onClientTickPre((net.minecraft.client.MinecraftClient) (Object) this);
     }

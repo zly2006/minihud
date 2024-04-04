@@ -18,7 +18,7 @@ public abstract class MixinClientPlayerInteractionManager
                          "Lnet/minecraft/world/WorldAccess;" +
                          "Lnet/minecraft/util/math/BlockPos;" +
                          "Lnet/minecraft/block/BlockState;)V"))
-    private void countBlockBreakingSpeed(net.minecraft.util.math.BlockPos pos, CallbackInfoReturnable<Boolean> cir)
+    private void minihud$countBlockBreakingSpeed(net.minecraft.util.math.BlockPos pos, CallbackInfoReturnable<Boolean> cir)
     {
         DataStorage.getInstance().onPlayerBlockBreak(this.client);
     }

@@ -13,7 +13,7 @@ import fi.dy.masa.minihud.util.DebugInfoUtils;
 public abstract class MixinDebugInfoSender
 {
     @Inject(method = "sendNeighborUpdate", at = @At("HEAD"))
-    private static void onSendNeighborUpdate(World world, BlockPos pos, CallbackInfo ci)
+    private static void minihud$onSendNeighborUpdate(World world, BlockPos pos, CallbackInfo ci)
     {
         DebugInfoUtils.onNeighborUpdate(world, pos);
     }

@@ -56,10 +56,8 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         // Use the client player, to allow looking from the camera perspective
         entity = this.isPlayerFollowing ? mc.player : entity;
 
-        assert entity != null;
         int ex = (int) Math.floor(entity.getX());
         int ez = (int) Math.floor(entity.getZ());
-        assert this.lastUpdatePos != null;
         int lx = this.lastUpdatePos.getX();
         int lz = this.lastUpdatePos.getZ();
 
