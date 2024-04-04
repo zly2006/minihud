@@ -401,6 +401,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                 WorldChunk chunk = world.getChunk(cx, cz);
                 final int startY = Math.max(minY, world.getBottomY());
                 final int endY = Math.min(maxY, ChunkUtils.getHighestSectionYOffset(chunk) + 15 + 1);
+
                 for (int y = startY; y <= endY; ++y)
                 {
                     if (y > startY)

@@ -168,7 +168,7 @@ public class DataStorage
         OverlayRendererBiomeBorders.INSTANCE.clear();
         OverlayRendererLightLevel.reset();
 
-        if (isLogout || !Configs.Generic.DONT_RESET_SEED_ON_DIMENSION_CHANGE.getBooleanValue())
+        if (isLogout || Configs.Generic.DONT_RESET_SEED_ON_DIMENSION_CHANGE.getBooleanValue() == false)
         {
             this.worldSeedValid = false;
             this.worldSeed = 0;
@@ -341,7 +341,7 @@ public class DataStorage
 
     public long getWorldSeed(World world)
     {
-        if (!this.worldSeedValid && this.mc.isIntegratedServerRunning())
+        if (this.worldSeedValid == false && this.mc.isIntegratedServerRunning())
         {
             MinecraftServer server = this.mc.getServer();
             assert server != null;

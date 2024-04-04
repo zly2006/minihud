@@ -73,7 +73,6 @@ public class RenderHandler implements IRenderer
     private final MinecraftClient mc;
     private final DataStorage data;
     private final Date date;
-    //private final Map<ChunkPos, CompletableFuture<WorldChunk>> chunkFutures = new HashMap<>();
     private final Map<ChunkPos, CompletableFuture<OptionalChunk<Chunk>>> chunkFutures = new HashMap<>();
     private final Set<InfoToggle> addedTypes = new HashSet<>();
     @Nullable private WorldChunk cachedClientChunk;
@@ -272,13 +271,11 @@ public class RenderHandler implements IRenderer
     {
         MinecraftClient mc = this.mc;
         Entity entity = mc.getCameraEntity();
-        assert entity != null;
         World world = entity.getEntityWorld();
         double y = entity.getY();
         BlockPos pos = BlockPos.ofFloored(entity.getX(), y, entity.getZ());
         ChunkPos chunkPos = new ChunkPos(pos);
 
-        assert mc.world != null;
         @SuppressWarnings("deprecation")
         boolean isChunkLoaded = mc.world.isChunkLoaded(pos);
 
@@ -1059,7 +1056,7 @@ public class RenderHandler implements IRenderer
 
     private WorldChunk getClientChunk(ChunkPos chunkPos)
     {
-        if (this.cachedClientChunk == null || !this.cachedClientChunk.getPos().equals(chunkPos))
+        if (this.cachedClientChunk == null || this.cachedClientChunk.getPos().equals(chunkPos) == false)
         {
             this.cachedClientChunk = this.mc.world.getChunk(chunkPos.x, chunkPos.z);
         }

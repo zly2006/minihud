@@ -9,7 +9,6 @@ import net.fabricmc.api.ModInitializer;
 public class MiniHUD implements ModInitializer
 {
     public static final Logger logger = LogManager.getLogger(Reference.MOD_ID);
-    //public static final String CHANNEL_CARPET_CLIENT = "CarpetClient";
 
     @Override
     public void onInitialize()

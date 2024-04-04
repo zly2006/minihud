@@ -35,7 +35,6 @@ public class RenderUtils
         final int boxMaxX = Math.max(posStart.getX(), posEnd.getX());
         final int boxMaxZ = Math.max(posStart.getZ(), posEnd.getZ());
 
-        assert entity != null;
         final int centerX = (int) Math.floor(entity.getX());
         final int centerZ = (int) Math.floor(entity.getZ());
         final int maxDist = MinecraftClient.getInstance().options.getViewDistance().getValue() * 32; // double the view distance in blocks

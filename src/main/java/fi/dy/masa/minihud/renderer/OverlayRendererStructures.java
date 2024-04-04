@@ -29,7 +29,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
     @Override
     public boolean shouldRender(MinecraftClient mc)
     {
-        if (!RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
+        if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() == false)
         {
             return false;
         }
@@ -95,7 +95,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
         if (components.isEmpty() == false)
         {
-            if (components.size() > 1 || !MiscUtils.areBoxesEqual(components.get(0), structure.getBoundingBox()))
+            if (components.size() > 1 || MiscUtils.areBoxesEqual(components.get(0), structure.getBoundingBox()) == false)
             {
                 for (IntBoundingBox bb : components)
                 {
