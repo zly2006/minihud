@@ -48,7 +48,7 @@
     "minihud.gui.label.shape.line.end": "§7Pos 2: x: §9%s§7, y: §9%s§7, z: §9%s",
     "minihud.gui.label.shape.render_type_colon": "Render Type:",
 
-    "minihud.gui.title.configs": "MiniHUD Configs",
+    "minihud.gui.title.configs": "MiniHUD %s Configs",
     "minihud.gui.title.shape_editor": "Shape Editor (%s)",
     "minihud.gui.title.shape_manager": "Shape Manager",
 
@@ -125,7 +125,8 @@
 
     "minihud.message.toggled_using_center_position": "Toggled %s %s, using the center position %s",
     "minihud.message.toggled_using_position": "Toggled %s %s, using the position %s",
-    "minihud.message.toggled_using_world_spawn": "Toggled %s %s, using the world spawn %s",
+    "minihud.message.toggled_using_world_spawn": "Toggled %s %s, World spawn %s",
+    "minihud.message.toggled_using_player_spawn": "Toggled %s %s, Simulation distance %s",
 
     "minihud.message.error.invalid_dropped_chunks_hash_size": "Failed to parse the dropped chunks HashSet size from chat",
     "minihud.message.error.invalid_seed": "Failed to parse the world seed from chat",
@@ -135,5 +136,6 @@
     "minihud.message.no_seed": "MiniHUD: World seed is not known",
     "minihud.message.seed_is": "The world seed in MiniHUD is currently set to '%s'",
     "minihud.message.seed_set": "MiniHUD: Set the world seed to '%s'",
-    "minihud.message.spawn_set": "MiniHUD: Set the world spawn to %s"
+    "minihud.message.spawn_set": "MiniHUD: Set the world spawn to %s",
+    "minihud.message.spawn_chunk_radius_set": "MiniHUD: Set the World Spawn Chunk Radius to %s"
 }
