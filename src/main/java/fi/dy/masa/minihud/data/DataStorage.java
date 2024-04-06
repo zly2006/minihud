@@ -13,7 +13,9 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
+import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.payload.PayloadType;
+import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.network.PacketType;
 import fi.dy.masa.minihud.network.listeners.ServuxStructuresPlayListener;
@@ -48,10 +50,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.gen.structure.Structure;
 
-import fi.dy.masa.malilib.util.Constants;
-import fi.dy.masa.malilib.util.InfoUtils;
-import fi.dy.masa.malilib.util.JsonUtils;
-import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -160,7 +158,7 @@ public class DataStorage
         this.structures.clear();
         this.clearTasks();
 
-        ServuxStructuresPlayListener.INSTANCE.reset(PayloadType.SERVUX_STRUCTURES);
+        ServuxStructuresPlayListener.getInstance().reset(PayloadType.SERVUX_STRUCTURES);
 
         ShapeManager.INSTANCE.clear();
         OverlayRendererBeaconRange.INSTANCE.clear();
@@ -255,6 +253,18 @@ public class DataStorage
             return DynamicRegistryManager.EMPTY;
     }
 
+    public void requestSpawnMetadata()
+    {
+        if (!this.hasIntegratedServer && DataStorage.getInstance().hasServuxServer())
+        {
+            // Refresh Spawn Metadata
+            NbtCompound nbt = new NbtCompound();
+            nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_SPAWN_METADATA);
+            nbt.putString("version", Reference.MOD_STRING);
+            ServuxStructuresPlayListener.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
+        }
+    }
+
     public void setWorldSeed(long seed)
     {
         this.worldSeed = seed;
@@ -264,17 +274,39 @@ public class DataStorage
     public void setWorldSpawn(BlockPos spawn)
     {
         if (this.worldSpawn != spawn)
+        {
             OverlayRendererSpawnChunks.setNeedsUpdate();
+        }
         this.worldSpawn = spawn;
         this.worldSpawnValid = true;
         MiniHUD.printDebug("DataStorage#setWorldSpawn(): set to: {}", spawn.toShortString());
     }
 
-    public void setSpawnChunkRadius(int radius) {
+    public void setSpawnChunkRadius(int radius)
+    {
         if (radius >= 0)
         {
             if (this.spawnChunkRadius != radius)
+            {
+                String green = GuiBase.TXT_GREEN;
+                String red = GuiBase.TXT_RED;
+                String rst = GuiBase.TXT_RST;
+                String message;
+                String strRadius;
+
+                if (radius > 0)
+                {
+                    strRadius = green + String.format("%d", radius);
+                }
+                else
+                {
+                    strRadius = red + String.format("%d", radius);
+                }
+                message = StringUtils.translate("minihud.message.spawn_chunk_radius_set", strRadius) + rst;
+
                 OverlayRendererSpawnChunks.setNeedsUpdate();
+                InfoUtils.printActionbarMessage(message);
+            }
             this.spawnChunkRadius = radius;
             MiniHUD.printDebug("DataStorage#setSpawnChunkRadius(): set to: {}", radius);
         }
@@ -715,7 +747,7 @@ public class DataStorage
             NbtCompound nbt = new NbtCompound();
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
             nbt.putString("version", Reference.MOD_STRING);
-            ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
+            ServuxStructuresPlayListener.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
 
             updateStructureToggles();
         }
@@ -728,7 +760,7 @@ public class DataStorage
             MiniHUD.printDebug("unregisterStructureChannel(): sending STRUCTURES_DECLINED packet");
             NbtCompound nbt = new NbtCompound();
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_DECLINED);
-            ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
+            ServuxStructuresPlayListener.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
             this.servuxServer = false;
         }
         this.shouldRegisterStructureChannel = false;
@@ -750,7 +782,7 @@ public class DataStorage
         {
             toggles.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURE_TOGGLE);
             MiniHUD.printDebug("DataStorage#updateStructureToggles(): sending STRUCTURE_TOGGLE packet");
-            ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, toggles);
+            ServuxStructuresPlayListener.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, toggles);
         }
     }
     public NbtCompound getStructureToggles()

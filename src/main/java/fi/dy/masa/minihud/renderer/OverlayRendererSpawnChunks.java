@@ -188,6 +188,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
 
         return Pair.of(pos1, pos2);
     }
+
     protected int getSpawnChunkRadius(MinecraftServer server)
     {
         if (server != null)
@@ -196,6 +197,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         }
         else return -1;
     }
+
     protected int getSimulationDistance()
     {
         if (DataStorage.getInstance().isSimulationDistanceKnown())

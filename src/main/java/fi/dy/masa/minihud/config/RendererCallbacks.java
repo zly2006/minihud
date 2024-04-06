@@ -1,12 +1,7 @@
 package fi.dy.masa.minihud.config;
 
-import fi.dy.masa.malilib.network.payload.PayloadType;
-import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.network.PacketType;
-import fi.dy.masa.minihud.network.listeners.ServuxStructuresPlayListener;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -106,6 +101,16 @@ public class RendererCallbacks
     {
         if (config.getBooleanValue())
         {
+            String green = GuiBase.TXT_GREEN;
+            String rst = GuiBase.TXT_RST;
+            String message;
+
+            // Prints the Simulation Distance value to the action bar
+            String strStatus = green + StringUtils.translate("malilib.message.value.on") + rst;
+            String strDist = String.format("%d", DataStorage.getInstance().getSimulationDistance());
+            message = StringUtils.translate("minihud.message.toggled_using_player_spawn", config.getPrettyName(), strStatus, strDist);
+
+            InfoUtils.printActionbarMessage(message);
             OverlayRendererSpawnChunks.setNeedsUpdate();
         }
     }
@@ -138,11 +143,7 @@ public class RendererCallbacks
 
                     if (!mc.isIntegratedServerRunning() && DataStorage.getInstance().hasServuxServer())
                     {
-                        // Refresh Spawn Metadata
-                        NbtCompound nbt = new NbtCompound();
-                        nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_SPAWN_METADATA);
-                        nbt.putString("version", Reference.MOD_STRING);
-                        ServuxStructuresPlayListener.INSTANCE.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
+                        DataStorage.getInstance().requestSpawnMetadata();
                     }
                     else
                     {
