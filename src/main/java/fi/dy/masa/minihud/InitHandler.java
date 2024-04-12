@@ -10,7 +10,7 @@ import fi.dy.masa.malilib.network.payload.channel.ServuxStructuresPayload;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.event.*;
 import fi.dy.masa.minihud.hotkeys.KeyCallbacks;
-import fi.dy.masa.minihud.network.listeners.ServuxStructuresPlayListener;
+import fi.dy.masa.minihud.network.ServuxStructuresPlayListener;
 
 public class InitHandler implements IInitializationHandler
 {

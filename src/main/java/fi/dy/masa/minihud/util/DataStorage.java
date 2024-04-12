@@ -19,7 +19,7 @@ import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.network.PacketType;
-import fi.dy.masa.minihud.network.listeners.ServuxStructuresPlayListener;
+import fi.dy.masa.minihud.network.ServuxStructuresPlayListener;
 import fi.dy.masa.minihud.renderer.*;
 
 import net.minecraft.client.MinecraftClient;

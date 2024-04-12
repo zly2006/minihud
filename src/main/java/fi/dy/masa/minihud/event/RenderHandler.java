@@ -156,14 +156,6 @@ public class RenderHandler implements IRenderer
                 fi.dy.masa.malilib.render.RenderUtils.renderMapPreview(stack, x, y, Configs.Generic.MAP_PREVIEW_SIZE.getIntegerValue(), false);
             }
         }
-        else if (item instanceof BundleItem)
-        {
-            if (Configs.Generic.BUNDLE_PREVIEW.getBooleanValue() &&
-                    (Configs.Generic.BUNDLE_PREVIEW_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
-            {
-                fi.dy.masa.malilib.render.RenderUtils.renderBundlePreview(stack, x, y, Configs.Colors.BUNDLE_DISPLAY_BACKGROUND_COLOR.getColor(), drawContext);
-            }
-        }
         else if (stack.getComponents().contains(DataComponentTypes.CONTAINER) && item.toString().contains("shulker"))
         {
             if (Configs.Generic.SHULKER_BOX_PREVIEW.getBooleanValue() &&

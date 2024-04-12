@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.network.listeners;
+package fi.dy.masa.minihud.network;
 
 import fi.dy.masa.malilib.network.handler.ClientCommonHandlerRegister;
 import fi.dy.masa.malilib.network.handler.client.ClientPlayHandler;
@@ -11,7 +11,6 @@ import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.util.DataStorage;
-import fi.dy.masa.minihud.network.PacketType;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;

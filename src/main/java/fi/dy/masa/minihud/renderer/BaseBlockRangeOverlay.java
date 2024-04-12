@@ -1,5 +1,6 @@
 package fi.dy.masa.minihud.renderer;
 
+import fi.dy.masa.malilib.util.WorldUtils;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.entity.BlockEntity;
@@ -15,7 +16,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.malilib.config.IConfigBoolean;
-import fi.dy.masa.malilib.util.ChunkUtils;
 
 public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends OverlayRendererBase
 {
@@ -192,7 +192,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
             for (int cx = minCX; cx <= maxCX; ++cx)
             {
                 WorldChunk chunk = world.getChunk(cx, cz);
-                int height = ChunkUtils.getHighestSectionYOffset(chunk) + 15;
+                int height = WorldUtils.getHighestSectionYOffset(chunk) + 15;
 
                 if (height > maxY)
                 {

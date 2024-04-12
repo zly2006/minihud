@@ -47,8 +47,6 @@ public class Configs implements IConfigHandler
         public static final ConfigString        BLOCK_POS_FORMAT_STRING             = new ConfigString("blockPosFormat", "Block: %d, %d, %d", "The format string for the \"infoBlockPosition\" line.\nNeeds to have three %d format strings!\nDefault: \"Block: %d, %d, %d\"");
         public static final ConfigOptionList    BLOCK_GRID_OVERLAY_MODE             = new ConfigOptionList("blockGridOverlayMode", BlockGridMode.ALL, "The block grid render mode");
         public static final ConfigInteger       BLOCK_GRID_OVERLAY_RADIUS           = new ConfigInteger("blockGridOverlayRadius", 32, 0, 128, "The radius of the block grid lines to render");
-        public static final ConfigBoolean       BUNDLE_PREVIEW                      = new ConfigBoolean("bundlePreview", false, "Enables rendering a preview of the bundle,\nwhen you hold shift while hovering over a bundle item");
-        public static final ConfigBoolean       BUNDLE_PREVIEW_REQUIRE_SHIFT        = new ConfigBoolean("bundlePreviewRequireShift", true, "Whether holding shift is required for the Bundle Preview");
         public static final ConfigString        COORDINATE_FORMAT_STRING            = new ConfigString("coordinateFormat", "x: %.1f y: %.1f z: %.1f", "The format string for the coordinate line.\nNeeds to have three %f format strings!\nDefault: x: %.1f y: %.1f z: %.1f");
         public static final ConfigString        DATE_FORMAT_REAL                    = new ConfigString("dateFormatReal", "yyyy-MM-dd HH:mm:ss", "The format string for real time, see the Java SimpleDateFormat\nclass for the format patterns, if needed.");
         public static final ConfigString        DATE_FORMAT_MINECRAFT               = new ConfigString("dateFormatMinecraft", "MC time: (day {DAY}) {HOUR}:{MIN}:xx", "The format string for the Minecraft time.\nThe supported placeholders are: {DAY_1}, {DAY}, {HOUR}, {MIN}, {SEC}, {MOON}.\n{DAY_1} starts the day counter from 1, {DAY} starts from 0.");
@@ -111,8 +109,6 @@ public class Configs implements IConfigHandler
                 BEE_TOOLTIPS,
                 HONEY_TOOLTIPS,
                 BIOME_OVERLAY_SINGLE_COLOR,
-                BUNDLE_PREVIEW,
-                BUNDLE_PREVIEW_REQUIRE_SHIFT,
                 DEBUG_MESSAGES,
                 //DEBUG_RENDERER_PATH_MAX_DIST,
                 DONT_RESET_SEED_ON_DIMENSION_CHANGE,
@@ -196,7 +192,6 @@ public class Configs implements IConfigHandler
         public static final ConfigColor BEACON_RANGE_LVL3_OVERLAY_COLOR         = new ConfigColor("beaconRangeLvl3",                    "#20FFF040", "Color for the Beacon Range lvl 3 overlay");
         public static final ConfigColor BEACON_RANGE_LVL4_OVERLAY_COLOR         = new ConfigColor("beaconRangeLvl4",                    "#2060FF40", "Color for the Beacon Range lvl 4 overlay");
         public static final ConfigColor BLOCK_GRID_OVERLAY_COLOR                = new ConfigColor("blockGridOverlayColor",              "#80FFFFFF", "Color for the block grid overlay");
-        public static final ConfigColor BUNDLE_DISPLAY_BACKGROUND_COLOR         = new ConfigColor("bundleDisplayBgColor",               "#41854F4C", "Enables tinting/coloring the Bundle display");
         public static final ConfigColor CONDUIT_RANGE_OVERLAY_COLOR             = new ConfigColor("conduitRange",                       "#2030FFFF", "Color for the Conduit Range overlay");
         public static final ConfigColor LIGHT_LEVEL_MARKER_BLOCK_LIT            = new ConfigColor("lightLevelMarkerBlockLit",           "#FF209040", "The color for the safe (during day) spots marker");
         public static final ConfigColor LIGHT_LEVEL_MARKER_DARK                 = new ConfigColor("lightLevelMarkerDark",               "#FFFF4848", "The color for the spawnable spots marker");
@@ -236,7 +231,6 @@ public class Configs implements IConfigHandler
                 BEACON_RANGE_LVL3_OVERLAY_COLOR,
                 BEACON_RANGE_LVL4_OVERLAY_COLOR,
                 BLOCK_GRID_OVERLAY_COLOR,
-                BUNDLE_DISPLAY_BACKGROUND_COLOR,
                 CONDUIT_RANGE_OVERLAY_COLOR,
                 LIGHT_LEVEL_MARKER_BLOCK_LIT,
                 LIGHT_LEVEL_MARKER_DARK,
