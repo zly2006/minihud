@@ -3,7 +3,7 @@ package fi.dy.masa.minihud.mixin;
 import java.util.function.BooleanSupplier;
 
 import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.data.DataStorage;
+import fi.dy.masa.minihud.util.DataStorage;
 import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;

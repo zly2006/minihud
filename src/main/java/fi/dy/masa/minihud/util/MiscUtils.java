@@ -3,7 +3,6 @@ package fi.dy.masa.minihud.util;
 import java.util.*;
 import javax.annotation.Nullable;
 
-import fi.dy.masa.minihud.data.DataStorage;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
@@ -159,7 +158,7 @@ public class MiscUtils
                     NbtCompound beeTag = beeData.copyNbt();
 
                     int beeTicks = beeOccupant.ticksInHive();
-                    String beeId = beeTag.getString("id");
+                    //String beeId = beeTag.getString("id");
                     // should always equal minecraft:bee
                     String beeName = "";
                     int beeAge = -1;

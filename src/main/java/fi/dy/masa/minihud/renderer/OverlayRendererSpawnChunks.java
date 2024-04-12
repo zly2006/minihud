@@ -15,7 +15,7 @@ import fi.dy.masa.malilib.util.Color4f;
 import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.DataStorage;
+import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.MiscUtils;
 
 public class OverlayRendererSpawnChunks extends OverlayRendererBase

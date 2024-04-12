@@ -15,7 +15,7 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.renderer.RenderContainer;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
-import fi.dy.masa.minihud.data.DataStorage;
+import fi.dy.masa.minihud.util.DataStorage;
 
 public class WorldLoadListener implements IWorldLoadListener
 {

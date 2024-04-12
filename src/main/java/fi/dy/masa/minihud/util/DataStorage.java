@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.data;
+package fi.dy.masa.minihud.util;
 
 import java.util.Collection;
 import java.util.Map;
@@ -17,12 +17,10 @@ import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.payload.PayloadType;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.network.PacketType;
 import fi.dy.masa.minihud.network.listeners.ServuxStructuresPlayListener;
 import fi.dy.masa.minihud.renderer.*;
-import fi.dy.masa.minihud.util.MiscUtils;
-import fi.dy.masa.minihud.util.StructureData;
-import fi.dy.masa.minihud.util.StructureType;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
@@ -95,7 +93,6 @@ public class DataStorage
     private final PriorityBlockingQueue<ChunkTask> taskQueue = Queues.newPriorityBlockingQueue();
     private final Thread workerThread;
     private final ThreadWorker worker;
-    private NbtCompound STRUCTURE_TOGGLES = new NbtCompound();
 
     private DataStorage()
     {
@@ -171,8 +168,6 @@ public class DataStorage
             this.worldSeedValid = false;
             this.worldSeed = 0;
         }
-
-        this.STRUCTURE_TOGGLES = new NbtCompound();
     }
 
     public void clearTasks()
@@ -195,16 +190,14 @@ public class DataStorage
 
     public void setIsServuxServer()
     {
-        MiniHUD.printDebug("DataStorage#setIsServuxServer()");
         this.servuxServer = true;
     }
 
     public void setServerVersion(String ver)
     {
-        MiniHUD.printDebug("DataStorage#setServerVersion()");
         if (ver != null && !ver.isEmpty())
         {
-            MiniHUD.logger.info("Accepting structures server version: {}", ver);
+            MiniHUD.printDebug("Accepting structures from server version: {}", ver);
             this.serverVersion = ver;
         }
         else
@@ -215,7 +208,7 @@ public class DataStorage
 
     public void onWorldJoin()
     {
-        MiniHUD.printDebug("DataStorage#onWorldJoin()");
+        //MiniHUD.printDebug("DataStorage#onWorldJoin()");
         OverlayRendererBeaconRange.INSTANCE.setNeedsUpdate();
         OverlayRendererConduitRange.INSTANCE.setNeedsUpdate();
         OverlayRendererSpawnChunks.setNeedsUpdate();
@@ -233,7 +226,7 @@ public class DataStorage
     }
 
     /**
-     * Store's the world registry manager for Dynamic Lookup
+     * Store's the world registry manager for Dynamic Lookup for various data
      * Set this at WorldLoadPost
      * @param manager
      */
@@ -257,10 +250,10 @@ public class DataStorage
     {
         if (!this.hasIntegratedServer && DataStorage.getInstance().hasServuxServer())
         {
-            // Refresh Spawn Metadata
             NbtCompound nbt = new NbtCompound();
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_SPAWN_METADATA);
             nbt.putString("version", Reference.MOD_STRING);
+
             ServuxStructuresPlayListener.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
         }
     }
@@ -748,8 +741,6 @@ public class DataStorage
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
             nbt.putString("version", Reference.MOD_STRING);
             ServuxStructuresPlayListener.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
-
-            updateStructureToggles();
         }
     }
 
@@ -758,36 +749,13 @@ public class DataStorage
         if (this.servuxServer)
         {
             MiniHUD.printDebug("unregisterStructureChannel(): sending STRUCTURES_DECLINED packet");
+
             NbtCompound nbt = new NbtCompound();
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_DECLINED);
             ServuxStructuresPlayListener.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
             this.servuxServer = false;
         }
         this.shouldRegisterStructureChannel = false;
-    }
-
-    /**
-     * For sending to ServUX to filter out unwanted structure data
-     */
-    public void updateStructureToggles()
-    {
-        NbtCompound toggles = new NbtCompound();
-        for (StructureType type : StructureType.VALUES)
-        {
-            toggles.putBoolean(type.name(), type.isEnabled());
-        }
-        this.STRUCTURE_TOGGLES.copyFrom(toggles);
-
-        if (this.servuxServer)
-        {
-            toggles.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURE_TOGGLE);
-            MiniHUD.printDebug("DataStorage#updateStructureToggles(): sending STRUCTURE_TOGGLE packet");
-            ServuxStructuresPlayListener.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, toggles);
-        }
-    }
-    public NbtCompound getStructureToggles()
-    {
-        return this.STRUCTURE_TOGGLES;
     }
 
     private boolean structuresNeedUpdating(BlockPos playerPos, int hysteresis)
@@ -839,7 +807,7 @@ public class DataStorage
 
         if (structures.getHeldType() == Constants.NBT.TAG_COMPOUND)
         {
-            MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): list size: {}", structures.size());
+            //MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): list size: {}", structures.size());
             this.structureDataTimeout = timeout + 200;
 
             long currentTime = this.mc.world.getTime();

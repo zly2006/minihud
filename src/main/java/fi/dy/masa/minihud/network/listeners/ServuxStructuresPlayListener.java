@@ -10,7 +10,7 @@ import fi.dy.masa.malilib.network.payload.channel.ServuxStructuresPayload;
 import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.DataStorage;
+import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.network.PacketType;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -127,12 +127,6 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
                 // Accept / Decline Structure Data based on Render toggle.
                 if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                 {
-                    // Send a list of toggled structures
-                    DataStorage.getInstance().updateStructureToggles();
-                    // TODO implement this in a usable way under Servux,
-                    //  but this is just informing them of our enabled structures
-                    //  that we'd like to receive.
-
                     NbtCompound nbt = new NbtCompound();
                     nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_ACCEPT);
                     MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): sending STRUCTURES_ACCEPT packet");

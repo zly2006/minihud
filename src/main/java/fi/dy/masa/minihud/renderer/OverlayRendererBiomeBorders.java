@@ -32,7 +32,7 @@ import fi.dy.masa.malilib.util.SubChunkPos;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.DataStorage;
+import fi.dy.masa.minihud.util.DataStorage;
 
 public class OverlayRendererBiomeBorders extends OverlayRendererBase
 {

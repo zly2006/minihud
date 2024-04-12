@@ -1,7 +1,7 @@
 package fi.dy.masa.minihud.event;
 
 import fi.dy.masa.malilib.interfaces.IServerListener;
-import fi.dy.masa.minihud.data.DataStorage;
+import fi.dy.masa.minihud.util.DataStorage;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
 

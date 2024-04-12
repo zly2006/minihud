@@ -1,6 +1,5 @@
 package fi.dy.masa.minihud.util;
 
-import fi.dy.masa.minihud.data.DataStorage;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.packet.s2c.play.ChunkData;
 import net.minecraft.network.packet.s2c.play.ChunkDeltaUpdateS2CPacket;
