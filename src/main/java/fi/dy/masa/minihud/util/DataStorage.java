@@ -12,16 +12,6 @@ import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.network.payload.PayloadType;
-import fi.dy.masa.malilib.util.*;
-import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.data.MobCapDataHandler;
-import fi.dy.masa.minihud.network.PacketType;
-import fi.dy.masa.minihud.network.ServuxStructuresPlayListener;
-import fi.dy.masa.minihud.renderer.*;
-
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
@@ -47,10 +37,17 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.gen.structure.Structure;
-
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.network.payload.PayloadType;
+import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.data.MobCapDataHandler;
+import fi.dy.masa.minihud.network.PacketType;
+import fi.dy.masa.minihud.network.ServuxStructuresPlayListener;
+import fi.dy.masa.minihud.renderer.*;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.renderer.worker.ChunkTask;
 import fi.dy.masa.minihud.renderer.worker.ThreadWorker;

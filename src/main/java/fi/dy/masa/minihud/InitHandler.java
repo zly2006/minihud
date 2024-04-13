@@ -35,7 +35,7 @@ public class InitHandler implements IInitializationHandler
 
         TickHandler.getInstance().registerClientTickHandler(new ClientTickHandler());
 
-        PayloadManager.getInstance().register(PayloadType.SERVUX_STRUCTURES, "structure_bounding_boxes", "servux", "structures");
+        PayloadManager.getInstance().register(PayloadType.SERVUX_STRUCTURES,"servux", "structures");
         ServuxStructuresPlayListener<ServuxStructuresPayload> servuxStructuresListener = ServuxStructuresPlayListener.getInstance();
         ClientPlayHandler.getInstance().registerClientPlayHandler(servuxStructuresListener);
 

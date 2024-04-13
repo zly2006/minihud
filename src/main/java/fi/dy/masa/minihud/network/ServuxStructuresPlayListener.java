@@ -1,6 +1,19 @@
 package fi.dy.masa.minihud.network;
 
-import fi.dy.masa.malilib.network.handler.ClientCommonHandlerRegister;
+import java.util.HashMap;
+import java.util.Map;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
+import net.minecraft.util.math.BlockPos;
+import fi.dy.masa.malilib.network.handler.CommonHandlerRegister;
 import fi.dy.masa.malilib.network.handler.client.ClientPlayHandler;
 import fi.dy.masa.malilib.network.handler.client.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.network.payload.PayloadCodec;
@@ -11,20 +24,6 @@ import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.util.DataStorage;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
-import net.minecraft.util.math.BlockPos;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Environment(EnvType.CLIENT)
 public abstract class ServuxStructuresPlayListener<T extends CustomPayload> implements IPluginClientPlayHandler<T>
@@ -229,7 +228,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         }
         if (!codec.isPlayRegistered())
         {
-            PayloadManager.getInstance().registerPlayChannel(type, ClientCommonHandlerRegister.getInstance().getPayloadType(type), ClientCommonHandlerRegister.getInstance().getPacketCodec(type));
+            PayloadManager.getInstance().registerPlayChannel(type, CommonHandlerRegister.getInstance().getPayloadType(type), CommonHandlerRegister.getInstance().getPacketCodec(type));
         }
     }
 
@@ -245,7 +244,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         }
         if (codec.isPlayRegistered())
         {
-            ClientCommonHandlerRegister.getInstance().registerPlayHandler((CustomPayload.Id<T>) ServuxStructuresPayload.TYPE, this);
+            CommonHandlerRegister.getInstance().registerPlayHandler((CustomPayload.Id<T>) ServuxStructuresPayload.TYPE, this);
             if (this.registered.containsKey(type))
                 this.registered.replace(type, true);
             else
@@ -265,7 +264,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         }
         if (codec.isPlayRegistered())
         {
-            ClientCommonHandlerRegister.getInstance().unregisterPlayHandler((CustomPayload.Id<T>) ServuxStructuresPayload.TYPE);
+            CommonHandlerRegister.getInstance().unregisterPlayHandler((CustomPayload.Id<T>) ServuxStructuresPayload.TYPE);
             if (this.registered.containsKey(type))
                 this.registered.replace(type, false);
             else
