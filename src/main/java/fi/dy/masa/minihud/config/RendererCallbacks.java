@@ -129,17 +129,18 @@ public class RendererCallbacks
                 String rst = GuiBase.TXT_RST;
                 String message;
 
-                if (radius != 0)
+                if (radius < 0)
                 {
-                    if (radius < 0)
-                    {
-                        DataStorage.getInstance().setSpawnChunkRadius(2);   // 1.20.5 Vanilla Default
-                    }
+                    DataStorage.getInstance().setSpawnChunkRadius(2);   // 1.20.5 Vanilla Default
+                    radius = 2;
+                }
+                if (radius > 0)
+                {
                     String strStatus = green + StringUtils.translate("malilib.message.value.on") + rst;
                     String strPos = String.format("x: %d, y: %d, z: %d [R: %d]", spawn.getX(), spawn.getY(), spawn.getZ(), radius);
                     message = StringUtils.translate("minihud.message.toggled_using_world_spawn", config.getPrettyName(), strStatus, strPos);
 
-                    if (!mc.isIntegratedServerRunning() && DataStorage.getInstance().hasServuxServer())
+                    if (mc.isIntegratedServerRunning() == false && DataStorage.getInstance().hasServuxServer())
                     {
                         DataStorage.getInstance().requestSpawnMetadata();
                     }

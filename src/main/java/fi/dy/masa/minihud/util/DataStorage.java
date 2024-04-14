@@ -391,7 +391,12 @@ public class DataStorage
 
     public int getSpawnChunkRadius()
     {
-        return this.spawnChunkRadius;
+        if (this.spawnChunkRadius > 0)
+        {
+            return this.spawnChunkRadius;
+        }
+
+        return 2;
     }
 
     public boolean isSimulationDistanceKnown()
@@ -401,7 +406,12 @@ public class DataStorage
 
     public int getSimulationDistance()
     {
-        return this.simulationDistance;
+        if (this.simulationDistance > 0)
+        {
+            return this.simulationDistance;
+        }
+
+        return 10;
     }
 
     public boolean hasIntegratedServer()

@@ -1,18 +1,19 @@
 package fi.dy.masa.minihud.renderer;
 
-import fi.dy.masa.minihud.MiniHUD;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.GameRules;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.entity.Entity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import fi.dy.masa.malilib.util.Color4f;
 import fi.dy.masa.malilib.util.PositionUtils;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.util.DataStorage;
@@ -87,12 +88,9 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         if (this.isPlayerFollowing)
         {
             // OVERLAY_SPAWN_CHUNK_OVERLAY_PLAYER
-            assert entity != null;
             spawn = PositionUtils.getEntityBlockPos(entity);
-
             spawnChunkRadius = getSimulationDistance();
 
-            // Do the correct math
             outer = spawnChunkRadius + 1;
             lazy = spawnChunkRadius;
             ent = spawnChunkRadius - 1;
@@ -102,41 +100,33 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
             // OVERLAY_SPAWN_CHUNK_OVERLAY_REAL
             spawn = data.getWorldSpawn();
             spawnChunkRadius = data.getSpawnChunkRadius();
+
             if (spawnChunkRadius < 0)
             {
-                if (data.hasIntegratedServer())
-                {
-                    spawnChunkRadius = getSpawnChunkRadius(mc.getServer());
-                    data.setSpawnChunkRadius(spawnChunkRadius);
-                }
-                else
-                {
-                    spawnChunkRadius = 2;
-                    data.setSpawnChunkRadiusIfUnknown(spawnChunkRadius);
-                    // Sets default 24w03b spawn chunk radius of 2 if not found.
-                }
+                spawnChunkRadius = getSpawnChunkRadius(mc.getServer());
+                data.setSpawnChunkRadiusIfUnknown(spawnChunkRadius);
             }
             if (spawnChunkRadius < 0)
-                spawnChunkRadius = 2;
+            {
+                spawnChunkRadius = 2;       // In case there is a sync/logic issue, use Default Value.
+            }
             if (spawnChunkRadius == 0)
             {
-                // Minecraft does not perm-load World Spawn when the SPAWN_CHUNK_RADIUS is set to 0,
-                // So the bounding box should be turned off when spawnChunkRadius is set to 0,
-                // Because we have nothing to render.
+                // We have nothing to render.
                 MiniHUD.logger.warn("overlaySpawnChunkReal: toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0.");
 
                 RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
                 needsUpdate = false;
+
                 return;
             }
 
-            // Do the correct math
             outer = spawnChunkRadius + 1;
             lazy = spawnChunkRadius;
             ent = spawnChunkRadius - 1;
         }
 
-        MiniHUD.printDebug("OverlayRendererSpawnChunks#update(): SpawnChunkRadius calc base: {} // outer: {}, lazy: {}, entity: {}", spawnChunkRadius, outer, lazy, ent);
+        //MiniHUD.printDebug("OverlayRendererSpawnChunks#update(): SpawnChunkRadius calc base: {} // outer: {}, lazy: {}, entity: {}", spawnChunkRadius, outer, lazy, ent);
 
         RenderObjectBase renderQuads = this.renderObjects.get(0);
         RenderObjectBase renderLines = this.renderObjects.get(1);
@@ -156,18 +146,14 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(spawn, cameraPos, colorEntity, 0.001, BUFFER_2);
         drawBlockBoundingBoxSidesBatchedQuads(spawn, cameraPos, colorEntity, 0.001, BUFFER_1);
 
-        Pair<BlockPos, BlockPos> corners;
+        Pair<BlockPos, BlockPos> corners = this.getSpawnChunkCorners(spawn, outer, mc.world);   // Org 22 (for 10 chunks?)
 
-        // Org 22 (Outer (10 + 1) * 2) --> Incorrect?
-        corners = this.getSpawnChunkCorners(spawn, outer, mc.world);
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorOuter, BUFFER_1, BUFFER_2);
 
-        // Org 11 (Lazy 10 + 1)
-        corners = this.getSpawnChunkCorners(spawn, lazy, mc.world);
+        corners = this.getSpawnChunkCorners(spawn, lazy, mc.world);     // Org 11
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorLazy, BUFFER_1, BUFFER_2);
 
-        // Org 9 (Entity 10 - 1)
-        corners = this.getSpawnChunkCorners(spawn, ent, mc.world);
+        corners = this.getSpawnChunkCorners(spawn, ent, mc.world);      // Org 9
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorEntity, BUFFER_1, BUFFER_2);
 
         renderQuads.uploadData(BUFFER_1);
@@ -189,13 +175,18 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         return Pair.of(pos1, pos2);
     }
 
-    protected int getSpawnChunkRadius(MinecraftServer server)
+    protected int getSpawnChunkRadius(@Nullable MinecraftServer server)
     {
         if (server != null)
         {
             return server.getOverworld().getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
         }
-        else return -1;
+        else if (DataStorage.getInstance().isSpawnChunkRadiusKnown())
+        {
+            return DataStorage.getInstance().getSpawnChunkRadius();
+        }
+
+        return 2;
     }
 
     protected int getSimulationDistance()
@@ -204,7 +195,8 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         {
             return DataStorage.getInstance().getSimulationDistance();
         }
-        else return 10;
+
+        return 10;
     }
 
     /**
