@@ -1,7 +1,5 @@
 package fi.dy.masa.minihud.network;
 
-import java.util.HashMap;
-import java.util.Map;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -33,45 +31,42 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         @Override
         public void receive(ServuxStructuresPayload payload, ClientPlayNetworking.Context context)
         {
-            //ClientPlayNetworkHandler handler = MinecraftClient.getInstance().getNetworkHandler();
             CallbackInfo ci = new CallbackInfo("ServuxStructuresPlayListener",false);
 
-            //if (handler != null)
-            //{
-                //ServuxStructuresPlayListener.INSTANCE.receiveS2CPlayPayload(PayloadType.SERVUX_STRUCTURES, payload, handler, ci);
-                //Servux doesn't need to use the networkHandler interface.
-            //}
-            //else
-                ServuxStructuresPlayListener.INSTANCE.receiveS2CPlayPayload(PayloadType.SERVUX_STRUCTURES, payload, context);
+            ServuxStructuresPlayListener.INSTANCE.receiveS2CPlayPayload(PayloadType.SERVUX_STRUCTURES, payload, context);
         }
     };
     public static ServuxStructuresPlayListener<ServuxStructuresPayload> getInstance() { return INSTANCE; }
 
-    private final Map<PayloadType, Boolean> registered = new HashMap<>();
     private int timeout;
     private boolean register;
+    private boolean servuxRegistered;
 
     @Override
     public PayloadType getPayloadType() {
         return PayloadType.SERVUX_STRUCTURES;
     }
 
+    public void setRegister(boolean toggle)
+    {
+        this.register = toggle;
+    }
+
     @Override
     public void reset(PayloadType type)
     {
-        // Don't unregister
+        if (type.equals(getPayloadType()) && this.servuxRegistered)
+        {
+            this.servuxRegistered = false;
+            this.timeout = -1;
+        }
         this.register = false;
-        if (this.registered.containsKey(type))
-            this.registered.replace(type, false);
-        else
-            this.registered.put(type, false);
     }
 
     @Override
     public <P extends CustomPayload> void receiveS2CPlayPayload(PayloadType type, P payload, ClientPlayNetworking.Context ctx)
     {
         ServuxStructuresPayload packet = (ServuxStructuresPayload) payload;
-        MiniHUD.printDebug("ServuxStructuresPlayListener#receiveS2CPlayPayload(): handling packet via Fabric Network API.");
 
         ((ClientPlayHandler<?>) ClientPlayHandler.getInstance()).decodeS2CNbtCompound(PayloadType.SERVUX_STRUCTURES, packet.data());
     }
@@ -79,142 +74,96 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
     @Override
     public <P extends CustomPayload> void receiveS2CPlayPayload(PayloadType type, P payload, ClientPlayNetworkHandler handler, CallbackInfo ci)
     {
-        // Can store the network handler here if wanted
         ServuxStructuresPayload packet = (ServuxStructuresPayload) payload;
-        MiniHUD.printDebug("ServuxStructuresPlayListener#receiveS2CPlayPayload(): handling packet via network handler.");
 
         ((ClientPlayHandler<?>) ClientPlayHandler.getInstance()).decodeS2CNbtCompound(PayloadType.SERVUX_STRUCTURES, packet.data());
 
         if (ci.isCancellable())
+        {
             ci.cancel();
+        }
     }
 
     @Override
     public void decodeS2CNbtCompound(PayloadType type, NbtCompound data)
     {
-        // Handle packet.
         int packetType = data.getInt("packetType");
-        MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): received packetType: {}, of size in bytes: {}.", packetType, data.getSizeInBytes());
 
         if (packetType == PacketType.Structures.PACKET_S2C_METADATA)
         {
-            MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): received METADATA packet, of size in bytes: {}.", data.getSizeInBytes());
             int version = data.getInt("version");
-            //String identifier = data.getString("id");
+
             if (version == PacketType.Structures.PROTOCOL_VERSION)
             {
-                this.timeout = data.getInt("timeout");
-                this.register = true;
-                DataStorage.getInstance().setIsServuxServer();
-                if (data.contains("servux"))
-                {
-                    String servux = data.getString("servux");
-                    DataStorage.getInstance().setServerVersion(servux);
-                }
-                int x = data.getInt("spawnPosX");
-                int y = data.getInt("spawnPosY");
-                int z = data.getInt("spawnPosZ");
-                BlockPos spawnPos = new BlockPos(x, y, z);
-                MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): SpawnPos: {} versus {}", DataStorage.getInstance().getWorldSpawn().toShortString(), spawnPos.toShortString());
-                DataStorage.getInstance().setWorldSpawn(spawnPos);
-                int radius = data.getInt("spawnChunkRadius");
-                MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): SpawnChunkRadius: {} versus {}", DataStorage.getInstance().getSpawnChunkRadius(), radius);
-                DataStorage.getInstance().setSpawnChunkRadius(radius);
-                MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): register; timeout: {}", this.timeout);
+                MiniHUD.printDebug("ServuxStructuresPlayListener#decodeS2CNbtCompound(): received METADATA packet Version {}, of size in bytes: {}.", version, data.getSizeInBytes());
 
-                // Accept / Decline Structure Data based on Render toggle.
-                if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
+                this.timeout = data.getInt("timeout");
+                DataStorage.getInstance().setServerVersion(data.getString("servux"));
+                DataStorage.getInstance().setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
+                DataStorage.getInstance().setSpawnChunkRadius(data.getInt("spawnChunkRadius"));
+
+                if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() && this.register)
                 {
                     NbtCompound nbt = new NbtCompound();
+
+                    this.servuxRegistered = true;
+                    DataStorage.getInstance().setIsServuxServer();
+
+                    MiniHUD.logger.info("ServuxStructuresPlayListener: accepting structures from server version {}", data.getString("servux"));
                     nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_ACCEPT);
-                    MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): sending STRUCTURES_ACCEPT packet");
                     encodeC2SNbtCompound(type, nbt);
                 }
             }
             else
             {
-                MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): Received invalid Metadata (version: {})", version);
+                MiniHUD.logger.warn("ServuxStructuresPlayListener#decodeS2CNbtCompound(): Received invalid Structures Metadata (version: {})", version);
             }
         }
         else if (packetType == PacketType.Structures.PACKET_S2C_SPAWN_METADATA)
         {
-            MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): received SPAWN_METADATA packet, of size in bytes: {}.", data.getSizeInBytes());
-            if (data.contains("servux"))
-            {
-                String servux = data.getString("servux");
-                DataStorage.getInstance().setServerVersion(servux);
-            }
-            int x = data.getInt("spawnPosX");
-            int y = data.getInt("spawnPosY");
-            int z = data.getInt("spawnPosZ");
-            BlockPos spawnPos = new BlockPos(x, y, z);
-            MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): SpawnPos: {} versus {}", DataStorage.getInstance().getWorldSpawn().toShortString(), spawnPos.toShortString());
-            DataStorage.getInstance().setWorldSpawn(spawnPos);
-            int radius = data.getInt("spawnChunkRadius");
-            MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): SpawnChunkRadius: {} versus {}", DataStorage.getInstance().getSpawnChunkRadius(), radius);
-            DataStorage.getInstance().setSpawnChunkRadius(radius);
+            MiniHUD.printDebug("ServuxStructuresPlayListener#decodeS2CNbtCompound(): received SPAWN_METADATA packet, of size in bytes: {}.", data.getSizeInBytes());
+
+            DataStorage.getInstance().setServerVersion(data.getString("servux"));
+            DataStorage.getInstance().setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
+            DataStorage.getInstance().setSpawnChunkRadius(data.getInt("spawnChunkRadius"));
         }
         else if (packetType == PacketType.Structures.PACKET_S2C_STRUCTURE_DATA)
         {
-            // It's safe to accept the data, even if our Structure Renderer is off.
-            MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): received STRUCTURE_DATA packet, of size in bytes: {}.", data.getSizeInBytes());
+            MiniHUD.printDebug("ServuxStructuresPlayListener#decodeS2CNbtCompound(): received STRUCTURE_DATA packet, of size in bytes: {}.", data.getSizeInBytes());
+
             NbtList structures = data.getList("Structures", Constants.NBT.TAG_COMPOUND);
-            MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): structures; list size: {}", structures.size());
             DataStorage.getInstance().addOrUpdateStructuresFromServer(structures, this.timeout, true);
         }
         else
         {
-            MiniHUD.printDebug("ServuxStructuresListener#decodeServuxStructures(): received unhandled packetType of size {} bytes.", data.getSizeInBytes());
+            MiniHUD.logger.warn("ServuxStructuresPlayListener#decodeS2CNbtCompound(): received unhandled packetType {} of size {} bytes.", packetType, data.getSizeInBytes());
         }
     }
 
     @Override
     public void encodeC2SNbtCompound(PayloadType type, NbtCompound data)
     {
-        // Encode Payload
         ServuxStructuresPayload payload = new ServuxStructuresPayload(data);
 
-        // TODO -- In case you want to use the networkHandler interface to send packets,
-        //  instead of the Fabric Networking API, this is how you can do it using this API.
-        //ClientPlayNetworkHandler handler = MinecraftClient.getInstance().getNetworkHandler();
-        //if (handler != null)
-        //{
-            //ServuxStructuresPlayListener.INSTANCE.sendC2SPlayPayload(type, payload, handler);
-        //}
-        //else
-            ServuxStructuresPlayListener.INSTANCE.sendC2SPlayPayload(type, payload);
+        ServuxStructuresPlayListener.INSTANCE.sendC2SPlayPayload(type, payload);        // Fabric API method
     }
 
-    //@Override
     public void sendC2SPlayPayload(PayloadType type, ServuxStructuresPayload payload)
     {
         if (ClientPlayNetworking.canSend(payload.getId()))
         {
             ClientPlayNetworking.send(payload);
         }
-        else
-        {
-            MiniHUD.printDebug("ServuxStructuresPlayListener#sendC2SPlayPayload(): [ERROR] CanSend() is false");
-        }
     }
 
-    //@Override
     public void sendC2SPlayPayload(PayloadType type, ServuxStructuresPayload payload, ClientPlayNetworkHandler handler)
     {
         Packet<?> packet = new CustomPayloadS2CPacket(payload);
 
-        if (handler == null)
-        {
-            MiniHUD.printDebug("ServuxStructuresPlayListener#sendC2SPlayPayload(): [ERROR] networkHandler = null");
-            return;
-        }
-
-        if (handler.accepts(packet))
+        if (handler != null && handler.accepts(packet))
         {
             handler.sendPacket(packet);
         }
-        else
-            MiniHUD.printDebug("ServuxStructuresPlayListener#sendC2SPlayPayload(): [ERROR] accepts() is false");
     }
 
     @Override
@@ -222,11 +171,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
     {
         PayloadCodec codec = PayloadManager.getInstance().getPayloadCodec(type);
 
-        if (codec == null)
-        {
-            return;
-        }
-        if (!codec.isPlayRegistered())
+        if (codec != null && codec.isPlayRegistered() == false)
         {
             PayloadManager.getInstance().registerPlayChannel(type, CommonHandlerRegister.getInstance().getPayloadType(type), CommonHandlerRegister.getInstance().getPacketCodec(type));
         }
@@ -238,17 +183,10 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
     {
         PayloadCodec codec = PayloadManager.getInstance().getPayloadCodec(type);
 
-        if (codec == null)
-        {
-            return;
-        }
-        if (codec.isPlayRegistered())
+        if (codec != null && codec.isPlayRegistered())
         {
             CommonHandlerRegister.getInstance().registerPlayHandler((CustomPayload.Id<T>) ServuxStructuresPayload.TYPE, this);
-            if (this.registered.containsKey(type))
-                this.registered.replace(type, true);
-            else
-                this.registered.put(type, true);
+            this.servuxRegistered = true;
         }
     }
 
@@ -258,17 +196,11 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
     {
         PayloadCodec codec = PayloadManager.getInstance().getPayloadCodec(type);
 
-        if (codec == null)
+        if (codec != null && codec.isPlayRegistered())
         {
-            return;
-        }
-        if (codec.isPlayRegistered())
-        {
+            reset(getPayloadType());
+
             CommonHandlerRegister.getInstance().unregisterPlayHandler((CustomPayload.Id<T>) ServuxStructuresPayload.TYPE);
-            if (this.registered.containsKey(type))
-                this.registered.replace(type, false);
-            else
-                this.registered.put(type, false);
         }
     }
 }

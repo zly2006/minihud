@@ -11,7 +11,7 @@ import net.minecraft.client.render.debug.BlockOutlineDebugRenderer;
 public abstract class MixinBlockOutlineDebugRenderer
 {
     @Inject(method = "render", at = @At("HEAD"))
-    public void minihud$fixDebugRendererState(CallbackInfo ci)
+    public void fixDebugRendererState(CallbackInfo ci)
     {
         RenderHandler.fixDebugRendererState();
     }

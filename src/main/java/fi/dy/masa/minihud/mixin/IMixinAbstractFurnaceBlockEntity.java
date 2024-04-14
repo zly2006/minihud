@@ -10,5 +10,5 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 public interface IMixinAbstractFurnaceBlockEntity
 {
     @Accessor("recipesUsed")
-    Object2IntOpenHashMap<Identifier> minihud$getUsedRecipes();
+    Object2IntOpenHashMap<Identifier> minihud_getUsedRecipes();
 }

@@ -8,5 +8,5 @@ import net.minecraft.world.biome.source.BiomeAccess;
 public interface IMixinBiomeAccess
 {
     @Accessor("seed")
-    long minihud$getSeed();
+    long minihud_getSeed();
 }

@@ -10,5 +10,5 @@ import net.minecraft.world.chunk.BlockEntityTickInvoker;
 public interface IMixinWorld
 {
     @Accessor("blockEntityTickers")
-    List<BlockEntityTickInvoker> minihud$getBlockEntityTickers();
+    List<BlockEntityTickInvoker> minihud_getBlockEntityTickers();
 }

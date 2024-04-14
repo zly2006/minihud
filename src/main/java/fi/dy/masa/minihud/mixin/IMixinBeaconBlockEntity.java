@@ -8,5 +8,5 @@ import net.minecraft.block.entity.BeaconBlockEntity;
 public interface IMixinBeaconBlockEntity
 {
     @Accessor("level")
-    int minihud$getLevel();
+    int minihud_getLevel();
 }

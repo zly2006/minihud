@@ -194,7 +194,6 @@ public class DataStorage
     {
         if (ver != null && !ver.isEmpty())
         {
-            MiniHUD.printDebug("Accepting structures from server version: {}", ver);
             this.serverVersion = ver;
         }
         else
@@ -205,19 +204,16 @@ public class DataStorage
 
     public void onWorldJoin()
     {
-        //MiniHUD.printDebug("DataStorage#onWorldJoin()");
         OverlayRendererBeaconRange.INSTANCE.setNeedsUpdate();
         OverlayRendererConduitRange.INSTANCE.setNeedsUpdate();
         OverlayRendererSpawnChunks.setNeedsUpdate();
 
-        if (!this.hasIntegratedServer)
+        if (this.hasIntegratedServer == false)
         {
             if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
             {
-                //this.unregisterStructureChannel();
                 this.registerStructureChannel();
                 this.structuresNeedUpdating = true;
-                // register Structures Channel, request METADATA handshake.
             }
         }
     }
@@ -732,11 +728,14 @@ public class DataStorage
 
         if (!this.servuxServer && this.hasIntegratedServer() == false)
         {
-            MiniHUD.printDebug("DataStorage#registerStructureChannel(): Attempting to request METADATA.");
+            MiniHUD.printDebug("registerStructureChannel(): sending REQUEST_METADATA packet");
 
             NbtCompound nbt = new NbtCompound();
+            ServuxStructuresPlayListener.getInstance().setRegister(true);
+            ServuxStructuresPlayListener.getInstance().registerPlayHandler(PayloadType.SERVUX_STRUCTURES);
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
             nbt.putString("version", Reference.MOD_STRING);
+
             ServuxStructuresPlayListener.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
         }
     }
@@ -745,12 +744,14 @@ public class DataStorage
     {
         if (this.servuxServer)
         {
-            MiniHUD.printDebug("unregisterStructureChannel(): sending STRUCTURES_DECLINED packet");
+            MiniHUD.logger.info("unregisterStructureChannel: declining structures data from {}", this.serverVersion);
 
-            NbtCompound nbt = new NbtCompound();
-            nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_DECLINED);
-            ServuxStructuresPlayListener.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
             this.servuxServer = false;
+            NbtCompound nbt = new NbtCompound();
+            ServuxStructuresPlayListener.getInstance().setRegister(false);
+            nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_DECLINED);
+
+            ServuxStructuresPlayListener.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
         }
         this.shouldRegisterStructureChannel = false;
     }
@@ -795,10 +796,10 @@ public class DataStorage
 
     public void addOrUpdateStructuresFromServer(NbtList structures, int timeout, boolean isServux)
     {
-        // Ignore the data from QuickCarpet if the Servux mod is also present
+        // Ignore the data from QuickCarpet if the ServuX mod is present
         if (this.servuxServer && isServux == false)
         {
-            MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): Ignoring structure data from not ServUX");
+            MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): Ignoring structure data from not ServuX");
             return;
         }
 

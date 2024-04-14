@@ -16,7 +16,7 @@ public abstract class MixinSubtitlesHud
     @Inject(method = "render",
             at = @At(value = "INVOKE",
                      target = "Lnet/minecraft/client/util/math/MatrixStack;scale(FFF)V"))
-    private void minihud$nudgeSubtitleOverlay(DrawContext context, CallbackInfo ci)
+    private void nudgeSubtitleOverlay(DrawContext context, CallbackInfo ci)
     {
         int offset = RenderHandler.getInstance().getSubtitleOffset();
 

@@ -239,7 +239,7 @@ public class MiscUtils
 
     public static int getFurnaceXpAmount(AbstractFurnaceBlockEntity be)
     {
-        Object2IntOpenHashMap<Identifier> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud$getUsedRecipes();
+        Object2IntOpenHashMap<Identifier> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
         World world = be.getWorld();
         double xp = 0.0;
 

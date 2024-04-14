@@ -22,7 +22,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     @Override
     protected void renderBlockRange(World world, BlockPos pos, BeaconBlockEntity be, Vec3d cameraPos)
     {
-        int level = ((IMixinBeaconBlockEntity) be).minihud$getLevel();
+        int level = ((IMixinBeaconBlockEntity) be).minihud_getLevel();
 
         if (level >= 1 && level <= 4)
         {

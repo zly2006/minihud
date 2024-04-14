@@ -14,7 +14,7 @@ import fi.dy.masa.minihud.util.DebugInfoUtils;
 public abstract class MixinDebugRenderer
 {
     @Inject(method = "render", at = @At("RETURN"))
-    private void minihud$renderDebugRenderers(MatrixStack matrixStack, VertexConsumerProvider.Immediate vtx,
+    private void renderDebugRenderers(MatrixStack matrixStack, VertexConsumerProvider.Immediate vtx,
             double cameraX, double cameraY, double cameraZ, CallbackInfo ci)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue())

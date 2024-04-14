@@ -7,5 +7,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface IMixinChunkDeltaUpdateS2CPacket
 {
     @Accessor("sectionPos")
-    net.minecraft.util.math.ChunkSectionPos minihud$getChunkSectionPos();
+    net.minecraft.util.math.ChunkSectionPos minihud_getChunkSectionPos();
 }

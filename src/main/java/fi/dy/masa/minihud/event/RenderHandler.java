@@ -740,7 +740,7 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.CHUNK_SECTIONS)
         {
-            this.addLine(String.format("C: %d", ((IMixinWorldRenderer) mc.worldRenderer).minihud$getRenderedChunksInvoker()));
+            this.addLine(String.format("C: %d", ((IMixinWorldRenderer) mc.worldRenderer).getRenderedChunksInvoker()));
         }
         else if (type == InfoToggle.CHUNK_SECTIONS_FULL)
         {
@@ -838,8 +838,8 @@ public class RenderHandler implements IRenderer
 
                 if (serverWorld instanceof ServerWorld)
                 {
-                    IServerEntityManager manager = (IServerEntityManager) ((IMixinServerWorld) serverWorld).minihud$getEntityManager();
-                    int indexSize = manager.minihud$getIndexSize();
+                    IServerEntityManager manager = (IServerEntityManager) ((IMixinServerWorld) serverWorld).minihud_getEntityManager();
+                    int indexSize = manager.getIndexSize();
                     this.addLine(String.format("Entities - Client: %d - Server: %d", countClient, indexSize));
                     return;
                 }

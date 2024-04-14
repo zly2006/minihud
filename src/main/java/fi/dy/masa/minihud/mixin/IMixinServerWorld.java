@@ -10,5 +10,5 @@ import net.minecraft.server.world.ServerWorld;
 public interface IMixinServerWorld
 {
     @Accessor("entityManager")
-    ServerEntityManager<Entity> minihud$getEntityManager();
+    ServerEntityManager<Entity> minihud_getEntityManager();
 }

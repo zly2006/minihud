@@ -4,7 +4,6 @@ import java.util.List;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -20,23 +19,22 @@ import fi.dy.masa.minihud.util.ConduitExtra;
 public abstract class MixinConduitBlockEntity implements ConduitExtra
 {
     @Shadow @Final private List<BlockPos> activatingBlocks;
-    @Unique
     private int minihud_activatingBlockCount;
 
     @Override
-    public int minihud$getCurrentActivatingBlockCount()
+    public int getCurrentActivatingBlockCount()
     {
         return this.activatingBlocks.size();
     }
 
     @Override
-    public int minihud$getStoredActivatingBlockCount()
+    public int getStoredActivatingBlockCount()
     {
         return this.minihud_activatingBlockCount;
     }
 
     @Override
-    public void minihud$setActivatingBlockCount(int count)
+    public void setActivatingBlockCount(int count)
     {
         this.minihud_activatingBlockCount = count;
     }
@@ -44,18 +42,18 @@ public abstract class MixinConduitBlockEntity implements ConduitExtra
     @Inject(method = "clientTick",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/block/entity/ConduitBlockEntity;openEye(Lnet/minecraft/block/entity/ConduitBlockEntity;Ljava/util/List;)V"))
-    private static void minihud$postActiveBlockScan(World world, BlockPos pos, BlockState state,
+    private static void minihud_postActiveBlockScan(World world, BlockPos pos, BlockState state,
                                                     ConduitBlockEntity blockEntity, CallbackInfo ci)
     {
         if (RendererToggle.OVERLAY_CONDUIT_RANGE.getBooleanValue())
         {
-            int count = ((ConduitExtra) blockEntity).minihud$getCurrentActivatingBlockCount();
-            int countBefore = ((ConduitExtra) blockEntity).minihud$getStoredActivatingBlockCount();
+            int count = ((ConduitExtra) blockEntity).getCurrentActivatingBlockCount();
+            int countBefore = ((ConduitExtra) blockEntity).getStoredActivatingBlockCount();
 
             if (count != countBefore)
             {
                 OverlayRendererConduitRange.INSTANCE.onBlockStatusChange(pos);
-                ((ConduitExtra) blockEntity).minihud$setActivatingBlockCount(count);
+                ((ConduitExtra) blockEntity).setActivatingBlockCount(count);
             }
         }
     }

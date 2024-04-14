@@ -2,9 +2,9 @@ package fi.dy.masa.minihud.util;
 
 public interface ConduitExtra
 {
-    int minihud$getCurrentActivatingBlockCount();
+    int getCurrentActivatingBlockCount();
 
-    int minihud$getStoredActivatingBlockCount();
+    int getStoredActivatingBlockCount();
 
-    void minihud$setActivatingBlockCount(int count);
+    void setActivatingBlockCount(int count);
 }
