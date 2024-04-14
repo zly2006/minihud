@@ -105,7 +105,6 @@ public class RendererCallbacks
             String rst = GuiBase.TXT_RST;
             String message;
 
-            // Prints the Simulation Distance value to the action bar
             String strStatus = green + StringUtils.translate("malilib.message.value.on") + rst;
             String strDist = String.format("%d", DataStorage.getInstance().getSimulationDistance());
             message = StringUtils.translate("minihud.message.toggled_using_player_spawn", config.getPrettyName(), strStatus, strDist);
@@ -132,10 +131,9 @@ public class RendererCallbacks
 
                 if (radius != 0)
                 {
-                    // Set Vanilla default if unknown
                     if (radius < 0)
                     {
-                        DataStorage.getInstance().setSpawnChunkRadius(2);
+                        DataStorage.getInstance().setSpawnChunkRadius(2);   // 1.20.5 Vanilla Default
                     }
                     String strStatus = green + StringUtils.translate("malilib.message.value.on") + rst;
                     String strPos = String.format("x: %d, y: %d, z: %d [R: %d]", spawn.getX(), spawn.getY(), spawn.getZ(), radius);
