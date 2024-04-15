@@ -16,15 +16,16 @@ public class MixinServerWorld
     private int spawnChunkRadius;
 
     @Inject(method = "setSpawnPos", at = @At("TAIL"))
-    private void minihud$checkSpawnPos(BlockPos pos, float angle, CallbackInfo ci)
+    private void minihud_checkSpawnPos(BlockPos pos, float angle, CallbackInfo ci)
     {
         int radius = (this.spawnChunkRadius - 1);
 
-        if (pos != DataStorage.getInstance().getWorldSpawn())
+        if (DataStorage.getInstance().getWorldSpawn() != pos)
         {
             DataStorage.getInstance().setWorldSpawn(pos);
         }
-        if (radius != DataStorage.getInstance().getSpawnChunkRadius())
+
+        if (DataStorage.getInstance().isSpawnChunkRadiusKnown() == false || DataStorage.getInstance().getSpawnChunkRadius() != radius)
         {
             DataStorage.getInstance().setSpawnChunkRadius(radius);
         }

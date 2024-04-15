@@ -21,6 +21,7 @@ public class ServerListener implements IServerListener
     public void onServerStarted(MinecraftServer server)
     {
         DataStorage.getInstance().checkWorldSeed(server);
+        DataStorage.getInstance().checkSpawnChunkRadius(server);
     }
 
     @Override

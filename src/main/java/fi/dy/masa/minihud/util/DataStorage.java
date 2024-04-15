@@ -34,6 +34,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
@@ -67,6 +68,7 @@ public class DataStorage
     private boolean carpetServer = false;
     private boolean servuxServer = false;
     private int spawnChunkRadius = -1;
+    private boolean spawnChunkRadiusValid = false;
     private int simulationDistance = -1;
     private boolean worldSpawnValid = false;
     private int structureDataTimeout = 30 * 20;
@@ -138,6 +140,7 @@ public class DataStorage
             this.worldSpawn = BlockPos.ORIGIN;
             this.carpetServer = false;
             this.worldSpawnValid = false;
+            this.spawnChunkRadiusValid = false;
         }
         else
         {
@@ -263,6 +266,7 @@ public class DataStorage
     {
         this.worldSeed = seed;
         this.worldSeedValid = true;
+        MiniHUD.printDebug("DataStorage#setWorldSeed(): set to: [{}]", seed);
     }
 
     public void setWorldSpawn(BlockPos spawn)
@@ -273,7 +277,7 @@ public class DataStorage
         }
         this.worldSpawn = spawn;
         this.worldSpawnValid = true;
-        MiniHUD.printDebug("DataStorage#setWorldSpawn(): set to: {}", spawn.toShortString());
+        MiniHUD.printDebug("DataStorage#setWorldSpawn(): set to: [{}]", spawn.toShortString());
     }
 
     public void setSpawnChunkRadius(int radius)
@@ -302,7 +306,8 @@ public class DataStorage
                 InfoUtils.printActionbarMessage(message);
             }
             this.spawnChunkRadius = radius;
-            //MiniHUD.printDebug("DataStorage#setSpawnChunkRadius(): set to: {}", radius);
+            this.spawnChunkRadiusValid = true;
+            MiniHUD.printDebug("DataStorage#setSpawnChunkRadius(): set to: [{}]", radius);
         }
         else
         {
@@ -321,7 +326,7 @@ public class DataStorage
 
     public void setSpawnChunkRadiusIfUnknown(int radius)
     {
-        if (this.spawnChunkRadius < 0)
+        if (this.spawnChunkRadiusValid == false)
         {
             this.setSpawnChunkRadius(radius);
             OverlayRendererSpawnChunks.setNeedsUpdate();
@@ -337,7 +342,7 @@ public class DataStorage
                 OverlayRendererSpawnChunks.setNeedsUpdate();
             }
             this.simulationDistance = distance;
-            //MiniHUD.printDebug("DataStorage#setSimulationDistance(): set to: {}", distance);
+            MiniHUD.printDebug("DataStorage#setSimulationDistance(): set to: [{}]", distance);
         }
         else
         {
@@ -383,10 +388,11 @@ public class DataStorage
     }
 
     /**
-     * This function checks the Integrated Server's World Seed at Server Launch
-     * Which happens before the WorldLoadListener/fromJson load which works fine for Multiplayer;
-     * But if we own the IntegratedServer, Use this value as valid, overriding the value from the JSON file.
-     * This is because your default "New World" .json files' seed tends to get stale without using the /seed command.
+     * This function checks the Integrated Server's World Seed at Server Launch.
+     * This happens before the WorldLoadListener/fromJson load which works fine for Multiplayer;
+     * But if we own the Server, use this value as valid, overriding the value from the JSON file.
+     * This is because your default "New World" .json files' seed tends to eventually get stale
+     * without using the /seed command continuously, or deleting the json files.
      * @param server (Server Object to get the data from)
      */
     public void checkWorldSeed(MinecraftServer server)
@@ -408,6 +414,20 @@ public class DataStorage
         }
     }
 
+    public void checkSpawnChunkRadius(MinecraftServer server)
+    {
+        if (this.hasIntegratedServer())
+        {
+            int radius = server.getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
+
+            if (radius != this.spawnChunkRadius)
+            {
+                MiniHUD.printDebug("checkSpawnChunkRadius: updating spawn chunk radius [{}] -> [{}] from the IntegratedServer", this.spawnChunkRadius, radius);
+                this.setSpawnChunkRadius(radius);
+            }
+        }
+    }
+
     public boolean isWorldSpawnKnown()
     {
         return this.worldSpawnValid;
@@ -420,7 +440,7 @@ public class DataStorage
 
     public boolean isSpawnChunkRadiusKnown()
     {
-        return this.spawnChunkRadius >= 0;
+        return this.spawnChunkRadiusValid;
     }
 
     public int getSpawnChunkRadius()
@@ -985,6 +1005,11 @@ public class DataStorage
         return obj;
     }
 
+    /**
+     * This function now checks for stale JSON data.
+     * It only compares it if we have an Integrated Server running, and they are marked as valid.
+     * @param obj ()
+     */
     public void fromJson(JsonObject obj)
     {
         Vec3d pos = JsonUtils.vec3dFromJson(obj, "distance_pos");
@@ -994,15 +1019,24 @@ public class DataStorage
         if (JsonUtils.hasVec3d(obj, "spawn_pos"))
         {
             Vec3d spawnVec3d = JsonUtils.vec3dFromJson(obj, "spawn_pos");
-            this.setWorldSpawn(new BlockPos((int) spawnVec3d.getX(), (int) spawnVec3d.getY(), (int) spawnVec3d.getZ()));
+            BlockPos spawnTmp = new BlockPos((int) spawnVec3d.getX(), (int) spawnVec3d.getY(), (int) spawnVec3d.getZ());
+
+            if (this.hasIntegratedServer() && this.isWorldSpawnKnown() && spawnTmp.equals(this.worldSpawn) == false)
+            {
+                MiniHUD.logger.info("fromJson: ignoring stale loaded SpawnPos [{}], keeping [{}] as valid from the integrated server", spawnTmp.toShortString(), this.worldSpawn.toShortString());
+            }
+            else
+            {
+                this.setWorldSpawn(spawnTmp);
+            }
         }
         if (JsonUtils.hasLong(obj, "seed"))
         {
             long seedTmp = JsonUtils.getLong(obj, "seed");
 
-            if (this.worldSeedValid && this.worldSeed != seedTmp)
+            if (this.hasIntegratedServer() && this.hasStoredWorldSeed() && this.worldSeed != seedTmp)
             {
-                MiniHUD.logger.warn("fromJson: ignoring stale loaded WorldSeed [{}], keeping [{}] as valid", seedTmp, this.worldSeed);
+                MiniHUD.logger.info("fromJson: ignoring stale loaded WorldSeed [{}], keeping [{}] as valid from the integrated server", seedTmp, this.worldSeed);
             }
             else
             {
@@ -1011,7 +1045,16 @@ public class DataStorage
         }
         if (JsonUtils.hasInteger(obj, "spawn_chunk_radius"))
         {
-            this.setSpawnChunkRadius(JsonUtils.getIntegerOrDefault(obj, "spawn_chunk_radius", 2));
+            int spawnRadiusTmp = JsonUtils.getIntegerOrDefault(obj, "spawn_chunk_radius", 2);
+
+            if (this.hasIntegratedServer() && this.isSpawnChunkRadiusKnown() && this.spawnChunkRadius != spawnRadiusTmp)
+            {
+                MiniHUD.logger.info("fromJson: ignoring stale loaded Spawn Chunk Radius [{}], keeping [{}] as valid from the integrated server", spawnRadiusTmp, this.spawnChunkRadius);
+            }
+            else
+            {
+                this.setSpawnChunkRadius(spawnRadiusTmp);
+            }
 
             // Force RenderToggle OFF if SPAWN_CHUNK_RADIUS is set to 0.
             // Because we have nothing to render.
