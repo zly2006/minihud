@@ -414,20 +414,6 @@ public class DataStorage
         }
     }
 
-    public void checkSpawnChunkRadius(MinecraftServer server)
-    {
-        if (this.hasIntegratedServer())
-        {
-            int radius = server.getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
-
-            if (radius != this.spawnChunkRadius)
-            {
-                MiniHUD.printDebug("checkSpawnChunkRadius: updating spawn chunk radius [{}] -> [{}] from the IntegratedServer", this.spawnChunkRadius, radius);
-                this.setSpawnChunkRadius(radius);
-            }
-        }
-    }
-
     public boolean isWorldSpawnKnown()
     {
         return this.worldSpawnValid;
