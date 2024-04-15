@@ -1,13 +1,14 @@
 package fi.dy.masa.minihud.util;
 
-import java.util.*;
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BeehiveBlockEntity;
-import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BlockStateComponent;
 import net.minecraft.component.type.NbtComponent;
@@ -16,8 +17,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
@@ -88,20 +87,32 @@ public class MiscUtils
 
     public static boolean isStructureWithinRange(@Nullable BlockBox bb, BlockPos playerPos, int maxRange)
     {
-        return bb != null &&
-                playerPos.getX() >= (bb.getMinX() - maxRange) &&
-                playerPos.getX() <= (bb.getMaxX() + maxRange) &&
-                playerPos.getZ() >= (bb.getMinZ() - maxRange) &&
-                playerPos.getZ() <= (bb.getMaxZ() + maxRange);
+
+        if (bb == null ||
+                playerPos.getX() < (bb.getMinX() - maxRange) ||
+                playerPos.getX() > (bb.getMaxX() + maxRange) ||
+                playerPos.getZ() < (bb.getMinZ() - maxRange) ||
+                playerPos.getZ() > (bb.getMaxZ() + maxRange))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public static boolean isStructureWithinRange(@Nullable IntBoundingBox bb, BlockPos playerPos, int maxRange)
     {
-        return bb != null &&
-                playerPos.getX() >= (bb.minX - maxRange) &&
-                playerPos.getX() <= (bb.maxX + maxRange) &&
-                playerPos.getZ() >= (bb.minZ - maxRange) &&
-                playerPos.getZ() <= (bb.maxZ + maxRange);
+
+        if (bb == null ||
+                playerPos.getX() < (bb.minX - maxRange) ||
+                playerPos.getX() > (bb.maxX + maxRange) ||
+                playerPos.getZ() < (bb.minZ - maxRange) ||
+                playerPos.getZ() > (bb.maxZ + maxRange))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public static boolean areBoxesEqual(IntBoundingBox bb1, IntBoundingBox bb2)
@@ -112,128 +123,98 @@ public class MiscUtils
 
     public static void addAxolotlTooltip(ItemStack stack, List<Text> lines)
     {
-        ComponentMap data = stack.getComponents();
+        NbtComponent entityData = stack.getComponents().get(DataComponentTypes.BUCKET_ENTITY_DATA);
 
-        if (data != null && data.contains(DataComponentTypes.BUCKET_ENTITY_DATA))
+        if (entityData != null)
         {
-            NbtComponent entityData = stack.get(DataComponentTypes.BUCKET_ENTITY_DATA);
-            if (entityData != null)
+            NbtCompound tag = entityData.copyNbt();
+
+            int variantId = tag.getInt(AxolotlEntity.VARIANT_KEY);
+            // FIXME 1.19.3+ this is not validated now... with AIOOB it will return the entry for ID 0
+            AxolotlEntity.Variant variant = AxolotlEntity.Variant.byId(variantId);
+            String variantName = variant.getName();
+            MutableText labelText = Text.translatable("minihud.label.axolotl_tooltip.label");
+            MutableText valueText = Text.translatable("minihud.label.axolotl_tooltip.value", variantName, variantId);
+
+            if (variantId < AXOLOTL_COLORS.length)
             {
-                NbtCompound tag = entityData.copyNbt();
-
-                int variantId = tag.getInt(AxolotlEntity.VARIANT_KEY);
-                // FIXME 1.19.3+ this is not validated now... with AIOOB it will return the entry for ID 0
-                AxolotlEntity.Variant variant = AxolotlEntity.Variant.byId(variantId);
-                String variantName = variant.getName();
-
-                MutableText labelText = Text.translatable("minihud.label.axolotl_tooltip.label");
-                MutableText valueText = Text.translatable("minihud.label.axolotl_tooltip.value", variantName, variantId);
-
-                if (variantId < AXOLOTL_COLORS.length)
-                {
-                    valueText.setStyle(Style.EMPTY.withColor(AXOLOTL_COLORS[variantId]));
-                }
-
-                lines.add(Math.min(1, lines.size()), labelText.append(valueText));
+                valueText.setStyle(Style.EMPTY.withColor(AXOLOTL_COLORS[variantId]));
             }
+
+            lines.add(Math.min(1, lines.size()), labelText.append(valueText));
         }
     }
 
     public static void addBeeTooltip(ItemStack stack, List<Text> lines)
     {
-        ComponentMap data = stack.getComponents();
+        List<BeehiveBlockEntity.BeeData> beeList = stack.getComponents().get(DataComponentTypes.BEES);
 
-        if (data != null && data.contains(DataComponentTypes.BEES))
+        if (beeList != null && !beeList.isEmpty())
         {
-            List<BeehiveBlockEntity.BeeData> beeList = stack.get(DataComponentTypes.BEES);
+            int count = beeList.size();
+            int babyCount = 0;
 
-            if (beeList != null && !beeList.isEmpty())
+            for (BeehiveBlockEntity.BeeData beeOccupant : beeList)
             {
-                int count = beeList.size();
-                int babyCount = 0;
+                NbtComponent beeData = beeOccupant.entityData();
+                NbtCompound beeTag = beeData.copyNbt();
 
-                for (BeehiveBlockEntity.BeeData beeOccupant : beeList)
+                int beeTicks = beeOccupant.ticksInHive();
+                //String beeId = beeTag.getString("id");
+                // should always equal minecraft:bee
+                String beeName = "";
+                int beeAge = -1;
+
+                if (beeTag.contains("CustomName", Constants.NBT.TAG_STRING))
                 {
-                    NbtComponent beeData = beeOccupant.entityData();
-                    NbtCompound beeTag = beeData.copyNbt();
-
-                    int beeTicks = beeOccupant.ticksInHive();
-                    //String beeId = beeTag.getString("id");
-                    // should always equal minecraft:bee
-                    String beeName = "";
-                    int beeAge = -1;
-
-                    if (beeTag.contains("CustomName", Constants.NBT.TAG_STRING))
-                    {
-                        beeName = beeTag.getString("CustomName");
-                    }
-                    if (beeTag.contains("Age", Constants.NBT.TAG_INT))
-                    {
-                        beeAge = beeTag.getInt("Age");
-                    }
-                    if (beeAge + beeTicks < 0)
-                    {
-                        babyCount++;
-                    }
-                    //MiniHUD.printDebug("addBeeTooltip() beeId {} // beeName {}, age {}, babies: {}", beeId, beeName, beeAge, babyCount);
-
-                    if (!beeName.isEmpty())
-                    {
-                        RegistryWrapper.WrapperLookup wrapper = DataStorage.getInstance().getWorldRegistryManager();
-                        Text beeText;
-
-                        if (wrapper != DynamicRegistryManager.EMPTY)
-                        {
-                            // This tries to add formatting
-                            beeText = Text.Serialization.fromJson(beeName, wrapper);
-                        }
-                        else
-                        {
-                            // This displays the name plainly
-                            beeText = Text.of(beeName);
-                        }
-
-                        lines.add(Math.min(1, lines.size()), Text.translatable("minihud.label.bee_tooltip.name", beeText.getLiteralString()));
-                    }
+                    beeName = beeTag.getString("CustomName");
                 }
-                Text text;
-
-                if (babyCount > 0)
+                if (beeTag.contains("Age", Constants.NBT.TAG_INT))
                 {
-                    text = Text.translatable("minihud.label.bee_tooltip.count_babies", String.valueOf(count), String.valueOf(babyCount));
+                    beeAge = beeTag.getInt("Age");
                 }
-                else
+                if (beeAge + beeTicks < 0)
                 {
-                    text = Text.translatable("minihud.label.bee_tooltip.count", String.valueOf(count));
+                    babyCount++;
                 }
+                //MiniHUD.printDebug("addBeeTooltip() beeId {} // beeName {}, age {}, babies: {}", beeId, beeName, beeAge, babyCount);
 
-                lines.add(Math.min(1, lines.size()), text);
+                if (!beeName.isEmpty())
+                {
+                    Text beeText = Text.Serialization.fromJson(beeName, DataStorage.getInstance().getWorldRegistryManager());
+
+                    lines.add(Math.min(1, lines.size()), Text.translatable("minihud.label.bee_tooltip.name", beeText));
+                }
             }
+            Text text;
+
+            if (babyCount > 0)
+            {
+                text = Text.translatable("minihud.label.bee_tooltip.count_babies", String.valueOf(count), String.valueOf(babyCount));
+            }
+            else
+            {
+                text = Text.translatable("minihud.label.bee_tooltip.count", String.valueOf(count));
+            }
+
+            lines.add(Math.min(1, lines.size()), text);
         }
     }
 
     public static void addHoneyTooltip(ItemStack stack, List<Text> lines)
     {
-        ComponentMap data = stack.getComponents();
+        BlockStateComponent blockItemState = stack.getComponents().get(DataComponentTypes.BLOCK_STATE);
 
-        if (data != null && data.contains(DataComponentTypes.BLOCK_STATE))
+        if (blockItemState != null && !blockItemState.isEmpty())
         {
-            BlockStateComponent blockItemState = stack.get(DataComponentTypes.BLOCK_STATE);
+            Integer honey = blockItemState.getValue(Properties.HONEY_LEVEL);
+            String honeyLevel = "0";
 
-            if (blockItemState != null && !blockItemState.isEmpty())
+            if (honey != null && (honey >= 0 && honey <= 5))
             {
-                Integer honey = blockItemState.getValue(Properties.HONEY_LEVEL);
-                String honeyLevel = "0";
-
-                if (honey != null)
-                {
-                    if (honey >= 0 && honey <= 5)
-                    {
-                        honeyLevel = String.valueOf(honey);
-                    }
-                }
-                lines.add(Math.min(1, lines.size()), Text.translatable("minihud.label.honey_info.level", honeyLevel));
+                honeyLevel = String.valueOf(honey);
             }
+            lines.add(Math.min(1, lines.size()), Text.translatable("minihud.label.honey_info.level", honeyLevel));
         }
     }
 

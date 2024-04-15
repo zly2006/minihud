@@ -12,6 +12,7 @@ import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
@@ -37,6 +38,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.gen.structure.Structure;
+
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.payload.PayloadType;
 import fi.dy.masa.malilib.util.*;
@@ -208,13 +210,10 @@ public class DataStorage
         OverlayRendererConduitRange.INSTANCE.setNeedsUpdate();
         OverlayRendererSpawnChunks.setNeedsUpdate();
 
-        if (this.hasIntegratedServer == false)
+        if (this.hasIntegratedServer == false && RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
         {
-            if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
-            {
-                this.registerStructureChannel();
-                this.structuresNeedUpdating = true;
-            }
+            this.registerStructureChannel();
+            this.structuresNeedUpdating = true;
         }
     }
 
@@ -226,17 +225,25 @@ public class DataStorage
     public void setWorldRegistryManager(DynamicRegistryManager manager)
     {
         if (manager != null && manager != DynamicRegistryManager.EMPTY)
+        {
             this.registryManager = manager;
+        }
         else
+        {
             this.registryManager = DynamicRegistryManager.EMPTY;
+        }
     }
 
     public DynamicRegistryManager getWorldRegistryManager()
     {
         if (this.registryManager != DynamicRegistryManager.EMPTY)
+        {
             return this.registryManager;
+        }
         else
+        {
             return DynamicRegistryManager.EMPTY;
+        }
     }
 
     public void requestSpawnMetadata()
@@ -265,7 +272,7 @@ public class DataStorage
         }
         this.worldSpawn = spawn;
         this.worldSpawnValid = true;
-        MiniHUD.printDebug("DataStorage#setWorldSpawn(): set to: {}", spawn.toShortString());
+        //MiniHUD.printDebug("DataStorage#setWorldSpawn(): set to: {}", spawn.toShortString());
     }
 
     public void setSpawnChunkRadius(int radius)
@@ -294,7 +301,7 @@ public class DataStorage
                 InfoUtils.printActionbarMessage(message);
             }
             this.spawnChunkRadius = radius;
-            MiniHUD.printDebug("DataStorage#setSpawnChunkRadius(): set to: {}", radius);
+            //MiniHUD.printDebug("DataStorage#setSpawnChunkRadius(): set to: {}", radius);
         }
         else
         {
@@ -329,7 +336,7 @@ public class DataStorage
                 OverlayRendererSpawnChunks.setNeedsUpdate();
             }
             this.simulationDistance = distance;
-            MiniHUD.printDebug("DataStorage#setSimulationDistance(): set to: {}", distance);
+            //MiniHUD.printDebug("DataStorage#setSimulationDistance(): set to: {}", distance);
         }
         else
         {
@@ -362,7 +369,6 @@ public class DataStorage
         if (this.worldSeedValid == false && this.mc.isIntegratedServerRunning())
         {
             MinecraftServer server = this.mc.getServer();
-            assert server != null;
             ServerWorld worldTmp = server.getWorld(world.getRegistryKey());
 
             if (worldTmp != null)
@@ -754,7 +760,7 @@ public class DataStorage
     {
         if (this.servuxServer)
         {
-            MiniHUD.logger.info("unregisterStructureChannel: declining structures data from {}", this.serverVersion);
+            MiniHUD.printDebug("unregisterStructureChannel: declining structures data from {}", this.serverVersion);
 
             this.servuxServer = false;
             NbtCompound nbt = new NbtCompound();
@@ -809,13 +815,13 @@ public class DataStorage
         // Ignore the data from QuickCarpet if the ServuX mod is present
         if (this.servuxServer && isServux == false)
         {
-            MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): Ignoring structure data from not ServuX");
+            MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): Ignoring structure data from not Servux");
             return;
         }
 
         if (structures.getHeldType() == Constants.NBT.TAG_COMPOUND)
         {
-            //MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): list size: {}", structures.size());
+            MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): list size: {}", structures.size());
             this.structureDataTimeout = timeout + 200;
 
             long currentTime = this.mc.world.getTime();
@@ -966,8 +972,9 @@ public class DataStorage
             // Because we have nothing to render.
             if (this.getSpawnChunkRadius() == 0 && RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.getBooleanValue())
             {
-                MiniHUD.logger.warn("overlaySpawnChunkReal: toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0.");
+                MiniHUD.logger.warn("overlaySpawnChunkReal: toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0");
                 RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
+                OverlayRendererSpawnChunks.setNeedsUpdate();
             }
         }
     }

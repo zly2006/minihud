@@ -40,7 +40,7 @@ public class DebugInfoUtils
 
     public static void sendPacketDebugPath(MinecraftServer server, int entityId, Path path, float maxDistance)
     {
-        // FIXME This causes a custom_payload crash
+        // FIXME --> This causes a custom_payload crash (Unregistered Vanilla channel)
         //DebugPathCustomPayload packet = new DebugPathCustomPayload(entityId, path, maxDistance);
         //server.getPlayerManager().sendToAll(new CustomPayloadS2CPacket(packet));
     }
@@ -158,7 +158,7 @@ public class DebugInfoUtils
         {
             neighborUpdateEnabled = config.getBooleanValue();
         }
-        // FIXME Pathfinding renderer causes custom_payload crash
+        // FIXME --> Pathfinding renderer causes a custom_payload crash (Unregistered Vanilla Payload)
         /*
         else if (config == RendererToggle.DEBUG_PATH_FINDING)
         {

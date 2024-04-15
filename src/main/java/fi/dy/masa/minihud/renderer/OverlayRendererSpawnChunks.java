@@ -113,7 +113,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
             if (spawnChunkRadius == 0)
             {
                 // We have nothing to render.
-                MiniHUD.logger.warn("overlaySpawnChunkReal: toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0.");
+                MiniHUD.logger.warn("overlaySpawnChunkReal: toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0 (Nothing to render)");
 
                 RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
                 needsUpdate = false;
