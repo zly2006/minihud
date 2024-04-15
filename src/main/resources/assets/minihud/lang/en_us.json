@@ -96,7 +96,7 @@
     "minihud.label.light_level_render_condition.dim": "Dim",
     "minihud.label.light_level_render_condition.never": "Never",
     "minihud.label.light_level_render_condition.safe": "Safe",
-    "minihud.label.light_level_render_condition.spawnable": "Spawn-able",
+    "minihud.label.light_level_render_condition.spawnable": "Spawnable",
 
     "minihud.label.shape_render_type.full_block": "Full Block",
     "minihud.label.shape_render_type.inner_edge": "Inner Edge",
