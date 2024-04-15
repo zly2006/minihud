@@ -89,10 +89,10 @@ public class MiscUtils
     {
 
         if (bb == null ||
-                playerPos.getX() < (bb.getMinX() - maxRange) ||
-                playerPos.getX() > (bb.getMaxX() + maxRange) ||
-                playerPos.getZ() < (bb.getMinZ() - maxRange) ||
-                playerPos.getZ() > (bb.getMaxZ() + maxRange))
+            playerPos.getX() < (bb.getMinX() - maxRange) ||
+            playerPos.getX() > (bb.getMaxX() + maxRange) ||
+            playerPos.getZ() < (bb.getMinZ() - maxRange) ||
+            playerPos.getZ() > (bb.getMaxZ() + maxRange))
         {
             return false;
         }
@@ -104,10 +104,10 @@ public class MiscUtils
     {
 
         if (bb == null ||
-                playerPos.getX() < (bb.minX - maxRange) ||
-                playerPos.getX() > (bb.maxX + maxRange) ||
-                playerPos.getZ() < (bb.minZ - maxRange) ||
-                playerPos.getZ() > (bb.maxZ + maxRange))
+            playerPos.getX() < (bb.minX - maxRange) ||
+            playerPos.getX() > (bb.maxX + maxRange) ||
+            playerPos.getZ() < (bb.minZ - maxRange) ||
+            playerPos.getZ() > (bb.maxZ + maxRange))
         {
             return false;
         }
@@ -128,7 +128,6 @@ public class MiscUtils
         if (entityData != null)
         {
             NbtCompound tag = entityData.copyNbt();
-
             int variantId = tag.getInt(AxolotlEntity.VARIANT_KEY);
             // FIXME 1.19.3+ this is not validated now... with AIOOB it will return the entry for ID 0
             AxolotlEntity.Variant variant = AxolotlEntity.Variant.byId(variantId);
@@ -149,7 +148,7 @@ public class MiscUtils
     {
         List<BeehiveBlockEntity.BeeData> beeList = stack.getComponents().get(DataComponentTypes.BEES);
 
-        if (beeList != null && !beeList.isEmpty())
+        if (beeList != null && beeList.isEmpty() == false)
         {
             int count = beeList.size();
             int babyCount = 0;
@@ -158,10 +157,7 @@ public class MiscUtils
             {
                 NbtComponent beeData = beeOccupant.entityData();
                 NbtCompound beeTag = beeData.copyNbt();
-
                 int beeTicks = beeOccupant.ticksInHive();
-                //String beeId = beeTag.getString("id");
-                // should always equal minecraft:bee
                 String beeName = "";
                 int beeAge = -1;
 
@@ -179,7 +175,7 @@ public class MiscUtils
                 }
                 //MiniHUD.printDebug("addBeeTooltip() beeId {} // beeName {}, age {}, babies: {}", beeId, beeName, beeAge, babyCount);
 
-                if (!beeName.isEmpty())
+                if (beeName.isEmpty() == false)
                 {
                     Text beeText = Text.Serialization.fromJson(beeName, DataStorage.getInstance().getWorldRegistryManager());
 
@@ -205,7 +201,7 @@ public class MiscUtils
     {
         BlockStateComponent blockItemState = stack.getComponents().get(DataComponentTypes.BLOCK_STATE);
 
-        if (blockItemState != null && !blockItemState.isEmpty())
+        if (blockItemState != null && blockItemState.isEmpty() == false)
         {
             Integer honey = blockItemState.getValue(Properties.HONEY_LEVEL);
             String honeyLevel = "0";
@@ -214,6 +210,7 @@ public class MiscUtils
             {
                 honeyLevel = String.valueOf(honey);
             }
+
             lines.add(Math.min(1, lines.size()), Text.translatable("minihud.label.honey_info.level", honeyLevel));
         }
     }

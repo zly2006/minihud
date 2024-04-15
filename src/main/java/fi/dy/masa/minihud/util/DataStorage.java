@@ -87,6 +87,7 @@ public class DataStorage
     private final int[] blockBreakCounter = new int[100];
     private final ArrayListMultimap<StructureType, StructureData> structures = ArrayListMultimap.create();
     private final MinecraftClient mc = MinecraftClient.getInstance();
+
     private DynamicRegistryManager registryManager = DynamicRegistryManager.EMPTY;
     private BlockPos worldSpawn = BlockPos.ORIGIN;
     private final PriorityBlockingQueue<ChunkTask> taskQueue = Queues.newPriorityBlockingQueue();
@@ -343,6 +344,7 @@ public class DataStorage
             this.simulationDistance = -1;
         }
     }
+
     public boolean isWorldSeedKnown(World world)
     {
         if (this.worldSeedValid)

@@ -27,7 +27,7 @@ public abstract class MixinMinecraftServer
     }
 
     @Inject(method = "prepareStartRegion", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setSpawnPos(Lnet/minecraft/util/math/BlockPos;F)V", shift = At.Shift.AFTER))
-    private void checkSpawnChunkRadius(WorldGenerationProgressListener worldGenerationProgressListener, CallbackInfo ci)
+    private void onPrepareStartRegion(WorldGenerationProgressListener worldGenerationProgressListener, CallbackInfo ci)
     {
         if (this.getOverworld().getSpawnPos() != DataStorage.getInstance().getWorldSpawn())
         {
@@ -36,6 +36,6 @@ public abstract class MixinMinecraftServer
         if (this.getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS) != DataStorage.getInstance().getSpawnChunkRadius())
         {
             DataStorage.getInstance().setSpawnChunkRadius(this.getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS));
-            }
+        }
     }
 }
