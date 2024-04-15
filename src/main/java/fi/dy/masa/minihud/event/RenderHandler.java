@@ -20,7 +20,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.passive.AbstractHorseEntity;
+import net.minecraft.entity.passive.*;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -43,7 +43,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
-
 import fi.dy.masa.malilib.config.HudAlignment;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.interfaces.IRenderer;
@@ -657,6 +656,28 @@ public class RenderHandler implements IRenderer
             }
 
             AbstractHorseEntity horse = (AbstractHorseEntity) vehicle;
+            String AnimalType;
+
+            if (horse instanceof CamelEntity)
+            {
+                AnimalType = "Camel";
+            }
+            else if (horse instanceof DonkeyEntity)
+            {
+                AnimalType = "Donkey";
+            }
+            else if (horse instanceof MuleEntity)
+            {
+                AnimalType = "Mule";
+            }
+            else if (horse instanceof LlamaEntity || horse instanceof TraderLlamaEntity)
+            {
+                AnimalType = "Llama";
+            }
+            else
+            {
+                AnimalType = "Horse";
+            }
 
             if (horse.isSaddled())
             {
@@ -664,7 +685,7 @@ public class RenderHandler implements IRenderer
                 {
                     float speed = horse.getMovementSpeed();
                     speed *= 42.163f;
-                    this.addLine(String.format("Horse Speed: %.3f m/s", speed));
+                    this.addLine(String.format(AnimalType+" Speed: %.3f m/s", speed));
                 }
 
                 if (InfoToggle.HORSE_JUMP.getBooleanValue())
@@ -675,7 +696,7 @@ public class RenderHandler implements IRenderer
                             3.689713992d * jump * jump +
                             2.128599134d * jump +
                             -0.343930367;
-                    this.addLine(String.format("Horse Jump: %.3f m", calculatedJumpHeight));
+                    this.addLine(String.format(AnimalType+" Jump: %.3f m", calculatedJumpHeight));
                 }
 
                 this.addedTypes.add(InfoToggle.HORSE_SPEED);
