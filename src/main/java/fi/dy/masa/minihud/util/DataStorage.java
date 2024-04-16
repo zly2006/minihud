@@ -779,8 +779,7 @@ public class DataStorage
 
             NbtCompound nbt = new NbtCompound();
             ServuxStructuresHandler.getInstance().setRegister(true);
-
-            nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_METADATA);
+            nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_REGISTER);
             nbt.putString("version", Reference.MOD_STRING);
 
             ServuxStructuresHandler.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
@@ -791,12 +790,11 @@ public class DataStorage
     {
         if (this.servuxServer)
         {
-            MiniHUD.printDebug("unregisterStructureChannel: declining structures data from {}", this.serverVersion);
+            MiniHUD.printDebug("unregisterStructureChannel: from {}", this.serverVersion);
 
             this.servuxServer = false;
             NbtCompound nbt = new NbtCompound();
-            ServuxStructuresHandler.getInstance().setRegister(false);
-            nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_DECLINED);
+            nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_UNREGISTER);
 
             ServuxStructuresHandler.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
         }

@@ -102,14 +102,15 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
 
                 if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() && this.register)
                 {
-                    NbtCompound nbt = new NbtCompound();
-
                     this.servuxRegistered = true;
                     DataStorage.getInstance().setIsServuxServer();
 
                     MiniHUD.logger.info("ServuxStructuresHandler: accepting structures from server version {}", data.getString("servux"));
+                    /*
+                    NbtCompound nbt = new NbtCompound();
                     nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_ACCEPT);
                     encodeC2SNbtCompound(type, nbt);
+                     */
                 }
             }
             else
@@ -124,19 +125,6 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
             DataStorage.getInstance().setServerVersion(data.getString("servux"));
             DataStorage.getInstance().setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
             DataStorage.getInstance().setSpawnChunkRadius(data.getInt("spawnChunkRadius"));
-        }
-        else if (packetType == PacketType.Structures.PACKET_S2C_METADATA_PING)
-        {
-            MiniHUD.printDebug("ServuxStructuresHandler#decodeC2SNbtCompound(): received a METADATA_PING packet.");
-
-            NbtCompound pong = new NbtCompound();
-            pong.putInt("packetType", PacketType.Structures.PACKET_C2S_METADATA_PONG);
-
-            encodeC2SNbtCompound(type, pong);
-        }
-        else if (packetType == PacketType.Structures.PACKET_C2S_METADATA_PONG)
-        {
-            MiniHUD.printDebug("ServuxStructuresHandler#decodeC2SNbtCompound(): received a METADATA_PONG packet.");
         }
         else if (packetType == PacketType.Structures.PACKET_S2C_STRUCTURE_DATA)
         {
