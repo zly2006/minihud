@@ -24,23 +24,21 @@ import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.util.DataStorage;
 
 @Environment(EnvType.CLIENT)
-public abstract class ServuxStructuresPlayListener<T extends CustomPayload> implements IPluginClientPlayHandler<T>
+public abstract class ServuxStructuresHandler<T extends CustomPayload> implements IPluginClientPlayHandler<T>
 {
-    private final static ServuxStructuresPlayListener<ServuxStructuresPayload> INSTANCE = new ServuxStructuresPlayListener<>()
+    private final static ServuxStructuresHandler<ServuxStructuresPayload> INSTANCE = new ServuxStructuresHandler<>()
     {
         @Override
         public void receive(ServuxStructuresPayload payload, ClientPlayNetworking.Context context)
         {
-            CallbackInfo ci = new CallbackInfo("ServuxStructuresPlayListener",false);
-
-            ServuxStructuresPlayListener.INSTANCE.receiveS2CPlayPayload(PayloadType.SERVUX_STRUCTURES, payload, context);
+            ServuxStructuresHandler.INSTANCE.receiveS2CPlayPayload(PayloadType.SERVUX_STRUCTURES, payload, context);
         }
     };
-    public static ServuxStructuresPlayListener<ServuxStructuresPayload> getInstance() { return INSTANCE; }
+    public static ServuxStructuresHandler<ServuxStructuresPayload> getInstance() { return INSTANCE; }
 
-    private int timeout;
-    private boolean register;
     private boolean servuxRegistered;
+    private boolean register;
+    private int timeout;
 
     @Override
     public PayloadType getPayloadType() {
@@ -95,7 +93,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
 
             if (version == PacketType.Structures.PROTOCOL_VERSION)
             {
-                MiniHUD.printDebug("ServuxStructuresPlayListener#decodeS2CNbtCompound(): received METADATA packet Version {}, of size in bytes: {}.", version, data.getSizeInBytes());
+                MiniHUD.printDebug("ServuxStructuresHandler#decodeS2CNbtCompound(): received \"{}\" METADATA packet Version {}, of size in bytes: {}.", data.getString("name"), version, data.getSizeInBytes());
 
                 this.timeout = data.getInt("timeout");
                 DataStorage.getInstance().setServerVersion(data.getString("servux"));
@@ -109,34 +107,47 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
                     this.servuxRegistered = true;
                     DataStorage.getInstance().setIsServuxServer();
 
-                    MiniHUD.logger.info("ServuxStructuresPlayListener: accepting structures from server version {}", data.getString("servux"));
+                    MiniHUD.logger.info("ServuxStructuresHandler: accepting structures from server version {}", data.getString("servux"));
                     nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_ACCEPT);
                     encodeC2SNbtCompound(type, nbt);
                 }
             }
             else
             {
-                MiniHUD.logger.warn("ServuxStructuresPlayListener#decodeS2CNbtCompound(): Received invalid Structures Metadata (version: {})", version);
+                MiniHUD.logger.warn("ServuxStructuresHandler#decodeS2CNbtCompound(): Received invalid Structures Metadata (version: {})", version);
             }
         }
         else if (packetType == PacketType.Structures.PACKET_S2C_SPAWN_METADATA)
         {
-            MiniHUD.printDebug("ServuxStructuresPlayListener#decodeS2CNbtCompound(): received SPAWN_METADATA packet, of size in bytes: {}.", data.getSizeInBytes());
+            MiniHUD.printDebug("ServuxStructuresHandler#decodeS2CNbtCompound(): received SPAWN_METADATA packet, of size in bytes: {}.", data.getSizeInBytes());
 
             DataStorage.getInstance().setServerVersion(data.getString("servux"));
             DataStorage.getInstance().setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
             DataStorage.getInstance().setSpawnChunkRadius(data.getInt("spawnChunkRadius"));
         }
+        else if (packetType == PacketType.Structures.PACKET_S2C_METADATA_PING)
+        {
+            MiniHUD.printDebug("ServuxStructuresHandler#decodeC2SNbtCompound(): received a METADATA_PING packet.");
+
+            NbtCompound pong = new NbtCompound();
+            pong.putInt("packetType", PacketType.Structures.PACKET_C2S_METADATA_PONG);
+
+            encodeC2SNbtCompound(type, pong);
+        }
+        else if (packetType == PacketType.Structures.PACKET_C2S_METADATA_PONG)
+        {
+            MiniHUD.printDebug("ServuxStructuresHandler#decodeC2SNbtCompound(): received a METADATA_PONG packet.");
+        }
         else if (packetType == PacketType.Structures.PACKET_S2C_STRUCTURE_DATA)
         {
-            MiniHUD.printDebug("ServuxStructuresPlayListener#decodeS2CNbtCompound(): received STRUCTURE_DATA packet, of size in bytes: {}.", data.getSizeInBytes());
+            MiniHUD.printDebug("ServuxStructuresHandler#decodeS2CNbtCompound(): received STRUCTURE_DATA packet, of size in bytes: {}.", data.getSizeInBytes());
 
             NbtList structures = data.getList("Structures", Constants.NBT.TAG_COMPOUND);
             DataStorage.getInstance().addOrUpdateStructuresFromServer(structures, this.timeout, true);
         }
         else
         {
-            MiniHUD.logger.warn("ServuxStructuresPlayListener#decodeS2CNbtCompound(): received unhandled packetType {} of size {} bytes.", packetType, data.getSizeInBytes());
+            MiniHUD.logger.warn("ServuxStructuresHandler#decodeS2CNbtCompound(): received unhandled packetType {} of size {} bytes.", packetType, data.getSizeInBytes());
         }
     }
 
@@ -145,7 +156,7 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
     {
         ServuxStructuresPayload payload = new ServuxStructuresPayload(data);
 
-        ServuxStructuresPlayListener.INSTANCE.sendC2SPlayPayload(type, payload);        // Fabric API method
+        ServuxStructuresHandler.INSTANCE.sendC2SPlayPayload(type, payload);        // Fabric API method
     }
 
     public void sendC2SPlayPayload(PayloadType type, ServuxStructuresPayload payload)
@@ -153,6 +164,10 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         if (ClientPlayNetworking.canSend(payload.getId()))
         {
             ClientPlayNetworking.send(payload);
+        }
+        else
+        {
+            MiniHUD.logger.error("ServuxStructuresHandler#sendS2CPlayPayload(): [API].canSend() is FALSE type: {}", type.toString());
         }
     }
 
@@ -163,6 +178,10 @@ public abstract class ServuxStructuresPlayListener<T extends CustomPayload> impl
         if (handler != null && handler.accepts(packet))
         {
             handler.sendPacket(packet);
+        }
+        else
+        {
+            MiniHUD.logger.error("ServuxStructuresHandler#sendS2CPlayPayload(): [Handler].accepts() is FALSE type: {}", type.toString());
         }
     }
 

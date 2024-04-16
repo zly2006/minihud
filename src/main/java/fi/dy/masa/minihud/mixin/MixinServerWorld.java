@@ -12,8 +12,7 @@ import fi.dy.masa.minihud.util.DataStorage;
 @Mixin(ServerWorld.class)
 public class MixinServerWorld
 {
-    @Shadow
-    private int spawnChunkRadius;
+    @Shadow private int spawnChunkRadius;
 
     @Inject(method = "setSpawnPos", at = @At("TAIL"))
     private void minihud_checkSpawnPos(BlockPos pos, float angle, CallbackInfo ci)

@@ -10,7 +10,7 @@ import fi.dy.masa.malilib.network.payload.channel.ServuxStructuresPayload;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.event.*;
 import fi.dy.masa.minihud.hotkeys.KeyCallbacks;
-import fi.dy.masa.minihud.network.ServuxStructuresPlayListener;
+import fi.dy.masa.minihud.network.ServuxStructuresHandler;
 
 public class InitHandler implements IInitializationHandler
 {
@@ -36,7 +36,7 @@ public class InitHandler implements IInitializationHandler
         TickHandler.getInstance().registerClientTickHandler(new ClientTickHandler());
 
         PayloadManager.getInstance().register(PayloadType.SERVUX_STRUCTURES,"servux", "structures");
-        ServuxStructuresPlayListener<ServuxStructuresPayload> servuxStructuresListener = ServuxStructuresPlayListener.getInstance();
+        ServuxStructuresHandler<ServuxStructuresPayload> servuxStructuresListener = ServuxStructuresHandler.getInstance();
         ClientPlayHandler.getInstance().registerClientPlayHandler(servuxStructuresListener);
 
         KeyCallbacks.init();
