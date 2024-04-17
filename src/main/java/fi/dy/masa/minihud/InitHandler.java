@@ -3,14 +3,10 @@ package fi.dy.masa.minihud;
 import fi.dy.masa.malilib.config.ConfigManager;
 import fi.dy.masa.malilib.event.*;
 import fi.dy.masa.malilib.interfaces.IInitializationHandler;
-import fi.dy.masa.malilib.network.handler.client.ClientPlayHandler;
-import fi.dy.masa.malilib.network.payload.PayloadManager;
-import fi.dy.masa.malilib.network.payload.PayloadType;
-import fi.dy.masa.malilib.network.payload.channel.ServuxStructuresPayload;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.event.*;
 import fi.dy.masa.minihud.hotkeys.KeyCallbacks;
-import fi.dy.masa.minihud.network.ServuxStructuresHandler;
+import fi.dy.masa.minihud.util.DataStorage;
 
 public class InitHandler implements IInitializationHandler
 {
@@ -18,6 +14,8 @@ public class InitHandler implements IInitializationHandler
     public void registerModHandlers()
     {
         ConfigManager.getInstance().registerConfigHandler(Reference.MOD_ID, new Configs());
+        DataStorage.getInstance().onGameInit();
+
         InputEventHandler.getKeybindManager().registerKeybindProvider(InputHandler.getInstance());
         InputEventHandler.getInputManager().registerMouseInputHandler(InputHandler.getInstance());
 
@@ -34,10 +32,6 @@ public class InitHandler implements IInitializationHandler
         ServerHandler.getInstance().registerServerHandler(serverListener);
 
         TickHandler.getInstance().registerClientTickHandler(new ClientTickHandler());
-
-        PayloadManager.getInstance().register(PayloadType.SERVUX_STRUCTURES,"servux", "structures");
-        ServuxStructuresHandler<ServuxStructuresPayload> servuxStructuresListener = ServuxStructuresHandler.getInstance();
-        ClientPlayHandler.getInstance().registerClientPlayHandler(servuxStructuresListener);
 
         KeyCallbacks.init();
     }

@@ -40,7 +40,12 @@ import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.gen.structure.Structure;
 
 import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.network.NetworkReference;
+import fi.dy.masa.malilib.network.handler.client.ClientPlayHandler;
+import fi.dy.masa.malilib.network.handler.client.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.network.payload.PayloadManager;
 import fi.dy.masa.malilib.network.payload.PayloadType;
+import fi.dy.masa.malilib.network.payload.channel.ServuxStructuresPayload;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
@@ -61,9 +66,9 @@ public class DataStorage
 
     private static final DataStorage INSTANCE = new DataStorage();
     private final MobCapDataHandler mobCapData = new MobCapDataHandler();
+    private final static ServuxStructuresHandler<ServuxStructuresPayload> HANDLER = ServuxStructuresHandler.getInstance();
     private boolean worldSeedValid = false;
     private boolean hasIntegratedServer = false;
-    private boolean hasOpenToLan = false;
     private boolean carpetServer = false;
     private boolean servuxServer = false;
     private int spawnChunkRadius = -1;
@@ -94,6 +99,7 @@ public class DataStorage
     private final PriorityBlockingQueue<ChunkTask> taskQueue = Queues.newPriorityBlockingQueue();
     private final Thread workerThread;
     private final ThreadWorker worker;
+    private int timeout;
 
     private DataStorage()
     {
@@ -106,6 +112,16 @@ public class DataStorage
     {
         return INSTANCE;
     }
+
+    public void onGameInit()
+    {
+        PayloadManager.getInstance().register(this.getNetworkChannel(), "servux", "structures");
+        ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
+    }
+
+    public PayloadType getNetworkChannel() { return PayloadType.SERVUX_STRUCTURES; }
+
+    public IPluginClientPlayHandler<ServuxStructuresPayload> getPacketHandler() { return HANDLER; }
 
     public MobCapDataHandler getMobCapData()
     {
@@ -131,7 +147,6 @@ public class DataStorage
             }
             */
             this.hasIntegratedServer = false;
-            this.hasOpenToLan = false;
             this.servuxServer = false;
             this.structureDataTimeout = 30 * 20;
             this.spawnChunkRadius = -1;
@@ -156,8 +171,9 @@ public class DataStorage
         this.lastStructureUpdatePos = null;
         this.structures.clear();
         this.clearTasks();
+        this.timeout = -1;
 
-        ServuxStructuresHandler.getInstance().reset(PayloadType.SERVUX_STRUCTURES);
+        HANDLER.reset(PayloadType.SERVUX_STRUCTURES);
 
         ShapeManager.INSTANCE.clear();
         OverlayRendererBeaconRange.INSTANCE.clear();
@@ -207,13 +223,19 @@ public class DataStorage
         }
     }
 
+    public void onWorldPre()
+    {
+        HANDLER.registerPlayHandler(this.getNetworkChannel());
+    }
+
     public void onWorldJoin()
     {
         OverlayRendererBeaconRange.INSTANCE.setNeedsUpdate();
         OverlayRendererConduitRange.INSTANCE.setNeedsUpdate();
         OverlayRendererSpawnChunks.setNeedsUpdate();
 
-        if (this.hasIntegratedServer == false && RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
+        if (NetworkReference.getInstance().isIntegrated() == false && NetworkReference.getInstance().isOpenToLan() == false &&
+            RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
         {
             this.registerStructureChannel();
             this.structuresNeedUpdating = true;
@@ -251,13 +273,13 @@ public class DataStorage
 
     public void requestSpawnMetadata()
     {
-        if (!this.hasIntegratedServer && DataStorage.getInstance().hasServuxServer())
+        if (NetworkReference.getInstance().isIntegrated() == false && this.hasServuxServer())
         {
             NbtCompound nbt = new NbtCompound();
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_SPAWN_METADATA);
             nbt.putString("version", Reference.MOD_STRING);
 
-            ServuxStructuresHandler.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
+            HANDLER.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
         }
     }
 
@@ -301,12 +323,12 @@ public class DataStorage
                 }
                 message = StringUtils.translate("minihud.message.spawn_chunk_radius_set", strRadius) + rst;
 
-                OverlayRendererSpawnChunks.setNeedsUpdate();
                 InfoUtils.printActionbarMessage(message);
+                OverlayRendererSpawnChunks.setNeedsUpdate();
             }
             this.spawnChunkRadius = radius;
             this.spawnChunkRadiusValid = true;
-            //MiniHUD.printDebug("DataStorage#setSpawnChunkRadius(): set to: [{}]", radius);
+            MiniHUD.printDebug("DataStorage#setSpawnChunkRadius(): set to: [{}]", radius);
         }
         else
         {
@@ -396,7 +418,7 @@ public class DataStorage
      */
     public void checkWorldSeed(MinecraftServer server)
     {
-        if (this.hasIntegratedServer())
+        if (NetworkReference.getInstance().isIntegrated())
         {
             ServerWorld worldTmp = server.getOverworld();
 
@@ -430,7 +452,7 @@ public class DataStorage
 
     public int getSpawnChunkRadius()
     {
-        if (this.spawnChunkRadius > 0)
+        if (this.spawnChunkRadius > -1)
         {
             return this.spawnChunkRadius;
         }
@@ -459,16 +481,6 @@ public class DataStorage
     }
 
     public void setIntegratedServer(boolean toggle) { this.hasIntegratedServer = toggle; }
-
-    public boolean hasOpenToLan()
-    {
-        return this.hasOpenToLan;
-    }
-
-    public void setOpenToLan(boolean toggle)
-    {
-        this.hasOpenToLan = toggle;
-    }
 
     public boolean hasTPSData()
     {
@@ -757,8 +769,6 @@ public class DataStorage
                 {
                     if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                     {
-                        MiniHUD.printDebug("DataStorage#updateStructureData(): register channel");
-
                         this.registerStructureChannel();
                         this.structuresNeedUpdating = true;
                     }
@@ -773,16 +783,53 @@ public class DataStorage
     {
         this.shouldRegisterStructureChannel = true;
 
-        if (!this.servuxServer && this.hasIntegratedServer() == false)
+        if (this.servuxServer == false && NetworkReference.getInstance().isIntegrated() == false)
         {
-            MiniHUD.printDebug("registerStructureChannel(): sending REQUEST_METADATA packet");
+            HANDLER.registerPlayHandler(this.getNetworkChannel());
+
+            //MiniHUD.printDebug("registerStructureChannel(): sending STRUCTURES_REGISTER packet");
 
             NbtCompound nbt = new NbtCompound();
-            ServuxStructuresHandler.getInstance().setRegister(true);
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_REGISTER);
             nbt.putString("version", Reference.MOD_STRING);
 
-            ServuxStructuresHandler.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
+            HANDLER.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
+        }
+    }
+
+    public boolean receiveServuxMetadata(NbtCompound data)
+    {
+        if (this.servuxServer == false && NetworkReference.getInstance().isIntegrated() == false &&
+            this.shouldRegisterStructureChannel)
+        {
+            //MiniHUD.printDebug("checkServuxMetadata: received METADATA");
+            if (data.getInt("version") != PacketType.Structures.PROTOCOL_VERSION)
+            {
+                MiniHUD.logger.warn("structureChannel: Mis-matched protocol version!");
+            }
+            this.timeout = data.getInt("timeout");
+            this.setServerVersion(data.getString("servux"));
+            this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
+            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"));
+
+            if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
+            {
+                this.setIsServuxServer();
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public void receiveSpawnMetadata(NbtCompound data)
+    {
+        if (NetworkReference.getInstance().isIntegrated() == false)
+        {
+            this.setServerVersion(data.getString("servux"));
+            this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
+            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"));
         }
     }
 
@@ -790,13 +837,13 @@ public class DataStorage
     {
         if (this.servuxServer)
         {
-            MiniHUD.printDebug("unregisterStructureChannel: from {}", this.serverVersion);
+            //MiniHUD.printDebug("unregisterStructureChannel: from {}", this.serverVersion);
 
             this.servuxServer = false;
             NbtCompound nbt = new NbtCompound();
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_UNREGISTER);
 
-            ServuxStructuresHandler.getInstance().encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
+            HANDLER.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
         }
         this.shouldRegisterStructureChannel = false;
     }
@@ -839,19 +886,19 @@ public class DataStorage
         this.structuresNeedUpdating = false;
     }
 
-    public void addOrUpdateStructuresFromServer(NbtList structures, int timeout, boolean isServux)
+    public void addOrUpdateStructuresFromServer(NbtList structures, boolean isServux)
     {
         // Ignore the data from QuickCarpet if the ServuX mod is present
         if (this.servuxServer && isServux == false)
         {
-            MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): Ignoring structure data from not Servux");
+            //MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): Ignoring structure data from not ServuX");
             return;
         }
 
         if (structures.getHeldType() == Constants.NBT.TAG_COMPOUND)
         {
-            MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): list size: {}", structures.size());
-            this.structureDataTimeout = timeout + 200;
+            //MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): list size: {}", structures.size());
+            this.structureDataTimeout = this.timeout + 200;
 
             long currentTime = this.mc.world.getTime();
             final int count = structures.size();
@@ -890,7 +937,7 @@ public class DataStorage
 
         if (countBefore != countAfter)
         {
-            MiniHUD.printDebug("DataStorage#removeExpiredStructures(): before: {}, after: {}", countBefore, countAfter);
+            //MiniHUD.printDebug("DataStorage#removeExpiredStructures(): before: {}, after: {}", countBefore, countAfter);
         }
     }
 
@@ -1002,7 +1049,7 @@ public class DataStorage
             Vec3d spawnVec3d = JsonUtils.vec3dFromJson(obj, "spawn_pos");
             BlockPos spawnTmp = new BlockPos((int) spawnVec3d.getX(), (int) spawnVec3d.getY(), (int) spawnVec3d.getZ());
 
-            if (this.hasIntegratedServer() && this.isWorldSpawnKnown() && spawnTmp.equals(this.worldSpawn) == false)
+            if (NetworkReference.getInstance().isIntegrated() && this.isWorldSpawnKnown() && spawnTmp.equals(this.worldSpawn) == false)
             {
                 MiniHUD.logger.warn("fromJson: ignoring stale loaded SpawnPos [{}], keeping [{}] as valid from the integrated server", spawnTmp.toShortString(), this.worldSpawn.toShortString());
             }
@@ -1015,7 +1062,7 @@ public class DataStorage
         {
             long seedTmp = JsonUtils.getLong(obj, "seed");
 
-            if (this.hasIntegratedServer() && this.hasStoredWorldSeed() && this.worldSeed != seedTmp)
+            if (NetworkReference.getInstance().isIntegrated() && this.hasStoredWorldSeed() && this.worldSeed != seedTmp)
             {
                 MiniHUD.logger.warn("fromJson: ignoring stale loaded WorldSeed [{}], keeping [{}] as valid from the integrated server", seedTmp, this.worldSeed);
             }
@@ -1028,7 +1075,7 @@ public class DataStorage
         {
             int spawnRadiusTmp = JsonUtils.getIntegerOrDefault(obj, "spawn_chunk_radius", 2);
 
-            if (this.hasIntegratedServer() && this.isSpawnChunkRadiusKnown() && this.spawnChunkRadius != spawnRadiusTmp)
+            if (NetworkReference.getInstance().isIntegrated() && this.isSpawnChunkRadiusKnown() && this.spawnChunkRadius != spawnRadiusTmp)
             {
                 MiniHUD.logger.warn("fromJson: ignoring stale loaded Spawn Chunk Radius [{}], keeping [{}] as valid from the integrated server", spawnRadiusTmp, this.spawnChunkRadius);
             }

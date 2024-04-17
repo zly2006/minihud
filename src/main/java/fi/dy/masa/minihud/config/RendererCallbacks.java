@@ -7,6 +7,7 @@ import net.minecraft.util.math.Vec3d;
 
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.network.NetworkReference;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
@@ -171,7 +172,7 @@ public class RendererCallbacks
 
         if (mc != null && mc.player != null)
         {
-            if (mc.isIntegratedServerRunning() == false)
+            if (mc.isIntegratedServerRunning() == false && NetworkReference.getInstance().isIntegrated() == false)
             {
                 if (config.getBooleanValue())
                 {
