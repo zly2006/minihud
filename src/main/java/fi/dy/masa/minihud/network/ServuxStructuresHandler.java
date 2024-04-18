@@ -28,16 +28,16 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
         @Override
         public void receive(ServuxStructuresPayload payload, ClientPlayNetworking.Context context)
         {
-            ServuxStructuresHandler.INSTANCE.receiveS2CPlayPayload(PayloadType.SERVUX_STRUCTURES, payload, context);
+            ServuxStructuresHandler.INSTANCE.receiveS2CPlayPayload(payload, context);
         }
     };
     public static ServuxStructuresHandler<ServuxStructuresPayload> getInstance() { return INSTANCE; }
+    private boolean servuxRegistered;
+
     @Override
     public PayloadType getPayloadType() {
         return PayloadType.SERVUX_STRUCTURES;
     }
-
-    private boolean servuxRegistered;
 
     @Override
     public void decodeS2CNbtCompound(PayloadType type, NbtCompound data)
@@ -119,18 +119,19 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     }
 
     @Override
-    public <P extends CustomPayload> void receiveS2CPlayPayload(PayloadType type, P payload, ClientPlayNetworking.Context ctx)
+    public <P extends CustomPayload> void receiveS2CPlayPayload(P payload, ClientPlayNetworking.Context ctx)
     {
         ((ClientPlayHandler<?>) ClientPlayHandler.getInstance()).decodeS2CNbtCompound(PayloadType.SERVUX_STRUCTURES, ((ServuxStructuresPayload) payload).data());
     }
 
     @Override
-    public void encodeC2SNbtCompound(PayloadType type, NbtCompound data)
+    public void encodeC2SNbtCompound(NbtCompound data)
     {
-        this.sendC2SPlayPayload(new ServuxStructuresPayload(data));
+        ServuxStructuresHandler.INSTANCE.sendC2SPlayPayload(new ServuxStructuresPayload(data));
     }
 
-    public void sendC2SPlayPayload(ServuxStructuresPayload payload)
+    @Override
+    public <P extends CustomPayload> void sendC2SPlayPayload(P payload)
     {
         if (ClientPlayNetworking.canSend(payload.getId()))
         {
@@ -138,7 +139,8 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
         }
     }
 
-    public void sendC2SPlayPayload(ServuxStructuresPayload payload, ClientPlayNetworkHandler handler)
+    @Override
+    public <P extends CustomPayload> void sendC2SPlayPayload(P payload, ClientPlayNetworkHandler handler)
     {
         Packet<?> packet = new CustomPayloadS2CPacket(payload);
 

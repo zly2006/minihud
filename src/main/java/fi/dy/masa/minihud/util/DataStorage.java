@@ -115,7 +115,7 @@ public class DataStorage
 
     public void onGameInit()
     {
-        PayloadManager.getInstance().register(this.getNetworkChannel(), "servux", "structures");
+        PayloadManager.getInstance().register(this.getNetworkChannel(), new Identifier("servux", "structures"));
         ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
     }
 
@@ -213,7 +213,7 @@ public class DataStorage
 
     public void setServerVersion(String ver)
     {
-        if (ver != null && !ver.isEmpty())
+        if (ver != null && ver.isEmpty() == false)
         {
             this.serverVersion = ver;
         }
@@ -279,7 +279,7 @@ public class DataStorage
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_REQUEST_SPAWN_METADATA);
             nbt.putString("version", Reference.MOD_STRING);
 
-            HANDLER.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
+            HANDLER.encodeC2SNbtCompound(nbt);
         }
     }
 
@@ -787,13 +787,13 @@ public class DataStorage
         {
             HANDLER.registerPlayHandler(this.getNetworkChannel());
 
-            //MiniHUD.printDebug("registerStructureChannel(): sending STRUCTURES_REGISTER packet");
+            MiniHUD.printDebug("registerStructureChannel(): sending STRUCTURES_REGISTER packet");
 
             NbtCompound nbt = new NbtCompound();
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_REGISTER);
             nbt.putString("version", Reference.MOD_STRING);
 
-            HANDLER.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
+            HANDLER.encodeC2SNbtCompound(nbt);
         }
     }
 
@@ -802,7 +802,7 @@ public class DataStorage
         if (this.servuxServer == false && NetworkReference.getInstance().isIntegrated() == false &&
             this.shouldRegisterStructureChannel)
         {
-            //MiniHUD.printDebug("checkServuxMetadata: received METADATA");
+            MiniHUD.printDebug("checkServuxMetadata: received METADATA");
             if (data.getInt("version") != PacketType.Structures.PROTOCOL_VERSION)
             {
                 MiniHUD.logger.warn("structureChannel: Mis-matched protocol version!");
@@ -811,13 +811,17 @@ public class DataStorage
             this.setServerVersion(data.getString("servux"));
             this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
             this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"));
+            this.setIsServuxServer();
 
             if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
             {
-                this.setIsServuxServer();
+                this.registerStructureChannel();
+                return true;
             }
-
-            return true;
+            else
+            {
+                this.unregisterStructureChannel();
+            }
         }
 
         return false;
@@ -835,15 +839,16 @@ public class DataStorage
 
     public void unregisterStructureChannel()
     {
-        if (this.servuxServer)
+        if (this.servuxServer || RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() == false)
         {
-            //MiniHUD.printDebug("unregisterStructureChannel: from {}", this.serverVersion);
+            MiniHUD.printDebug("unregisterStructureChannel: for {}", this.serverVersion);
 
             this.servuxServer = false;
             NbtCompound nbt = new NbtCompound();
             nbt.putInt("packetType", PacketType.Structures.PACKET_C2S_STRUCTURES_UNREGISTER);
 
-            HANDLER.encodeC2SNbtCompound(PayloadType.SERVUX_STRUCTURES, nbt);
+            HANDLER.encodeC2SNbtCompound(nbt);
+            HANDLER.reset(PayloadType.SERVUX_STRUCTURES);
         }
         this.shouldRegisterStructureChannel = false;
     }
@@ -888,10 +893,10 @@ public class DataStorage
 
     public void addOrUpdateStructuresFromServer(NbtList structures, boolean isServux)
     {
-        // Ignore the data from QuickCarpet if the ServuX mod is present
-        if (this.servuxServer && isServux == false)
+        if (isServux == false)
         {
-            //MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): Ignoring structure data from not ServuX");
+            MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): Ignoring structure data when isServuX is false");
+            this.unregisterStructureChannel();
             return;
         }
 

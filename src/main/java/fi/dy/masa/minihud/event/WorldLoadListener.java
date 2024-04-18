@@ -1,20 +1,17 @@
 package fi.dy.masa.minihud.event;
 
-import java.io.File;
 import javax.annotation.Nullable;
+import java.io.File;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.nbt.NbtCompound;
 import fi.dy.masa.malilib.interfaces.IWorldLoadListener;
-import fi.dy.masa.malilib.network.payload.PayloadType;
 import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.network.TestClientHandler;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.renderer.RenderContainer;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
@@ -39,7 +36,6 @@ public class WorldLoadListener implements IWorldLoadListener
         if (worldAfter != null)
         {
             DataStorage.getInstance().onWorldPre();
-            TestClientHandler.getInstance().registerPlayHandler(PayloadType.MALILIB_TEST);
         }
     }
 
@@ -63,10 +59,6 @@ public class WorldLoadListener implements IWorldLoadListener
 
             DataStorage.getInstance().onWorldJoin();
             DataStorage.getInstance().setWorldRegistryManager(worldAfter.getRegistryManager());
-
-            NbtCompound nbt = new NbtCompound();
-            nbt.putString("message", "onWorldJoin test message from "+ Reference.MOD_STRING);
-            TestClientHandler.getInstance().encodeC2SNbtCompound(PayloadType.MALILIB_TEST, nbt);
         }
     }
 
