@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
@@ -87,7 +86,6 @@ public class MiscUtils
 
     public static boolean isStructureWithinRange(@Nullable BlockBox bb, BlockPos playerPos, int maxRange)
     {
-
         if (bb == null ||
             playerPos.getX() < (bb.getMinX() - maxRange) ||
             playerPos.getX() > (bb.getMaxX() + maxRange) ||
@@ -102,7 +100,6 @@ public class MiscUtils
 
     public static boolean isStructureWithinRange(@Nullable IntBoundingBox bb, BlockPos playerPos, int maxRange)
     {
-
         if (bb == null ||
             playerPos.getX() < (bb.minX - maxRange) ||
             playerPos.getX() > (bb.maxX + maxRange) ||
@@ -173,12 +170,10 @@ public class MiscUtils
                 {
                     babyCount++;
                 }
-                //MiniHUD.printDebug("addBeeTooltip() beeId {} // beeName {}, age {}, babies: {}", beeId, beeName, beeAge, babyCount);
 
                 if (beeName.isEmpty() == false)
                 {
                     Text beeText = Text.Serialization.fromJson(beeName, DataStorage.getInstance().getWorldRegistryManager());
-
                     lines.add(Math.min(1, lines.size()), Text.translatable("minihud.label.bee_tooltip.name", beeText));
                 }
             }

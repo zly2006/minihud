@@ -43,6 +43,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
+
 import fi.dy.masa.malilib.config.HudAlignment;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.interfaces.IRenderer;
@@ -1025,14 +1026,20 @@ public class RenderHandler implements IRenderer
 
         OptionalChunk<Chunk> chunkResult = future.getNow(null);
         if (chunkResult == null)
+        {
             return null;
+        }
         else
         {
             Chunk chunk = chunkResult.orElse(null);
             if (chunk instanceof WorldChunk)
+            {
                 return (WorldChunk) chunk;
+            }
             else
+            {
                 return null;
+            }
         }
     }
 

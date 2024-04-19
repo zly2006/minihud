@@ -126,8 +126,6 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
             ent = spawnChunkRadius - 1;
         }
 
-        //MiniHUD.printDebug("OverlayRendererSpawnChunks#update(): SpawnChunkRadius calc base: {} // outer: {}, lazy: {}, entity: {}", spawnChunkRadius, outer, lazy, ent);
-
         RenderObjectBase renderQuads = this.renderObjects.get(0);
         RenderObjectBase renderLines = this.renderObjects.get(1);
         BUFFER_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);

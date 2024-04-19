@@ -3,15 +3,14 @@ package fi.dy.masa.minihud.network;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
-import fi.dy.masa.malilib.network.handler.client.ClientPlayHandler;
-import fi.dy.masa.malilib.network.handler.client.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.network.client.ClientPlayHandler;
+import fi.dy.masa.malilib.network.client.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.network.payload.PayloadCodec;
 import fi.dy.masa.malilib.network.payload.PayloadManager;
 import fi.dy.masa.malilib.network.payload.PayloadType;
@@ -46,8 +45,6 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
 
         if (packetType == PacketType.Structures.PACKET_S2C_METADATA)
         {
-            MiniHUD.printDebug("ServuxStructuresHandler#decodeS2CNbtCompound(): received \"{}\" METADATA packet Version {}, of size in bytes: {}.", data.getString("name"), data.getInt("version"), data.getSizeInBytes());
-
             if (DataStorage.getInstance().receiveServuxMetadata(data))
             {
                 this.servuxRegistered = true;
@@ -55,14 +52,10 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
         }
         else if (packetType == PacketType.Structures.PACKET_S2C_SPAWN_METADATA)
         {
-            MiniHUD.printDebug("ServuxStructuresHandler#decodeS2CNbtCompound(): received SPAWN_METADATA packet, of size in bytes: {}.", data.getSizeInBytes());
-
             DataStorage.getInstance().receiveSpawnMetadata(data);
         }
         else if (packetType == PacketType.Structures.PACKET_S2C_STRUCTURE_DATA)
         {
-            MiniHUD.printDebug("ServuxStructuresHandler#decodeS2CNbtCompound(): received STRUCTURE_DATA packet, of size in bytes: {}.", data.getSizeInBytes());
-
             NbtList structures = data.getList("Structures", Constants.NBT.TAG_COMPOUND);
             DataStorage.getInstance().addOrUpdateStructuresFromServer(structures, this.servuxRegistered);
         }
@@ -112,7 +105,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
 
         if (codec != null && codec.isPlayRegistered())
         {
-            reset(getPayloadType());
+            reset(type);
 
             PayloadManager.getInstance().unregisterPlayHandler((CustomPayload.Id<T>) ServuxStructuresPayload.TYPE);
         }
