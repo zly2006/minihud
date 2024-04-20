@@ -82,6 +82,8 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
         }
         else if (packetType == PACKET_S2C_STRUCTURE_DATA)
         {
+            MiniHUD.printDebug("ServuxStructuresHandler#decodeS2CNbtCompound(): received Structures Data payload of size {} (in bytes)", data.getSizeInBytes());
+
             NbtList structures = data.getList("Structures", Constants.NBT.TAG_COMPOUND);
             DataStorage.getInstance().addOrUpdateStructuresFromServer(structures, this.servuxRegistered);
         }
@@ -96,6 +98,8 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     {
         if (channel.equals(this.getPayloadChannel()) && this.servuxRegistered)
         {
+            MiniHUD.printDebug("reset() called for {}", channel.toString());
+
             this.servuxRegistered = false;
         }
     }
@@ -103,12 +107,10 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     @Override
     public void registerPlayPayload(Identifier channel)
     {
-        MiniHUD.logger.error("registerPlayPayload() called for {}", channel.toString());
-
         if (this.servuxRegistered == false && this.payloadRegistered == false &&
                 ClientPlayHandler.getInstance().isClientPlayChannelRegistered(this) == false)
         {
-            MiniHUD.logger.error("registerPlayPayload() registering for {}", channel.toString());
+            MiniHUD.printDebug("registerPlayPayload() registering for {}", channel.toString());
 
             PayloadTypeRegistry.playC2S().register(ServuxStructuresPayload.TYPE, ServuxStructuresPayload.CODEC);
             PayloadTypeRegistry.playS2C().register(ServuxStructuresPayload.TYPE, ServuxStructuresPayload.CODEC);
@@ -121,10 +123,10 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     @SuppressWarnings("unchecked")
     public void registerPlayHandler(Identifier channel)
     {
-        MiniHUD.logger.error("registerPlayHandler() called for {}", channel.toString());
-
         if (channel.equals(this.getPayloadChannel()) && this.payloadRegistered)
         {
+            MiniHUD.printDebug("registerPlayHandler() called for {}", channel.toString());
+
             ClientPlayNetworking.registerGlobalReceiver((CustomPayload.Id<T>) ServuxStructuresPayload.TYPE, this);
             this.servuxRegistered = true;
         }
@@ -133,12 +135,11 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     @Override
     public void unregisterPlayHandler(Identifier channel)
     {
-        MiniHUD.logger.error("unregisterPlayHandler() called for {}", channel.toString());
-
         if (channel.equals(this.getPayloadChannel()) && this.payloadRegistered)
         {
-            reset(channel);
+            MiniHUD.printDebug("unregisterPlayHandler() called for {}", channel.toString());
 
+            this.servuxRegistered = false;
             ClientPlayNetworking.unregisterGlobalReceiver(ServuxStructuresPayload.TYPE.id());
         }
     }
