@@ -4,12 +4,9 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.util.Identifier;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
@@ -67,29 +64,24 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     @Override
     public void decodeNbtCompound(Identifier channel, NbtCompound data)
     {
-        int packetType = data.getInt("packetType");
-
-        if (packetType == PACKET_S2C_METADATA)
+        switch (data.getInt("packetType"))
         {
-            if (DataStorage.getInstance().receiveServuxMetadata(data))
+            case PACKET_S2C_METADATA ->
             {
-                this.servuxRegistered = true;
+                if (DataStorage.getInstance().receiveServuxMetadata(data))
+                {
+                    this.servuxRegistered = true;
+                }
             }
-        }
-        else if (packetType == PACKET_S2C_SPAWN_METADATA)
-        {
-            DataStorage.getInstance().receiveSpawnMetadata(data);
-        }
-        else if (packetType == PACKET_S2C_STRUCTURE_DATA)
-        {
-            MiniHUD.printDebug("ServuxStructuresHandler#decodeS2CNbtCompound(): received Structures Data payload of size {} (in bytes)", data.getSizeInBytes());
+            case PACKET_S2C_SPAWN_METADATA -> DataStorage.getInstance().receiveSpawnMetadata(data);
+            case PACKET_S2C_STRUCTURE_DATA ->
+            {
+                MiniHUD.printDebug("ServuxStructuresHandler#decodeNbtCompound(): received Structures Data payload of size {} (in bytes)", data.getSizeInBytes());
 
-            NbtList structures = data.getList("Structures", Constants.NBT.TAG_COMPOUND);
-            DataStorage.getInstance().addOrUpdateStructuresFromServer(structures, this.servuxRegistered);
-        }
-        else
-        {
-            MiniHUD.logger.warn("ServuxStructuresHandler#decodeS2CNbtCompound(): received unhandled packetType {} of size {} bytes.", packetType, data.getSizeInBytes());
+                NbtList structures = data.getList("Structures", Constants.NBT.TAG_COMPOUND);
+                DataStorage.getInstance().addOrUpdateStructuresFromServer(structures, this.servuxRegistered);
+            }
+            default -> MiniHUD.logger.warn("ServuxStructuresHandler#decodeNbtCompound(): received unhandled packetType {} of size {} bytes.", data.getInt("packetType"), data.getSizeInBytes());
         }
     }
 
@@ -157,29 +149,5 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     public void encodeNbtCompound(NbtCompound data)
     {
         ServuxStructuresHandler.INSTANCE.sendPlayPayload(new ServuxStructuresPayload(data));
-    }
-
-    @Override
-    public <P extends CustomPayload> void sendPlayPayload(P payload)
-    {
-        if (payload.getId().id().equals(this.getPayloadChannel()) && this.payloadRegistered &&
-            ClientPlayNetworking.canSend(payload.getId()))
-        {
-            ClientPlayNetworking.send(payload);
-        }
-    }
-
-    @Override
-    public <P extends CustomPayload> void sendPlayPayload(P payload, ClientPlayNetworkHandler handler)
-    {
-        if (payload.getId().id().equals(this.getPayloadChannel()) && this.payloadRegistered)
-        {
-            Packet<?> packet = new CustomPayloadS2CPacket(payload);
-
-            if (handler != null && handler.accepts(packet))
-            {
-                handler.sendPacket(packet);
-            }
-        }
     }
 }

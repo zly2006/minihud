@@ -303,20 +303,23 @@ public class DataStorage
 
     public void setWorldSeed(long seed)
     {
+        if (this.worldSeed != seed)
+        {
+            MiniHUD.printDebug("DataStorage#setWorldSeed(): set world seed [{}] -> [{}]", this.worldSeed, seed);
+        }
         this.worldSeed = seed;
         this.worldSeedValid = true;
-        //MiniHUD.printDebug("DataStorage#setWorldSeed(): set to: [{}]", seed);
     }
 
     public void setWorldSpawn(BlockPos spawn)
     {
-        if (this.worldSpawn != spawn)
+        if (this.worldSpawn.equals(spawn) == false)
         {
             OverlayRendererSpawnChunks.setNeedsUpdate();
+            MiniHUD.printDebug("DataStorage#setWorldSpawn(): set world spawn [{}] -> [{}]", this.worldSpawn.toShortString(), spawn.toShortString());
         }
         this.worldSpawn = spawn;
         this.worldSpawnValid = true;
-        MiniHUD.printDebug("DataStorage#setWorldSpawn(): set to: [{}]", spawn.toShortString());
     }
 
     public void setSpawnChunkRadius(int radius)
@@ -343,10 +346,11 @@ public class DataStorage
 
                 InfoUtils.printActionbarMessage(message);
                 OverlayRendererSpawnChunks.setNeedsUpdate();
+
+                MiniHUD.printDebug("DataStorage#setSpawnChunkRadius(): set spawn radius [{}] -> [{}]", this.spawnChunkRadius, radius);
             }
             this.spawnChunkRadius = radius;
             this.spawnChunkRadiusValid = true;
-            MiniHUD.printDebug("DataStorage#setSpawnChunkRadius(): set to: [{}]", radius);
         }
         else
         {
@@ -446,7 +450,6 @@ public class DataStorage
 
                 if (seedTmp != this.worldSeed)
                 {
-                    MiniHUD.printDebug("checkWorldSeed: updating world seed [{}] -> [{}] from the IntegratedServer", this.worldSeed, seedTmp);
                     this.setWorldSeed(seedTmp);
                 }
             }

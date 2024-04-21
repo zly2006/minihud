@@ -19,7 +19,7 @@ public class MixinServerWorld
     {
         int radius = (this.spawnChunkRadius - 1);
 
-        if (DataStorage.getInstance().getWorldSpawn() != pos)
+        if (DataStorage.getInstance().getWorldSpawn().equals(pos) == false)
         {
             DataStorage.getInstance().setWorldSpawn(pos);
         }

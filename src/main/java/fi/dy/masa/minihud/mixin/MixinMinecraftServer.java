@@ -29,7 +29,7 @@ public abstract class MixinMinecraftServer
     private void onPrepareStartRegion(WorldGenerationProgressListener worldGenerationProgressListener, CallbackInfo ci,
                                       ServerWorld serverWorld, BlockPos blockPos, ServerChunkManager serverChunkManager, int i)
     {
-        if (DataStorage.getInstance().getWorldSpawn() != blockPos)
+        if (DataStorage.getInstance().getWorldSpawn().equals(blockPos) == false)
         {
             DataStorage.getInstance().setWorldSpawn(blockPos);
         }
