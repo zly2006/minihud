@@ -3,7 +3,6 @@ package fi.dy.masa.minihud.network;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.packet.CustomPayload;
@@ -97,47 +96,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     }
 
     @Override
-    public void registerPlayPayload(Identifier channel)
-    {
-        if (this.servuxRegistered == false && this.payloadRegistered == false &&
-                ClientPlayHandler.getInstance().isClientPlayChannelRegistered(this) == false)
-        {
-            MiniHUD.printDebug("registerPlayPayload() registering for {}", channel.toString());
-
-            PayloadTypeRegistry.playC2S().register(ServuxStructuresPayload.TYPE, ServuxStructuresPayload.CODEC);
-            PayloadTypeRegistry.playS2C().register(ServuxStructuresPayload.TYPE, ServuxStructuresPayload.CODEC);
-        }
-
-        this.payloadRegistered = true;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void registerPlayHandler(Identifier channel)
-    {
-        if (channel.equals(this.getPayloadChannel()) && this.payloadRegistered)
-        {
-            MiniHUD.printDebug("registerPlayHandler() called for {}", channel.toString());
-
-            ClientPlayNetworking.registerGlobalReceiver((CustomPayload.Id<T>) ServuxStructuresPayload.TYPE, this);
-            this.servuxRegistered = true;
-        }
-    }
-
-    @Override
-    public void unregisterPlayHandler(Identifier channel)
-    {
-        if (channel.equals(this.getPayloadChannel()) && this.payloadRegistered)
-        {
-            MiniHUD.printDebug("unregisterPlayHandler() called for {}", channel.toString());
-
-            this.servuxRegistered = false;
-            ClientPlayNetworking.unregisterGlobalReceiver(ServuxStructuresPayload.TYPE.id());
-        }
-    }
-
-    @Override
-    public <P extends CustomPayload> void receivePlayPayload(P payload, ClientPlayNetworking.Context ctx)
+    public void receivePlayPayload(T payload, ClientPlayNetworking.Context ctx)
     {
         if (payload.getId().id().equals(this.getPayloadChannel()))
         {

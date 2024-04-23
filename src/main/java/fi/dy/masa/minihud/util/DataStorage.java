@@ -112,11 +112,7 @@ public class DataStorage
     public void onGameInit()
     {
         ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
-
-        if (HANDLER.isPlayRegistered(this.getNetworkChannel()) == false)
-        {
-            HANDLER.registerPlayPayload(this.getNetworkChannel());
-        }
+        HANDLER.registerPlayPayload(this.getNetworkChannel(), IPluginClientPlayHandler.BOTH_CLIENT, ServuxStructuresPayload.TYPE, ServuxStructuresPayload.CODEC);
     }
 
     public Identifier getNetworkChannel() { return ServuxStructuresHandler.CHANNEL_ID; }
@@ -233,7 +229,7 @@ public class DataStorage
     {
         if (this.hasIntegratedServer == false)
         {
-            HANDLER.registerPlayHandler(this.getNetworkChannel());
+            HANDLER.registerPlayReceiver(this.getNetworkChannel(), ServuxStructuresPayload.TYPE, HANDLER::receivePlayPayload);
         }
     }
 
@@ -799,13 +795,16 @@ public class DataStorage
 
         if (this.servuxServer == false && this.hasIntegratedServer == false)
         {
-            MiniHUD.printDebug("registerStructureChannel(): sending STRUCTURES_REGISTER to Servux");
+            if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
+            {
+                MiniHUD.printDebug("registerStructureChannel(): sending STRUCTURES_REGISTER to Servux");
 
-            NbtCompound nbt = new NbtCompound();
-            nbt.putInt("packetType", ServuxStructuresHandler.PACKET_C2S_STRUCTURES_REGISTER);
-            nbt.putString("version", Reference.MOD_STRING);
+                NbtCompound nbt = new NbtCompound();
+                nbt.putInt("packetType", ServuxStructuresHandler.PACKET_C2S_STRUCTURES_REGISTER);
+                nbt.putString("version", Reference.MOD_STRING);
 
-            HANDLER.encodeNbtCompound(nbt);
+                HANDLER.encodeNbtCompound(nbt);
+            }
         }
         // QuickCarpet doesn't exist for 1.20.5
     }
