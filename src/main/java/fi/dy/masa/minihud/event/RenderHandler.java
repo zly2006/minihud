@@ -686,7 +686,7 @@ public class RenderHandler implements IRenderer
                 if (InfoToggle.HORSE_SPEED.getBooleanValue())
                 {
                     float speed = horse.getMovementSpeed();
-                    speed *= 42.1629629629f;
+                    speed *= 42.1629629629629f;
                     this.addLine(String.format(AnimalType+" Speed: %.3f m/s", speed));
                 }
 
