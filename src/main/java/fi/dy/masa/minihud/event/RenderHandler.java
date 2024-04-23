@@ -51,6 +51,7 @@ import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -685,7 +686,7 @@ public class RenderHandler implements IRenderer
                 if (InfoToggle.HORSE_SPEED.getBooleanValue())
                 {
                     float speed = horse.getMovementSpeed();
-                    speed *= 42.163f;
+                    speed *= 42.1629629629f;
                     this.addLine(String.format(AnimalType+" Speed: %.3f m/s", speed));
                 }
 
