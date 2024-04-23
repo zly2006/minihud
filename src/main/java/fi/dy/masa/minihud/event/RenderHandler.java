@@ -147,7 +147,7 @@ public class RenderHandler implements IRenderer
         if (item instanceof FilledMapItem)
         {
             if (Configs.Generic.MAP_PREVIEW.getBooleanValue() &&
-                (Configs.Generic.MAP_PREVIEW_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
+               (Configs.Generic.MAP_PREVIEW_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
             {
                 fi.dy.masa.malilib.render.RenderUtils.renderMapPreview(stack, x, y, Configs.Generic.MAP_PREVIEW_SIZE.getIntegerValue(), false);
             }
@@ -155,7 +155,7 @@ public class RenderHandler implements IRenderer
         else if (stack.getComponents().contains(DataComponentTypes.CONTAINER))
         {
             if (Configs.Generic.SHULKER_BOX_PREVIEW.getBooleanValue() &&
-                (Configs.Generic.SHULKER_DISPLAY_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
+               (Configs.Generic.SHULKER_DISPLAY_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
             {
                 fi.dy.masa.malilib.render.RenderUtils.renderShulkerBoxPreview(stack, x, y, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue(), drawContext);
             }
