@@ -112,7 +112,7 @@ public class DataStorage
     public void onGameInit()
     {
         ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
-        HANDLER.registerPlayPayload(this.getNetworkChannel(), IPluginClientPlayHandler.BOTH_CLIENT, ServuxStructuresPayload.TYPE, ServuxStructuresPayload.CODEC);
+        HANDLER.registerPlayPayload(ServuxStructuresPayload.TYPE, ServuxStructuresPayload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
     }
 
     public Identifier getNetworkChannel() { return ServuxStructuresHandler.CHANNEL_ID; }
@@ -229,7 +229,7 @@ public class DataStorage
     {
         if (this.hasIntegratedServer == false)
         {
-            HANDLER.registerPlayReceiver(this.getNetworkChannel(), ServuxStructuresPayload.TYPE, HANDLER::receivePlayPayload);
+            HANDLER.registerPlayReceiver(ServuxStructuresPayload.TYPE, HANDLER::receivePlayPayload);
         }
     }
 
