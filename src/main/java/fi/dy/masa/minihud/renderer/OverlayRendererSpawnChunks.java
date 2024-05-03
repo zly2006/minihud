@@ -81,9 +81,8 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         DataStorage data = DataStorage.getInstance();
         BlockPos spawn;
         int spawnChunkRadius;
-        int outer;
-        int lazy;
-        int ent;
+        int red;
+        int green;
 
         if (this.isPlayerFollowing)
         {
@@ -91,9 +90,8 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
             spawn = PositionUtils.getEntityBlockPos(entity);
             spawnChunkRadius = getSimulationDistance();
 
-            outer = spawnChunkRadius + 1;
-            lazy = spawnChunkRadius;
-            ent = spawnChunkRadius - 1;
+            red = spawnChunkRadius + 1;
+            green = spawnChunkRadius - 1;
         }
         else
         {
@@ -121,9 +119,8 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
                 return;
             }
 
-            outer = spawnChunkRadius + 1;
-            lazy = spawnChunkRadius;
-            ent = spawnChunkRadius - 1;
+            red = spawnChunkRadius + 1;
+            green = spawnChunkRadius - 1;
         }
 
         RenderObjectBase renderQuads = this.renderObjects.get(0);
@@ -144,14 +141,14 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(spawn, cameraPos, colorEntity, 0.001, BUFFER_2);
         drawBlockBoundingBoxSidesBatchedQuads(spawn, cameraPos, colorEntity, 0.001, BUFFER_1);
 
-        Pair<BlockPos, BlockPos> corners = this.getSpawnChunkCorners(spawn, outer, mc.world);   // Org 22 (for 10 chunks?)
+        Pair<BlockPos, BlockPos> corners = this.getSpawnChunkCorners(spawn, 22, mc.world);   // Org 22 (for 10 chunks?)
 
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorOuter, BUFFER_1, BUFFER_2);
 
-        corners = this.getSpawnChunkCorners(spawn, lazy, mc.world);     // Org 11
+        corners = this.getSpawnChunkCorners(spawn, red, mc.world);     // Org 11
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorLazy, BUFFER_1, BUFFER_2);
 
-        corners = this.getSpawnChunkCorners(spawn, ent, mc.world);      // Org 9
+        corners = this.getSpawnChunkCorners(spawn, green, mc.world);      // Org 9
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorEntity, BUFFER_1, BUFFER_2);
 
         renderQuads.uploadData(BUFFER_1);
