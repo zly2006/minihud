@@ -83,6 +83,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         int spawnChunkRadius;
         int red;
         int green;
+        int brown;
 
         if (this.isPlayerFollowing)
         {
@@ -92,6 +93,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
 
             red = spawnChunkRadius + 1;
             green = spawnChunkRadius - 1;
+            brown = red + 11;
         }
         else
         {
@@ -121,6 +123,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
 
             red = spawnChunkRadius + 1;
             green = spawnChunkRadius - 1;
+            brown = red + 11;
         }
 
         RenderObjectBase renderQuads = this.renderObjects.get(0);
@@ -141,7 +144,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(spawn, cameraPos, colorEntity, 0.001, BUFFER_2);
         drawBlockBoundingBoxSidesBatchedQuads(spawn, cameraPos, colorEntity, 0.001, BUFFER_1);
 
-        Pair<BlockPos, BlockPos> corners = this.getSpawnChunkCorners(spawn, 22, mc.world);   // Org 22
+        Pair<BlockPos, BlockPos> corners = this.getSpawnChunkCorners(spawn, brown, mc.world);   // Org 22
 
         RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorOuter, BUFFER_1, BUFFER_2);
 
