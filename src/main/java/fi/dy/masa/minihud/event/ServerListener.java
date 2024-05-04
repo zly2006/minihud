@@ -40,6 +40,6 @@ public class ServerListener implements IServerListener
     @Override
     public void onServerStopped(MinecraftServer server)
     {
-        DataStorage.getInstance().reset(true);
+        // NO-OP
     }
 }
