@@ -34,8 +34,11 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     public static final int PACKET_C2S_STRUCTURES_UNREGISTER = 4;
     public static final int PACKET_S2C_SPAWN_METADATA = 10;
     public static final int PACKET_C2S_REQUEST_SPAWN_METADATA = 11;
+
     private boolean servuxRegistered;
     private boolean payloadRegistered = false;
+    private int failures = 0;
+    private static final int MAX_FAILURES = 4;
 
     @Override
     public Identifier getPayloadChannel() { return CHANNEL_ID; }
@@ -43,7 +46,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     @Override
     public boolean isPlayRegistered(Identifier channel)
     {
-        if (channel.equals(this.getPayloadChannel()))
+        if (channel.equals(CHANNEL_ID))
         {
             return this.payloadRegistered;
         }
@@ -54,7 +57,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     @Override
     public void setPlayRegistered(Identifier channel)
     {
-        if (channel.equals(this.getPayloadChannel()))
+        if (channel.equals(CHANNEL_ID))
         {
             this.payloadRegistered = true;
         }
@@ -87,18 +90,28 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     @Override
     public void reset(Identifier channel)
     {
-        if (channel.equals(this.getPayloadChannel()) && this.servuxRegistered)
+        if (channel.equals(CHANNEL_ID) && this.servuxRegistered)
         {
             MiniHUD.printDebug("reset() called for {}", channel.toString());
 
             this.servuxRegistered = false;
+            this.failures = 0;
+        }
+    }
+
+    public void resetFailures(Identifier channel)
+    {
+        if (channel.equals(CHANNEL_ID) && this.failures > 0)
+        {
+            MiniHUD.printDebug("resetFailures() called for {}", channel.toString());
+            this.failures = 0;
         }
     }
 
     @Override
     public void receivePlayPayload(T payload, ClientPlayNetworking.Context ctx)
     {
-        if (payload.getId().id().equals(this.getPayloadChannel()))
+        if (payload.getId().id().equals(CHANNEL_ID))
         {
             ((ClientPlayHandler<?>) ClientPlayHandler.getInstance()).decodeNbtCompound(CHANNEL_ID, ((ServuxStructuresPayload) payload).data());
         }
@@ -107,6 +120,19 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     @Override
     public void encodeNbtCompound(NbtCompound data)
     {
-        ServuxStructuresHandler.INSTANCE.sendPlayPayload(new ServuxStructuresPayload(data));
+        if (ServuxStructuresHandler.INSTANCE.sendPlayPayload(new ServuxStructuresPayload(data)) == false)
+        {
+            if (this.failures > MAX_FAILURES)
+            {
+                MiniHUD.logger.warn("encodeNbtCompound: encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
+                this.servuxRegistered = false;
+                ServuxStructuresHandler.INSTANCE.unregisterPlayReceiver();
+                DataStorage.getInstance().onPacketFailure();
+            }
+            else
+            {
+                this.failures++;
+            }
+        }
     }
 }
