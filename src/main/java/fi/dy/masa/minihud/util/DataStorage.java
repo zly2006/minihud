@@ -66,6 +66,7 @@ public class DataStorage
     private boolean worldSeedValid = false;
     private boolean carpetServer = false;
     private boolean servuxServer = false;
+    private boolean hasInValidServux = false;
     private boolean hasIntegratedServer = false;
     private int spawnChunkRadius = -1;
     private boolean spawnChunkRadiusValid = false;
@@ -143,7 +144,9 @@ public class DataStorage
             }
             */
             HANDLER.reset(this.getNetworkChannel());
+            HANDLER.resetFailures(this.getNetworkChannel());
             this.servuxServer = false;
+            this.hasInValidServux = false;
             this.structureDataTimeout = 30 * 20;
             this.spawnChunkRadius = -1;
             this.registryManager = DynamicRegistryManager.EMPTY;
@@ -204,6 +207,10 @@ public class DataStorage
     public void setIsServuxServer()
     {
         this.servuxServer = true;
+        if (this.hasInValidServux)
+        {
+            this.hasInValidServux = false;
+        }
     }
 
     public void setServerVersion(String ver)
@@ -793,7 +800,7 @@ public class DataStorage
     {
         this.shouldRegisterStructureChannel = true;
 
-        if (this.servuxServer == false && this.hasIntegratedServer == false)
+        if (this.servuxServer == false && this.hasIntegratedServer == false && this.hasInValidServux == false)
         {
             if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
             {
@@ -805,6 +812,10 @@ public class DataStorage
 
                 HANDLER.encodeNbtCompound(nbt);
             }
+        }
+        else
+        {
+            this.shouldRegisterStructureChannel = false;
         }
         // QuickCarpet doesn't exist for 1.20.5
     }
@@ -849,6 +860,11 @@ public class DataStorage
             this.setServerVersion(data.getString("servux"));
             this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
             this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"));
+
+            if (this.hasInValidServux)
+            {
+                this.hasInValidServux = false;
+            }
         }
     }
 
@@ -856,16 +872,26 @@ public class DataStorage
     {
         if (this.servuxServer || RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() == false)
         {
-            MiniHUD.printDebug("unregisterStructureChannel: for {}", this.serverVersion);
-
             this.servuxServer = false;
-            NbtCompound nbt = new NbtCompound();
-            nbt.putInt("packetType", ServuxStructuresHandler.PACKET_C2S_STRUCTURES_UNREGISTER);
+            if (this.hasInValidServux == false)
+            {
+                MiniHUD.printDebug("unregisterStructureChannel: for {}", this.serverVersion);
+                NbtCompound nbt = new NbtCompound();
+                nbt.putInt("packetType", ServuxStructuresHandler.PACKET_C2S_STRUCTURES_UNREGISTER);
 
-            HANDLER.encodeNbtCompound(nbt);
-            HANDLER.reset(this.getNetworkChannel());
+                HANDLER.encodeNbtCompound(nbt);
+                HANDLER.reset(this.getNetworkChannel());
+            }
         }
         this.shouldRegisterStructureChannel = false;
+    }
+
+    public void onPacketFailure()
+    {
+        // Define how to handle multiple sendPayload failures
+        this.shouldRegisterStructureChannel = false;
+        this.servuxServer = false;
+        this.hasInValidServux = true;
     }
 
     private boolean structuresNeedUpdating(BlockPos playerPos, int hysteresis)
