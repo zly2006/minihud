@@ -49,6 +49,7 @@ import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.interfaces.IRenderer;
 import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.BlockUtils;
+import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.minihud.config.Configs;
@@ -152,7 +153,7 @@ public class RenderHandler implements IRenderer
                 fi.dy.masa.malilib.render.RenderUtils.renderMapPreview(stack, x, y, Configs.Generic.MAP_PREVIEW_SIZE.getIntegerValue(), false);
             }
         }
-        else if (stack.getComponents().contains(DataComponentTypes.CONTAINER))
+        else if (stack.getComponents().contains(DataComponentTypes.CONTAINER) && InventoryUtils.shulkerBoxHasItems(stack))
         {
             if (Configs.Generic.SHULKER_BOX_PREVIEW.getBooleanValue() &&
                (Configs.Generic.SHULKER_DISPLAY_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
