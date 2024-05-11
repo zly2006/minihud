@@ -8,12 +8,6 @@ import fi.dy.masa.minihud.util.DataStorage;
 public class ServerListener implements IServerListener
 {
     @Override
-    public void onServerStarting(MinecraftServer server)
-    {
-        // NO-OP
-    }
-
-    @Override
     public void onServerStarted(MinecraftServer server)
     {
         DataStorage.getInstance().checkWorldSeed(server);
@@ -23,23 +17,5 @@ public class ServerListener implements IServerListener
     public void onServerIntegratedSetup(IntegratedServer server)
     {
         DataStorage.getInstance().setHasIntegratedServer(true);
-    }
-
-    @Override
-    public void onServerOpenToLan(IntegratedServer server)
-    {
-        // NO-OP
-    }
-
-    @Override
-    public void onServerStopping(MinecraftServer server)
-    {
-        // NO-OP
-    }
-
-    @Override
-    public void onServerStopped(MinecraftServer server)
-    {
-        // NO-OP
     }
 }
