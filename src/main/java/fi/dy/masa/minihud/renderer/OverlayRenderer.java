@@ -117,7 +117,7 @@ public class OverlayRenderer
 
         //tessellator.draw();
         meshData = buffer.method_60800();
-        BufferRenderer.draw(meshData);
+        BufferRenderer.drawWithGlobalProgram(meshData);
         meshData.close();
 
         buffer = tessellator.method_60827(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
@@ -126,7 +126,7 @@ public class OverlayRenderer
 
         //tessellator.draw();
         meshData = buffer.method_60800();
-        BufferRenderer.draw(meshData);
+        BufferRenderer.drawWithGlobalProgram(meshData);
         meshData.close();
 
         RenderSystem.polygonOffset(0f, 0f);
