@@ -32,7 +32,6 @@ import fi.dy.masa.malilib.util.Color4f;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.util.LightLevelMarkerMode;
@@ -43,7 +42,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 {
     public static final OverlayRendererLightLevel INSTANCE = new OverlayRendererLightLevel();
 
-    private static final Identifier TEXTURE_NUMBERS = new Identifier(Reference.MOD_ID, "textures/misc/light_level_numbers.png");
+    private static final Identifier TEXTURE_NUMBERS = Identifier.splitOn("minihud:textures/misc/light_level_numbers.png", ':');
 
     private final List<LightLevelInfo> lightInfos = new ArrayList<>();
     private final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
@@ -84,8 +83,10 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         BlockPos pos = PositionUtils.getEntityBlockPos(entity);
         RenderObjectBase renderQuads = this.renderObjects.get(0);
         RenderObjectBase renderLines = this.renderObjects.get(1);
-        BUFFER_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_TEXTURE_COLOR);
-        BUFFER_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+        //BUFFER_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_TEXTURE_COLOR);
+        //BUFFER_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+        BUFFER_1 = TESSELLATOR_1.method_60827(renderQuads.getGlMode(), VertexFormats.POSITION_TEXTURE_COLOR);
+        BUFFER_2 = TESSELLATOR_2.method_60827(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
 
         //long pre = System.nanoTime();
         this.updateLightLevels(mc.world, pos);
@@ -250,7 +251,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                     color = colorDim;
                 }
 
-                renderer.render(x, y, z, color, offset1, offset2, buffer);
+                renderer.render((float) x, (float) y, (float) z, color, (float) offset1, (float) offset2, buffer);
             }
         }
     }
@@ -292,78 +293,78 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                     color = colorDim;
                 }
 
-                this.renderLightLevelTextureColor(x, y, z, facing, lightLevel, color, buffer);
+                this.renderLightLevelTextureColor((float) x, (float) y, (float) z, facing, lightLevel, color, buffer);
             }
         }
     }
 
-    private void renderLightLevelTextureColor(double x, double y, double z, Direction facing, int lightLevel, Color4f color, BufferBuilder buffer)
+    private void renderLightLevelTextureColor(float x, float y, float z, Direction facing, int lightLevel, Color4f color, BufferBuilder buffer)
     {
         float w = 0.25f;
         float u = (lightLevel & 0x3) * w;
         float v = (lightLevel >> 2) * w;
-        y += 0.005;
+        y += 0.005F;
 
         switch (facing)
         {
             case NORTH:
-                buffer.vertex(x    , y, z    ).texture(u    , v    ).color(color.r, color.g, color.b, color.a).next();
-                buffer.vertex(x    , y, z + 1).texture(u    , v + w).color(color.r, color.g, color.b, color.a).next();
-                buffer.vertex(x + 1, y, z + 1).texture(u + w, v + w).color(color.r, color.g, color.b, color.a).next();
-                buffer.vertex(x + 1, y, z    ).texture(u + w, v    ).color(color.r, color.g, color.b, color.a).next();
+                buffer.vertex(x, y, z).texture(u    , v    ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(x, y, z + 1).texture(u    , v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(x + 1, y, z + 1).texture(u + w, v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(x + 1, y, z).texture(u + w, v    ).color(color.r, color.g, color.b, color.a);
                 break;
 
             case SOUTH:
-                buffer.vertex(x + 1, y, z + 1).texture(u    , v    ).color(color.r, color.g, color.b, color.a).next();
-                buffer.vertex(x + 1, y, z    ).texture(u    , v + w).color(color.r, color.g, color.b, color.a).next();
-                buffer.vertex(x    , y, z    ).texture(u + w, v + w).color(color.r, color.g, color.b, color.a).next();
-                buffer.vertex(x    , y, z + 1).texture(u + w, v    ).color(color.r, color.g, color.b, color.a).next();
+                buffer.vertex(x + 1, y, z + 1).texture(u    , v    ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(x + 1, y, z    ).texture(u    , v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(x    , y, z    ).texture(u + w, v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(x    , y, z + 1).texture(u + w, v    ).color(color.r, color.g, color.b, color.a);
                 break;
 
             case EAST:
-                buffer.vertex(x + 1, y, z    ).texture(u    , v    ).color(color.r, color.g, color.b, color.a).next();
-                buffer.vertex(x    , y, z    ).texture(u    , v + w).color(color.r, color.g, color.b, color.a).next();
-                buffer.vertex(x    , y, z + 1).texture(u + w, v + w).color(color.r, color.g, color.b, color.a).next();
-                buffer.vertex(x + 1, y, z + 1).texture(u + w, v    ).color(color.r, color.g, color.b, color.a).next();
+                buffer.vertex(x + 1, y, z    ).texture(u    , v    ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(x    , y, z    ).texture(u    , v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(x    , y, z + 1).texture(u + w, v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(x + 1, y, z + 1).texture(u + w, v    ).color(color.r, color.g, color.b, color.a);
                 break;
 
             case WEST:
-                buffer.vertex(x    , y, z + 1).texture(u    , v    ).color(color.r, color.g, color.b, color.a).next();
-                buffer.vertex(x + 1, y, z + 1).texture(u    , v + w).color(color.r, color.g, color.b, color.a).next();
-                buffer.vertex(x + 1, y, z    ).texture(u + w, v + w).color(color.r, color.g, color.b, color.a).next();
-                buffer.vertex(x    , y, z    ).texture(u + w, v    ).color(color.r, color.g, color.b, color.a).next();
+                buffer.vertex(x    , y, z + 1).texture(u    , v    ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(x + 1, y, z + 1).texture(u    , v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(x + 1, y, z    ).texture(u + w, v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(x    , y, z    ).texture(u + w, v    ).color(color.r, color.g, color.b, color.a);
                 break;
 
             default:
         }
     }
 
-    private void renderLightLevelCross(double x, double y, double z, Color4f color, double offset1, double offset2, BufferBuilder buffer)
+    private void renderLightLevelCross(float x, float y, float z, Color4f color, float offset1, float offset2, BufferBuilder buffer)
     {
-        y += 0.005;
+        y += 0.005F;
 
-        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).next();
-        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).next();
+        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).next();
-        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).next();
+        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a);
     }
 
-    private void renderLightLevelSquare(double x, double y, double z, Color4f color, double offset1, double offset2, BufferBuilder buffer)
+    private void renderLightLevelSquare(float x, float y, float z, Color4f color, float offset1, float offset2, BufferBuilder buffer)
     {
-        y += 0.005;
+        y += 0.005F;
 
-        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).next();
-        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).next();
+        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).next();
-        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).next();
+        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).next();
-        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).next();
+        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).next();
-        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).next();
+        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a);
     }
 
     private void updateLightLevels(World world, BlockPos center)
@@ -550,6 +551,6 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
     private interface IMarkerRenderer
     {
-        void render(double x, double y, double z, Color4f color, double offset1, double offset2, BufferBuilder buffer);
+        void render(float x, float y, float z, Color4f color, float offset1, float offset2, BufferBuilder buffer);
     }
 }

@@ -113,8 +113,10 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         List<ColoredQuad> quads = this.getQuadsToRender(chunks);
         RenderObjectBase renderQuads = this.renderObjects.get(0);
         RenderObjectBase renderLines = this.renderObjects.get(1);
-        BUFFER_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
-        BUFFER_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+        //BUFFER_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
+        //BUFFER_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+        BUFFER_1 = TESSELLATOR_1.method_60827(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
+        BUFFER_2 = TESSELLATOR_2.method_60827(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
 
         this.renderQuads(quads, BUFFER_1, BUFFER_2, this.cameraPosition);
 
@@ -472,7 +474,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
             final int limit = 16 - (side.getAxis() != Direction.Axis.Y ? y : z);
             int count = 1;
 
-            handled[x][y][z] |= (1 << sideIndex);
+            handled[x][y][z] |= (byte) (1 << sideIndex);
 
             for (int i = 1; i < limit; ++i)
             {
@@ -487,7 +489,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
                     break;
                 }
 
-                handled[tmpX][tmpY][tmpZ] |= (1 << sideIndex);
+                handled[tmpX][tmpY][tmpZ] |= (byte) (1 << sideIndex);
                 ++count;
             }
 
@@ -690,7 +692,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     {
         try
         {
-            Optional<Biome> optional = registry.getOrEmpty(new Identifier(biomeId));
+            Optional<Biome> optional = registry.getOrEmpty(Identifier.tryParse(biomeId));
 
             if (optional.isPresent())
             {

@@ -3,6 +3,7 @@ package fi.dy.masa.minihud.renderer;
 import java.util.function.Supplier;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.joml.Matrix4f;
+import net.minecraft.class_9801;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.BufferBuilder;
@@ -28,7 +29,7 @@ public class RenderObjectVbo extends RenderObjectBase
         // This isn't really that nice and clean, but it'll do for now...
         for (VertexFormatElement el : this.format.getElements())
         {
-            if (el.getType() == VertexFormatElement.Type.UV)
+            if (el.type() == VertexFormatElement.Type.UV)
             {
                 hasTexture = true;
                 break;
@@ -41,9 +42,23 @@ public class RenderObjectVbo extends RenderObjectBase
     @Override
     public void uploadData(BufferBuilder buffer)
     {
-        this.hasData = ! buffer.isBatchEmpty();
-        BufferBuilder.BuiltBuffer builtBuffer = buffer.end();
+        //this.hasData = ! buffer.isBatchEmpty();
+        //BufferBuilder.BuiltBuffer builtBuffer = buffer.end();
+        // FIXME MeshData
+        class_9801 meshData;
 
+        try
+        {
+            meshData = buffer.method_60800();
+            this.hasData = true;
+            this.vertexBuffer.bind();
+            this.vertexBuffer.upload(meshData);
+            VertexBuffer.unbind();
+            meshData.close();
+        }
+        catch (Exception ignored) { }
+
+        /*
         if (this.hasData)
         {
             this.vertexBuffer.bind();
@@ -54,6 +69,7 @@ public class RenderObjectVbo extends RenderObjectBase
         {
             builtBuffer.release();
         }
+         */
     }
 
     @Override
