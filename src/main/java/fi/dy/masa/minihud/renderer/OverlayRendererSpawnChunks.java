@@ -130,8 +130,8 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         RenderObjectBase renderLines = this.renderObjects.get(1);
         //BUFFER_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
         //BUFFER_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
-        BUFFER_1 = TESSELLATOR_1.method_60827(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
-        BUFFER_2 = TESSELLATOR_2.method_60827(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+        BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
+        BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
 
         final Color4f colorEntity = this.isPlayerFollowing ?
                 Configs.Colors.SPAWN_PLAYER_ENTITY_OVERLAY_COLOR.getColor() :

@@ -3,10 +3,10 @@ package fi.dy.masa.minihud.renderer;
 import java.util.function.Supplier;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.joml.Matrix4f;
-import net.minecraft.class_9801;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormatElement;
 
@@ -29,7 +29,7 @@ public class RenderObjectVbo extends RenderObjectBase
         // This isn't really that nice and clean, but it'll do for now...
         for (VertexFormatElement el : this.format.getElements())
         {
-            if (el.type() == VertexFormatElement.Type.UV)
+            if (el.type() == VertexFormatElement.UV.type())
             {
                 hasTexture = true;
                 break;
@@ -44,12 +44,11 @@ public class RenderObjectVbo extends RenderObjectBase
     {
         //this.hasData = ! buffer.isBatchEmpty();
         //BufferBuilder.BuiltBuffer builtBuffer = buffer.end();
-        // FIXME MeshData
-        class_9801 meshData;
+        BuiltBuffer meshData;
 
         try
         {
-            meshData = buffer.method_60800();
+            meshData = buffer.end();
             this.hasData = true;
             this.vertexBuffer.bind();
             this.vertexBuffer.upload(meshData);

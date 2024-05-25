@@ -63,7 +63,7 @@ public class ShapeCircle extends ShapeCircleBase
 
         RenderObjectBase renderQuads = this.renderObjects.getFirst();
         //BUFFER_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
-        BUFFER_1 = TESSELLATOR_1.method_60827(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
+        BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
 
         if (this.getCombineQuads())
         {

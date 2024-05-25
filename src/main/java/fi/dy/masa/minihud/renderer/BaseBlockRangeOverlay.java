@@ -108,8 +108,8 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
     {
         //BUFFER_1.begin(this.renderObjects.get(0).getGlMode(), VertexFormats.POSITION_COLOR);
         //BUFFER_2.begin(this.renderObjects.get(1).getGlMode(), VertexFormats.POSITION_COLOR);
-        BUFFER_1 = TESSELLATOR_1.method_60827(this.renderObjects.get(0).getGlMode(), VertexFormats.POSITION_COLOR);
-        BUFFER_2 = TESSELLATOR_2.method_60827(this.renderObjects.get(1).getGlMode(), VertexFormats.POSITION_COLOR);
+        BUFFER_1 = TESSELLATOR_1.begin(this.renderObjects.get(0).getGlMode(), VertexFormats.POSITION_COLOR);
+        BUFFER_2 = TESSELLATOR_2.begin(this.renderObjects.get(1).getGlMode(), VertexFormats.POSITION_COLOR);
     }
 
     protected void uploadBuffers()

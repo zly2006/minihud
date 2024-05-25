@@ -41,7 +41,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     protected void startBuffers()
     {
         //BUFFER_1.begin(this.renderObjects.get(0).getGlMode(), VertexFormats.POSITION_COLOR);
-        BUFFER_1 = TESSELLATOR_1.method_60827(this.renderObjects.getFirst().getGlMode(), VertexFormats.POSITION_COLOR);
+        BUFFER_1 = TESSELLATOR_1.begin(this.renderObjects.getFirst().getGlMode(), VertexFormats.POSITION_COLOR);
     }
 
     @Override

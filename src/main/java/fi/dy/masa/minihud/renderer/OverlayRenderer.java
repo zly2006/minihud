@@ -3,7 +3,6 @@ package fi.dy.masa.minihud.renderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.joml.Matrix4f;
 import net.minecraft.block.Blocks;
-import net.minecraft.class_9801;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.entity.Entity;
@@ -105,9 +104,8 @@ public class OverlayRenderer
 
         Tessellator tessellator = Tessellator.getInstance();
         //BufferBuilder buffer = tessellator.getBuffer();
-        BufferBuilder buffer = tessellator.method_60827(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        // FIXME MeshData
-        class_9801 meshData;
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        BuiltBuffer meshData;
 
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.applyModelViewMatrix();
@@ -116,16 +114,16 @@ public class OverlayRenderer
         fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(minX, minY, minZ, maxX, maxY, maxZ, Color4f.fromColor(color, 0.3f), buffer);
 
         //tessellator.draw();
-        meshData = buffer.method_60800();
+        meshData = buffer.end();
         BufferRenderer.drawWithGlobalProgram(meshData);
         meshData.close();
 
-        buffer = tessellator.method_60827(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
+        buffer = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
 
         fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines(minX, minY, minZ, maxX, maxY, maxZ, Color4f.fromColor(color, 1f), buffer);
 
         //tessellator.draw();
-        meshData = buffer.method_60800();
+        meshData = buffer.end();
         BufferRenderer.drawWithGlobalProgram(meshData);
         meshData.close();
 
