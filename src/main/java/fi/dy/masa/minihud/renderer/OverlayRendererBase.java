@@ -18,7 +18,6 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     protected static final Tessellator TESSELLATOR_2 = new Tessellator(2097152);
     protected static BufferBuilder BUFFER_1;
     protected static BufferBuilder BUFFER_2;
-    //protected static final BufferBuilder BUFFER_3 = new BufferBuilder(2097152);
 
     protected final List<RenderObjectBase> renderObjects = new ArrayList<>();
     protected boolean renderThrough;

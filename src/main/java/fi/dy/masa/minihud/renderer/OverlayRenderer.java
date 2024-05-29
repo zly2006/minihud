@@ -103,17 +103,14 @@ public class OverlayRenderer
         fi.dy.masa.malilib.render.RenderUtils.color(1f, 1f, 1f, 1f);
 
         Tessellator tessellator = Tessellator.getInstance();
-        //BufferBuilder buffer = tessellator.getBuffer();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         BuiltBuffer meshData;
 
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.applyModelViewMatrix();
-        //buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
 
         fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(minX, minY, minZ, maxX, maxY, maxZ, Color4f.fromColor(color, 0.3f), buffer);
 
-        //tessellator.draw();
         meshData = buffer.end();
         BufferRenderer.drawWithGlobalProgram(meshData);
         meshData.close();
@@ -122,7 +119,6 @@ public class OverlayRenderer
 
         fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines(minX, minY, minZ, maxX, maxY, maxZ, Color4f.fromColor(color, 1f), buffer);
 
-        //tessellator.draw();
         meshData = buffer.end();
         BufferRenderer.drawWithGlobalProgram(meshData);
         meshData.close();

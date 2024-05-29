@@ -42,8 +42,6 @@ public class RenderObjectVbo extends RenderObjectBase
     @Override
     public void uploadData(BufferBuilder buffer)
     {
-        //this.hasData = ! buffer.isBatchEmpty();
-        //BufferBuilder.BuiltBuffer builtBuffer = buffer.end();
         BuiltBuffer meshData;
 
         try

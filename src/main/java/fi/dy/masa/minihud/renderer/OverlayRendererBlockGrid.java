@@ -45,7 +45,6 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
         int radius = Configs.Generic.BLOCK_GRID_OVERLAY_RADIUS.getIntegerValue();
 
         RenderObjectBase renderLines = this.renderObjects.getFirst();
-        //BUFFER_1.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
         BUFFER_1 = TESSELLATOR_1.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
         BlockGridMode mode = (BlockGridMode) Configs.Generic.BLOCK_GRID_OVERLAY_MODE.getOptionListValue();
 

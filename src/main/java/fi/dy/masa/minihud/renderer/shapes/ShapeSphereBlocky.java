@@ -57,7 +57,6 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         SphereUtils.collectSpherePositions(positionConsumer, test, centerPos, (int) this.getTotalRadius());
 
         RenderObjectBase renderQuads = this.renderObjects.getFirst();
-        //BUFFER_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
         BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
 
         if (this.getCombineQuads())

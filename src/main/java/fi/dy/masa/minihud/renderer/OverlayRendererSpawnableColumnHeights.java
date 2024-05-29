@@ -94,8 +94,6 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
 
         RenderObjectBase renderQuads = this.renderObjects.get(0);
         RenderObjectBase renderLines = this.renderObjects.get(1);
-        //BUFFER_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
-        //BUFFER_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
         BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
         BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
 
