@@ -25,6 +25,12 @@ public class OverlayRendererRegion extends OverlayRendererBase
     }
 
     @Override
+    public String getName()
+    {
+        return "OverlayRendererRegion";
+    }
+
+    @Override
     public boolean shouldRender(MinecraftClient mc)
     {
         return RendererToggle.OVERLAY_REGION_FILE.getBooleanValue();

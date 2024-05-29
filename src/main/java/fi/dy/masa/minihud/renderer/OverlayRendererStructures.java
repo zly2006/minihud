@@ -27,6 +27,12 @@ public class OverlayRendererStructures extends OverlayRendererBase
     }
 
     @Override
+    public String getName()
+    {
+        return "OverlayRendererStructures";
+    }
+
+    @Override
     public boolean shouldRender(MinecraftClient mc)
     {
         if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() == false)

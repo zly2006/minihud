@@ -909,9 +909,8 @@ public class DataStorage
 
         if (world != null)
         {
-
             MinecraftServer server = this.mc.getServer();
-            final int maxChunkRange = this.mc.options.getViewDistance().getValue() + 2;
+            final int maxChunkRange = this.mc.options.getClampedViewDistance();
 
             server.send(new ServerTask(server.getTicks(), () ->
             {
@@ -990,6 +989,8 @@ public class DataStorage
 
     private void addStructureDataFromGenerator(ServerWorld world, BlockPos playerPos, int maxChunkRange)
     {
+        int lastCount = this.structures.size();
+
         this.structures.clear();
 
         int minCX = (playerPos.getX() >> 4) - maxChunkRange;
@@ -1002,7 +1003,15 @@ public class DataStorage
             for (int cx = minCX; cx <= maxCX; ++cx)
             {
                 // Don't load the chunk
-                Chunk chunk = world.getChunk(cx, cz, ChunkStatus.FULL, false);
+                Chunk chunk;
+                try
+                {
+                     chunk = world.getChunk(cx, cz, ChunkStatus.FULL, false);
+                }
+                catch (Exception ignored)
+                {
+                    continue;
+                }
 
                 if (chunk == null)
                 {
@@ -1026,9 +1035,8 @@ public class DataStorage
             }
         }
 
+        MiniHUD.printDebug("Structure data updated from the integrated server ({} -> {} structures)", lastCount, this.structures.size());
         this.structureRendererNeedsUpdate = true;
-
-        MiniHUD.printDebug("Structure data updated from the integrated server ({} structures)", this.structures.size());
     }
 
     public void handleCarpetServerTPSData(Text textComponent)

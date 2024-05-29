@@ -29,6 +29,12 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     protected double maxX;
     protected double maxZ;
 
+    @Override
+    public String getName()
+    {
+        return "OverlayRendererRandomTickableChunks";
+    }
+
     public static void setNeedsUpdate()
     {
         needsUpdate = true;

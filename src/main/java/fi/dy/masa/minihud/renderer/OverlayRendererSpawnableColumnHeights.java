@@ -22,6 +22,12 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
     private final BlockPos.Mutable posMutable = new BlockPos.Mutable();
     private long lastCheckTime;
 
+    @Override
+    public String getName()
+    {
+        return "OverlayRendererSpawnableColumnHeights";
+    }
+
     public static void markChunkChanged(int cx, int cz)
     {
         if (RendererToggle.OVERLAY_SPAWNABLE_COLUMN_HEIGHTS.getBooleanValue())

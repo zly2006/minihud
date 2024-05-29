@@ -51,6 +51,12 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     private static boolean tagsBroken;
     private static boolean needsUpdate;
 
+    @Override
+    public String getName()
+    {
+        return "OverlayRendererLightLevel";
+    }
+
     public static void setNeedsUpdate()
     {
         needsUpdate = true;

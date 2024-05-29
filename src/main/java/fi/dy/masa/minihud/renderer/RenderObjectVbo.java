@@ -42,31 +42,18 @@ public class RenderObjectVbo extends RenderObjectBase
     @Override
     public void uploadData(BufferBuilder buffer)
     {
-        BuiltBuffer meshData;
+        BuiltBuffer builtBuffer;
 
         try
         {
-            meshData = buffer.end();
+            builtBuffer = buffer.end();
             this.hasData = true;
-            this.vertexBuffer.bind();
-            this.vertexBuffer.upload(meshData);
-            VertexBuffer.unbind();
-            meshData.close();
-        }
-        catch (Exception ignored) { }
-
-        /*
-        if (this.hasData)
-        {
             this.vertexBuffer.bind();
             this.vertexBuffer.upload(builtBuffer);
             VertexBuffer.unbind();
+            builtBuffer.close();
         }
-        else
-        {
-            builtBuffer.release();
-        }
-         */
+        catch (Exception ignored) { }
     }
 
     @Override

@@ -20,6 +20,12 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     }
 
     @Override
+    public String getName()
+    {
+        return "OverlayRendererBeaconRange";
+    }
+
+    @Override
     protected void renderBlockRange(World world, BlockPos pos, BeaconBlockEntity be, Vec3d cameraPos)
     {
         int level = ((IMixinBeaconBlockEntity) be).minihud_getLevel();

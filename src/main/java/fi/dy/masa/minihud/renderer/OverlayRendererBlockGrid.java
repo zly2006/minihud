@@ -20,6 +20,12 @@ import fi.dy.masa.minihud.util.BlockGridMode;
 public class OverlayRendererBlockGrid extends OverlayRendererBase
 {
     @Override
+    public String getName()
+    {
+        return "OverlayRendererBlockGrid";
+    }
+
+    @Override
     public boolean shouldRender(MinecraftClient mc)
     {
         return RendererToggle.OVERLAY_BLOCK_GRID.getBooleanValue();

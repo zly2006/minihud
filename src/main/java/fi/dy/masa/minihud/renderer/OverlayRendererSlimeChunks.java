@@ -28,6 +28,12 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     protected long seed;
     protected double topY;
 
+    @Override
+    public String getName()
+    {
+        return "OverlayRendererSlimeChunks";
+    }
+
     public static void setNeedsUpdate()
     {
         needsUpdate = true;

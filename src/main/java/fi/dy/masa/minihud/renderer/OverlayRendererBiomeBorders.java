@@ -55,6 +55,12 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         this.useCulling = true;
     }
 
+    @Override
+    public String getName()
+    {
+        return "OverlayRendererBiomeBorders";
+    }
+
     public void setNeedsUpdate()
     {
         if (RendererToggle.OVERLAY_BIOME_BORDER.getBooleanValue())

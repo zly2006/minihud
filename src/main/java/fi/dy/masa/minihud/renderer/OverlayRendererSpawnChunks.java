@@ -26,15 +26,21 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
     protected final RendererToggle toggle;
     protected final boolean isPlayerFollowing;
 
-    public static void setNeedsUpdate()
-    {
-        needsUpdate = true;
-    }
-
     public OverlayRendererSpawnChunks(RendererToggle toggle)
     {
         this.toggle = toggle;
         this.isPlayerFollowing = toggle == RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_PLAYER;
+    }
+
+    @Override
+    public String getName()
+    {
+        return "OverlayRendererSpawnChunks";
+    }
+
+    public static void setNeedsUpdate()
+    {
+        needsUpdate = true;
     }
 
     @Override

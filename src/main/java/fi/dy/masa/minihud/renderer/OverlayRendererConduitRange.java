@@ -32,6 +32,12 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     }
 
     @Override
+    public String getName()
+    {
+        return "OverlayRendererConduitRange";
+    }
+
+    @Override
     public void allocateGlResources()
     {
         this.allocateBuffer(VertexFormat.DrawMode.QUADS);

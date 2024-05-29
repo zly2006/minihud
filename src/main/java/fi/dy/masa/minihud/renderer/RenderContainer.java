@@ -75,7 +75,7 @@ public class RenderContainer
 
         for (OverlayRendererBase renderer : this.renderers)
         {
-            mc.getProfiler().push(() -> renderer.getClass().getName());
+            mc.getProfiler().push(renderer::getName);
 
             if (renderer.shouldRender(mc))
             {
