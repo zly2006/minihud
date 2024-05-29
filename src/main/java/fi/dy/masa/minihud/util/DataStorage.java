@@ -943,7 +943,6 @@ public class DataStorage
 
         if (structures.getHeldType() == Constants.NBT.TAG_COMPOUND)
         {
-            MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): list size: {}", structures.size());
             this.structureDataTimeout = this.timeout + 300;
 
             long currentTime = this.mc.world.getTime();
@@ -983,7 +982,7 @@ public class DataStorage
 
         if (countBefore != countAfter)
         {
-            MiniHUD.printDebug("DataStorage#removeExpiredStructures(): before: {}, after: {}", countBefore, countAfter);
+            MiniHUD.printDebug("removeExpiredStructures from server: {} -> {} structures", countBefore, countAfter);
         }
     }
 
@@ -1035,7 +1034,7 @@ public class DataStorage
             }
         }
 
-        MiniHUD.printDebug("Structure data updated from the integrated server ({} -> {} structures)", lastCount, this.structures.size());
+        MiniHUD.printDebug("Structure data updated from the integrated server: {} -> {} structures", lastCount, this.structures.size());
         this.structureRendererNeedsUpdate = true;
     }
 
