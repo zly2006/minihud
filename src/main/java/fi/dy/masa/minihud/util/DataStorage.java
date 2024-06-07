@@ -943,10 +943,11 @@ public class DataStorage
 
         if (structures.getHeldType() == Constants.NBT.TAG_COMPOUND)
         {
-            this.structureDataTimeout = this.timeout + 300;
+            this.structureDataTimeout = this.timeout + 240;
 
             long currentTime = this.mc.world.getTime();
             final int count = structures.size();
+            final int oldCount = this.structures.size();
 
             this.removeExpiredStructures(currentTime, this.structureDataTimeout);
 
@@ -966,6 +967,8 @@ public class DataStorage
                     this.structures.put(data.getStructureType(), data);
                 }
             }
+
+            MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): received {} structures // total size {} -> {}", count, oldCount, this.structures.size());
 
             this.structureRendererNeedsUpdate = true;
             this.hasStructureDataFromServer = true;
