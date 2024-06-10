@@ -58,9 +58,6 @@ public abstract class MixinClientPlayNetworkHandler
     @Inject(method = "onGameJoin", at = @At("RETURN"))
     private void onPostGameJoin(GameJoinS2CPacket packet, CallbackInfo ci)
     {
-        if (DataStorage.getInstance().getSimulationDistance() != packet.simulationDistance())
-        {
-            DataStorage.getInstance().setSimulationDistance(packet.simulationDistance());
-        }
+        DataStorage.getInstance().setSimulationDistance(packet.simulationDistance());
     }
 }

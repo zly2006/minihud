@@ -331,26 +331,11 @@ public class DataStorage
         {
             if (this.spawnChunkRadius != radius)
             {
-                String green = GuiBase.TXT_GREEN;
-                String red = GuiBase.TXT_RED;
-                String rst = GuiBase.TXT_RST;
-                String message;
-                String strRadius;
+                String strRadius = radius > 0 ? GuiBase.TXT_GREEN + String.format("%d", radius) : GuiBase.TXT_RED + String.format("%d", radius);
+                InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_set", strRadius) + GuiBase.TXT_RST);
 
-                if (radius > 0)
-                {
-                    strRadius = green + String.format("%d", radius);
-                }
-                else
-                {
-                    strRadius = red + String.format("%d", radius);
-                }
-                message = StringUtils.translate("minihud.message.spawn_chunk_radius_set", strRadius) + rst;
-
-                InfoUtils.printActionbarMessage(message);
                 OverlayRendererSpawnChunks.setNeedsUpdate();
-
-                MiniHUD.printDebug("DataStorage#setSpawnChunkRadius(): set spawn radius [{}] -> [{}]", this.spawnChunkRadius, radius);
+                MiniHUD.printDebug("DataStorage#setSpawnChunkRadius(): set spawn chunk radius [{}] -> [{}]", this.spawnChunkRadius, radius);
             }
             this.spawnChunkRadius = radius;
             this.spawnChunkRadiusValid = true;
@@ -620,6 +605,43 @@ public class DataStorage
 
             return true;
         }
+        else if (parts.length > 0 && (parts[0].equals("minihud-spawnchunkradius") || parts[0].equals("/minihud-spawnchunkradius")))
+        {
+            if (parts.length == 2)
+            {
+                try
+                {
+                    int radius = Integer.parseInt(parts[1]);
+
+                    if (radius >= 0)
+                    {
+                        this.setSpawnChunkRadius(radius);
+                    }
+                    else
+                    {
+                        InfoUtils.printActionbarMessage("minihud.message.error.invalid_spawn_chunk_radius");
+                    }
+                }
+                catch (NumberFormatException e)
+                {
+                    InfoUtils.printActionbarMessage("minihud.message.error.invalid_spawn_chunk_radius");
+                }
+            }
+            else if (parts.length == 1)
+            {
+                if (this.spawnChunkRadiusValid)
+                {
+                    String strRadius = this.spawnChunkRadius > 0 ? GuiBase.TXT_GREEN + String.format("%d", this.spawnChunkRadius) : GuiBase.TXT_RED + String.format("%d", this.spawnChunkRadius);
+                    InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_is", strRadius) + GuiBase.TXT_RST);
+                }
+                else
+                {
+                    InfoUtils.printActionbarMessage("minihud.message.no_spawn_chunk_radius");
+                }
+            }
+
+            return true;
+        }
 
         return false;
     }
@@ -687,6 +709,32 @@ public class DataStorage
                 catch (Exception e)
                 {
                     MiniHUD.logger.warn("Failed to read the world spawn point from '{}'", text.getArgs(), e);
+                }
+            }
+            else if (("commands.gamerule.set".equals(text.getKey()) || "commands.gamerule.query".equals(text.getKey())) && text.getArgs().length == 2)
+            {
+                try
+                {
+                    Object[] o = text.getArgs();
+                    String rule = o[0].toString();
+                    int value = Integer.parseInt(o[1].toString());
+
+                    if (rule.equals("spawnChunkRadius"))
+                    {
+                        if (this.spawnChunkRadius != value)
+                        {
+                            this.setSpawnChunkRadius(value);
+                        }
+                        else
+                        {
+                            String strRadius = this.spawnChunkRadius > 0 ? GuiBase.TXT_GREEN + String.format("%d", this.spawnChunkRadius) : GuiBase.TXT_RED + String.format("%d", this.spawnChunkRadius);
+                            InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_is", strRadius) + GuiBase.TXT_RST);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.logger.warn("Failed to read the spawn chunk radius from '{}'", text.getArgs(), e);
                 }
             }
         }
@@ -1078,10 +1126,6 @@ public class DataStorage
         {
             obj.add("seed", new JsonPrimitive(this.worldSeed));
         }
-        if (this.isWorldSpawnKnown())
-        {
-            obj.add("spawn_pos", JsonUtils.vec3dToJson(new Vec3d(this.worldSpawn.getX(), this.worldSpawn.getY(), this.worldSpawn.getZ())));
-        }
         if (this.isSpawnChunkRadiusKnown())
         {
             obj.add("spawn_chunk_radius", new JsonPrimitive(this.spawnChunkRadius));
@@ -1101,20 +1145,6 @@ public class DataStorage
 
         this.distanceReferencePoint = Objects.requireNonNullElse(pos, Vec3d.ZERO);
 
-        if (JsonUtils.hasVec3d(obj, "spawn_pos"))
-        {
-            Vec3d spawnVec3d = JsonUtils.vec3dFromJson(obj, "spawn_pos");
-            BlockPos spawnTmp = new BlockPos((int) spawnVec3d.getX(), (int) spawnVec3d.getY(), (int) spawnVec3d.getZ());
-
-            if (this.hasIntegratedServer && this.isWorldSpawnKnown() && spawnTmp.equals(this.worldSpawn) == false)
-            {
-                MiniHUD.printDebug("DataStorage#fromJson(): ignoring stale SpawnPos [{}], keeping [{}] as valid from the integrated server", spawnTmp.toShortString(), this.worldSpawn.toShortString());
-            }
-            else
-            {
-                this.setWorldSpawn(spawnTmp);
-            }
-        }
         if (JsonUtils.hasLong(obj, "seed"))
         {
             long seedTmp = JsonUtils.getLong(obj, "seed");
