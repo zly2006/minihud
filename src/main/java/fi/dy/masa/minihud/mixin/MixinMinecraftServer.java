@@ -30,6 +30,6 @@ public abstract class MixinMinecraftServer
                                       ServerWorld serverWorld, BlockPos blockPos, ServerChunkManager serverChunkManager, int i)
     {
         DataStorage.getInstance().setWorldSpawn(blockPos);
-        DataStorage.getInstance().setSpawnChunkRadius(i);
+        DataStorage.getInstance().setSpawnChunkRadius(i, true);
     }
 }

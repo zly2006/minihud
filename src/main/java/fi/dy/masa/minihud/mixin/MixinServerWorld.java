@@ -18,6 +18,6 @@ public class MixinServerWorld
     private void minihud_checkSpawnPos(BlockPos pos, float angle, CallbackInfo ci)
     {
         DataStorage.getInstance().setWorldSpawn(pos);
-        DataStorage.getInstance().setSpawnChunkRadius((this.spawnChunkRadius - 1));
+        DataStorage.getInstance().setSpawnChunkRadius(this.spawnChunkRadius - 1, true);
     }
 }

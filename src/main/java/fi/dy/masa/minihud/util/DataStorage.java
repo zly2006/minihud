@@ -325,14 +325,17 @@ public class DataStorage
         this.worldSpawnValid = true;
     }
 
-    public void setSpawnChunkRadius(int radius)
+    public void setSpawnChunkRadius(int radius, boolean message)
     {
-        if (radius >= 0)
+        if (radius >= 0 && radius <= 32)
         {
             if (this.spawnChunkRadius != radius)
             {
-                String strRadius = radius > 0 ? GuiBase.TXT_GREEN + String.format("%d", radius) : GuiBase.TXT_RED + String.format("%d", radius);
-                InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_set", strRadius) + GuiBase.TXT_RST);
+                if (message)
+                {
+                    String strRadius = radius > 0 ? GuiBase.TXT_GREEN + String.format("%d", radius) + GuiBase.TXT_RST : GuiBase.TXT_RED + String.format("%d", radius) + GuiBase.TXT_RST;
+                    InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_set", strRadius));
+                }
 
                 OverlayRendererSpawnChunks.setNeedsUpdate();
                 MiniHUD.printDebug("DataStorage#setSpawnChunkRadius(): set spawn chunk radius [{}] -> [{}]", this.spawnChunkRadius, radius);
@@ -343,6 +346,7 @@ public class DataStorage
         else
         {
             this.spawnChunkRadius = -1;
+            this.spawnChunkRadiusValid = false;
         }
     }
 
@@ -359,7 +363,7 @@ public class DataStorage
     {
         if (this.spawnChunkRadiusValid == false)
         {
-            this.setSpawnChunkRadius(radius);
+            this.setSpawnChunkRadius(radius, true);
             OverlayRendererSpawnChunks.setNeedsUpdate();
         }
     }
@@ -613,9 +617,9 @@ public class DataStorage
                 {
                     int radius = Integer.parseInt(parts[1]);
 
-                    if (radius >= 0)
+                    if (radius >= 0 && radius <= 32)
                     {
-                        this.setSpawnChunkRadius(radius);
+                        this.setSpawnChunkRadius(radius, true);
                     }
                     else
                     {
@@ -631,8 +635,8 @@ public class DataStorage
             {
                 if (this.spawnChunkRadiusValid)
                 {
-                    String strRadius = this.spawnChunkRadius > 0 ? GuiBase.TXT_GREEN + String.format("%d", this.spawnChunkRadius) : GuiBase.TXT_RED + String.format("%d", this.spawnChunkRadius);
-                    InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_is", strRadius) + GuiBase.TXT_RST);
+                    String strRadius = this.spawnChunkRadius > 0 ? GuiBase.TXT_GREEN + String.format("%d", this.spawnChunkRadius) + GuiBase.TXT_RST : GuiBase.TXT_RED + String.format("%d", this.spawnChunkRadius) + GuiBase.TXT_RST;
+                    InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_is", strRadius));
                 }
                 else
                 {
@@ -691,7 +695,7 @@ public class DataStorage
                     MiniHUD.logger.warn("Failed to read the world seed from '{}'", text.getArgs()[1], e);
                 }
             }
-            else if ("commands.setworldspawn.success".equals(text.getKey()) && text.getArgs().length == 3)
+            else if ("commands.setworldspawn.success".equals(text.getKey()) && text.getArgs().length == 4)
             {
                 try
                 {
@@ -717,18 +721,20 @@ public class DataStorage
                 {
                     Object[] o = text.getArgs();
                     String rule = o[0].toString();
-                    int value = Integer.parseInt(o[1].toString());
 
                     if (rule.equals("spawnChunkRadius"))
                     {
+                        int value = Integer.parseInt(o[1].toString());
+
                         if (this.spawnChunkRadius != value)
                         {
-                            this.setSpawnChunkRadius(value);
+                            MiniHUD.logger.info("Received spawn chunk radius from the vanilla /gamerule command: {}", this.spawnChunkRadius);
+                            this.setSpawnChunkRadius(value, true);
                         }
                         else
                         {
-                            String strRadius = this.spawnChunkRadius > 0 ? GuiBase.TXT_GREEN + String.format("%d", this.spawnChunkRadius) : GuiBase.TXT_RED + String.format("%d", this.spawnChunkRadius);
-                            InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_is", strRadius) + GuiBase.TXT_RST);
+                            String strRadius = this.spawnChunkRadius > 0 ? GuiBase.TXT_GREEN + String.format("%d", this.spawnChunkRadius) + GuiBase.TXT_RST : GuiBase.TXT_RED + String.format("%d", this.spawnChunkRadius) + GuiBase.TXT_RST;
+                            InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_is", strRadius));
                         }
                     }
                 }
@@ -882,7 +888,7 @@ public class DataStorage
             this.timeout = data.getInt("timeout");
             this.setServerVersion(data.getString("servux"));
             this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
-            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"));
+            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"), true);
             this.setIsServuxServer();
 
             if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
@@ -907,7 +913,7 @@ public class DataStorage
 
             this.setServerVersion(data.getString("servux"));
             this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
-            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"));
+            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"), true);
 
             if (this.hasInValidServux)
             {
@@ -1168,7 +1174,7 @@ public class DataStorage
             }
             else
             {
-                this.setSpawnChunkRadius(spawnRadiusTmp);
+                this.setSpawnChunkRadius(spawnRadiusTmp, false);
             }
 
             // Force RenderToggle OFF if SPAWN_CHUNK_RADIUS is set to 0

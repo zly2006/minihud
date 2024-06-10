@@ -52,7 +52,7 @@ public abstract class MixinClientPlayNetworkHandler
     @Inject(method = "onPlayerSpawnPosition", at = @At("RETURN"))
     private void onSetSpawn(net.minecraft.network.packet.s2c.play.PlayerSpawnPositionS2CPacket packet, CallbackInfo ci)
     {
-        DataStorage.getInstance().setWorldSpawnIfUnknown(packet.getPos());
+        DataStorage.getInstance().setWorldSpawn(packet.getPos());
     }
 
     @Inject(method = "onGameJoin", at = @At("RETURN"))
