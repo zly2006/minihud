@@ -7,7 +7,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
-import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.minihud.MiniHUD;
@@ -66,6 +65,8 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     @Override
     public void decodeNbtCompound(Identifier channel, NbtCompound data)
     {
+        //MiniHUD.logger.warn("ServuxStructuresHandler#decodeNbtCompound(): received packetType {} of size {} bytes.", data.getInt("packetType"), data.getSizeInBytes());
+
         switch (data.getInt("packetType"))
         {
             case PACKET_S2C_METADATA ->
@@ -78,12 +79,12 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
             case PACKET_S2C_SPAWN_METADATA -> DataStorage.getInstance().receiveSpawnMetadata(data);
             case PACKET_S2C_STRUCTURE_DATA ->
             {
-                MiniHUD.printDebug("ServuxStructuresHandler#decodeNbtCompound(): received Structures Data payload of size {} (in bytes)", data.getSizeInBytes());
+                MiniHUD.printDebug("ServuxStructuresHandler#decodeNbtCompound(): received Structures Data payload of size [{}] (in bytes)", data.getSizeInBytes());
 
                 NbtList structures = data.getList("Structures", Constants.NBT.TAG_COMPOUND);
                 DataStorage.getInstance().addOrUpdateStructuresFromServer(structures, this.servuxRegistered);
             }
-            default -> MiniHUD.logger.warn("ServuxStructuresHandler#decodeNbtCompound(): received unhandled packetType {} of size {} bytes.", data.getInt("packetType"), data.getSizeInBytes());
+            default -> MiniHUD.logger.warn("ServuxStructuresHandler#decodeNbtCompound(): received unhandled packetType {} of size [{}] bytes.", data.getInt("packetType"), data.getSizeInBytes());
         }
     }
 
@@ -113,7 +114,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     {
         if (payload.getId().id().equals(CHANNEL_ID))
         {
-            ((ClientPlayHandler<?>) ClientPlayHandler.getInstance()).decodeNbtCompound(CHANNEL_ID, ((ServuxStructuresPayload) payload).data());
+            ServuxStructuresHandler.INSTANCE.decodeNbtCompound(CHANNEL_ID, ((ServuxStructuresPayload) payload).data());
         }
     }
 

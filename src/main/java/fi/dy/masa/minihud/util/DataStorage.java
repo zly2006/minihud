@@ -12,7 +12,6 @@ import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
@@ -38,7 +37,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.gen.structure.Structure;
-
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
@@ -63,6 +61,7 @@ public class DataStorage
     private static final DataStorage INSTANCE = new DataStorage();
     private final MobCapDataHandler mobCapData = new MobCapDataHandler();
     private final static ServuxStructuresHandler<ServuxStructuresPayload> HANDLER = ServuxStructuresHandler.getInstance();
+    //private final static ServuxStructuresHandlerTest<ServuxStructuresPayloadTest> TESTER = ServuxStructuresHandlerTest.getInstance();
     private boolean worldSeedValid = false;
     private boolean carpetServer = false;
     private boolean servuxServer = false;
@@ -114,9 +113,14 @@ public class DataStorage
     {
         ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
         HANDLER.registerPlayPayload(ServuxStructuresPayload.TYPE, ServuxStructuresPayload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
+
+        //ClientPlayHandler.getInstance().registerClientPlayHandler(TESTER);
+        //TESTER.registerPlayPayload(ServuxStructuresPayloadTest.TYPE, ServuxStructuresPayloadTest.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
     }
 
     public Identifier getNetworkChannel() { return ServuxStructuresHandler.CHANNEL_ID; }
+
+    //public Identifier getNetworkChannelTest() { return ServuxStructuresHandlerTest.CHANNEL_ID; }
 
     public IPluginClientPlayHandler<ServuxStructuresPayload> getPacketHandler() { return HANDLER; }
 
@@ -145,6 +149,8 @@ public class DataStorage
             */
             HANDLER.reset(this.getNetworkChannel());
             HANDLER.resetFailures(this.getNetworkChannel());
+            //TESTER.reset(this.getNetworkChannelTest());
+            //TESTER.resetFailures(this.getNetworkChannelTest());
             this.servuxServer = false;
             this.hasInValidServux = false;
             this.structureDataTimeout = 30 * 20;
@@ -237,6 +243,7 @@ public class DataStorage
         if (this.hasIntegratedServer == false)
         {
             HANDLER.registerPlayReceiver(ServuxStructuresPayload.TYPE, HANDLER::receivePlayPayload);
+            //TESTER.registerPlayReceiver(ServuxStructuresPayloadTest.TYPE, TESTER::receivePlayPayload);
         }
     }
 
@@ -301,6 +308,7 @@ public class DataStorage
             nbt.putString("version", Reference.MOD_STRING);
 
             HANDLER.encodeNbtCompound(nbt);
+            //TESTER.encodeStructuresData(new ServuxStructuresDataTest(ServuxStructuresHandlerTest.PACKET_C2S_REQUEST_SPAWN_METADATA, nbt));
         }
     }
 
@@ -865,6 +873,7 @@ public class DataStorage
                 nbt.putString("version", Reference.MOD_STRING);
 
                 HANDLER.encodeNbtCompound(nbt);
+                //TESTER.encodeStructuresData(new ServuxStructuresDataTest(ServuxStructuresHandlerTest.PACKET_C2S_STRUCTURES_REGISTER, nbt));
             }
         }
         else
@@ -935,6 +944,8 @@ public class DataStorage
 
                 HANDLER.encodeNbtCompound(nbt);
                 HANDLER.reset(this.getNetworkChannel());
+                //TESTER.encodeStructuresData(new ServuxStructuresDataTest(ServuxStructuresHandlerTest.PACKET_C2S_STRUCTURES_UNREGISTER, nbt));
+                //TESTER.reset(this.getNetworkChannelTest());
             }
         }
         this.shouldRegisterStructureChannel = false;
