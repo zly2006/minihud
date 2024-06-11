@@ -3,8 +3,10 @@ package fi.dy.masa.minihud.network;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
@@ -116,6 +118,12 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
         {
             ServuxStructuresHandler.INSTANCE.decodeNbtCompound(CHANNEL_ID, ((ServuxStructuresPayload) payload).data());
         }
+    }
+
+    @Override
+    public void encodeWithSplitter(PacketByteBuf buf, ClientPlayNetworkHandler handler)
+    {
+        // NO-OP
     }
 
     @Override

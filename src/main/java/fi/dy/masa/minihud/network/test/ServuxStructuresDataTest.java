@@ -6,10 +6,11 @@ import io.netty.buffer.Unpooled;
 import org.jetbrains.annotations.ApiStatus;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
+import fi.dy.masa.malilib.network.IClientPayloadData;
 import fi.dy.masa.minihud.MiniHUD;
 
 @ApiStatus.Experimental
-public class ServuxStructuresDataTest
+public class ServuxStructuresDataTest implements IClientPayloadData
 {
     private NbtCompound NBT;
     private PacketByteBuf BUFFER;
@@ -37,6 +38,13 @@ public class ServuxStructuresDataTest
         this.BUFFER = packet;
     }
 
+    @Override
+    public int getVersion()
+    {
+        return ServuxStructuresHandlerTest.PROTOCOL_VERSION;
+    }
+
+    @Override
     public int getPacketType() { return this.packetType; }
 
     @Nullable
@@ -49,6 +57,7 @@ public class ServuxStructuresDataTest
 
     public boolean hasNbt() { return this.NBT != null && this.NBT.isEmpty() == false; }
 
+    @Override
     public int getTotalSize()
     {
         int total = 1;
@@ -64,6 +73,12 @@ public class ServuxStructuresDataTest
         }
 
         return total;
+    }
+
+    @Override
+    public boolean isEmpty()
+    {
+        return !this.hasNbt() && !this.hasPacket();
     }
 
     @Nullable
@@ -97,6 +112,7 @@ public class ServuxStructuresDataTest
         return null;
     }
 
+    @Override
     public void toPacket(PacketByteBuf output)
     {
         if (this.packetType == ServuxStructuresHandlerTest.PACKET_S2C_STRUCTURE_DATA)
@@ -125,7 +141,8 @@ public class ServuxStructuresDataTest
         }
     }
 
-    public void reset()
+    @Override
+    public void clear()
     {
         this.packetType = -1;
 

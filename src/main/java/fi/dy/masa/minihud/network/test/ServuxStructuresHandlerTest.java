@@ -37,7 +37,7 @@ public abstract class ServuxStructuresHandlerTest<T extends CustomPayload> imple
     private int failures = 0;
     private static final int MAX_FAILURES = 4;
 
-    public final int PROTOCOL_VERSION = 2;
+    public static final int PROTOCOL_VERSION = 2;
     public static final int PACKET_S2C_METADATA = 1;
     public static final int PACKET_S2C_STRUCTURE_DATA = 2;
     public static final int PACKET_C2S_STRUCTURES_REGISTER = 3;
@@ -167,9 +167,9 @@ public abstract class ServuxStructuresHandlerTest<T extends CustomPayload> imple
     }
 
     @Override
-    public void encodeWithSplitter(PacketByteBuf packet)
+    public void encodeWithSplitter(PacketByteBuf buf, ClientPlayNetworkHandler handler)
     {
-        ServuxStructuresHandlerTest.INSTANCE.encodeStructuresData(new ServuxStructuresDataTest(PACKET_S2C_STRUCTURE_DATA, packet));
+        ServuxStructuresHandlerTest.INSTANCE.encodeStructuresData(new ServuxStructuresDataTest(PACKET_S2C_STRUCTURE_DATA, buf));
     }
 
     public void encodeStructuresData(ServuxStructuresDataTest data)
