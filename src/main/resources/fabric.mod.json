@@ -35,6 +35,7 @@
 
 	"depends": {
 		"minecraft": ">=1.21-rc.1",
+		"fabric-networking-api-v1": ">=4.1.0",
 		"malilib": ">=0.18.999-sakura"
 	}
 }
