@@ -46,12 +46,16 @@ public class RenderObjectVbo extends RenderObjectBase
 
         try
         {
-            builtBuffer = buffer.end();
-            this.hasData = true;
-            this.vertexBuffer.bind();
-            this.vertexBuffer.upload(builtBuffer);
-            VertexBuffer.unbind();
-            builtBuffer.close();
+            builtBuffer = buffer.endNullable();
+
+            if (builtBuffer != null)
+            {
+                this.hasData = true;
+                this.vertexBuffer.bind();
+                this.vertexBuffer.upload(builtBuffer);
+                VertexBuffer.unbind();
+                builtBuffer.close();
+            }
         }
         catch (Exception ignored) { }
     }

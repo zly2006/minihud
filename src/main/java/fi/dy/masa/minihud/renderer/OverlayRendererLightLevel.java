@@ -87,18 +87,33 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
     {
         BlockPos pos = PositionUtils.getEntityBlockPos(entity);
-        RenderObjectBase renderQuads = this.renderObjects.get(0);
-        RenderObjectBase renderLines = this.renderObjects.get(1);
-        BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_TEXTURE_COLOR);
-        BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+        int lastSize = this.lightInfos.size();
+
+        if (this.updateLightLevels(mc.world, pos))
+        {
+            if (lastSize == 0)
+            {
+                this.allocateGlResources();
+            }
+
+            RenderObjectBase renderQuads = this.renderObjects.get(0);
+            RenderObjectBase renderLines = this.renderObjects.get(1);
+
+            BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_TEXTURE_COLOR);
+            BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+
+            this.renderLightLevels(cameraPos, mc);
+
+            renderQuads.uploadData(BUFFER_1);
+            renderLines.uploadData(BUFFER_2);
+        }
+        else
+        {
+            this.deleteGlResources();
+        }
 
         //long pre = System.nanoTime();
-        this.updateLightLevels(mc.world, pos);
-        //System.out.printf("LL markers: %d, time: %.3f s\n", LIGHT_INFOS.size(), (double) (System.nanoTime() - pre) / 1000000000D);
-        this.renderLightLevels(cameraPos, mc);
-
-        renderQuads.uploadData(BUFFER_1);
-        renderLines.uploadData(BUFFER_2);
+        //System.out.printf("LL markers: %d, time: %.3f s\n", this.lightInfos.size(), (double) (System.nanoTime() - pre) / 1000000000D);
 
         this.lastUpdatePos = pos;
         this.lastDirection = entity.getHorizontalFacing();
@@ -371,7 +386,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a);
     }
 
-    private void updateLightLevels(World world, BlockPos center)
+    private boolean updateLightLevels(World world, BlockPos center)
     {
         this.lightInfos.clear();
 
@@ -455,6 +470,8 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                 }
             }
         }
+
+        return this.lightInfos.isEmpty() == false && this.lightInfos.size() > 0;
     }
 
     private boolean canSpawnAtWrapper(int x, int y, int z, Chunk chunk, World world, boolean skipBlockCheck)

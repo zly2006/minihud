@@ -1,5 +1,6 @@
 package fi.dy.masa.minihud.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -801,6 +802,48 @@ public class DataStorage
                 if (values.isEmpty() == false)
                 {
                     copy.putAll(type, values);
+                }
+            }
+
+            this.structureRendererNeedsUpdate = false;
+        }
+
+        return copy;
+    }
+
+    /**
+     * Get all structures withinRange of the player (Helps reduce overhead)
+     * @param pos (Player Position)
+     * @param maxRange (maxChunkRange)
+     * @return (The list)
+     */
+    public ArrayListMultimap<StructureType, StructureData> getCopyOfStructureDataWithinRange(BlockPos pos, int maxRange)
+    {
+        ArrayListMultimap<StructureType, StructureData> copy = ArrayListMultimap.create();
+
+        if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() == false)
+        {
+            return copy;
+        }
+
+        synchronized (this.structures)
+        {
+            for (StructureType type : StructureType.VALUES)
+            {
+                Collection<StructureData> values = this.structures.get(type);
+                Collection<StructureData> valuesCopy = new ArrayList<>();
+
+                if (values.isEmpty() == false)
+                {
+                    for (StructureData structure : values)
+                    {
+                        if (MiscUtils.isStructureWithinRange(structure.getBoundingBox(), pos, maxRange))
+                        {
+                            valuesCopy.add(structure);
+                        }
+                    }
+
+                    copy.putAll(type, valuesCopy);
                 }
             }
 
