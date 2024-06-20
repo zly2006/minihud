@@ -75,7 +75,7 @@ public class RenderContainer
 
         for (OverlayRendererBase renderer : this.renderers)
         {
-            mc.getProfiler().push(() -> renderer.getClass().getName());
+            mc.getProfiler().push(renderer::getName);
 
             if (renderer.shouldRender(mc))
             {
@@ -122,8 +122,7 @@ public class RenderContainer
 
                     matrix4fstack.pushMatrix();
                     matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
-                    renderer.draw(matrix4fstack, projMatrix);
-
+                    renderer.draw(matrix4fstack.get(matrix4f), projMatrix);
                     matrix4fstack.popMatrix();
                 }
 
