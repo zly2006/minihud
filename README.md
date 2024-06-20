@@ -1,3 +1,5 @@
+[![](https://jitpack.io/v/sakura-ryoko/minihud.svg)](https://jitpack.io/#sakura-ryoko/minihud)
+
 Mini HUD
 ==============
 Mini HUD is a tiny client-side mod for Minecraft. that adds the coordinates, looking angle and current speed to the screen.
