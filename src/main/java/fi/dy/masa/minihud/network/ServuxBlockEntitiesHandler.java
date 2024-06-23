@@ -5,32 +5,32 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.random.Random;
+import fi.dy.masa.malilib.network.ClientPlayHandler;
+import fi.dy.masa.malilib.network.IClientPayloadData;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.network.PacketSplitter;
-import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.util.DataStorage;
+import fi.dy.masa.minihud.data.BlockEntitiesData;
 
 @Environment(EnvType.CLIENT)
-public abstract class ServuxStructuresHandler<T extends CustomPayload> implements IPluginClientPlayHandler<T>
+public abstract class ServuxBlockEntitiesHandler<T extends CustomPayload> implements IPluginClientPlayHandler<T>
 {
-    private final static ServuxStructuresHandler<ServuxStructuresPacket.Payload> INSTANCE = new ServuxStructuresHandler<>()
+    private final static ServuxBlockEntitiesHandler<ServuxBlockEntitiesPacket.Payload> INSTANCE = new ServuxBlockEntitiesHandler<>()
     {
         @Override
-        public void receive(ServuxStructuresPacket.Payload payload, ClientPlayNetworking.Context context)
+        public void receive(ServuxBlockEntitiesPacket.Payload payload, ClientPlayNetworking.Context context)
         {
-            ServuxStructuresHandler.INSTANCE.receivePlayPayload(payload, context);
+            ServuxBlockEntitiesHandler.INSTANCE.receivePlayPayload(payload, context);
         }
     };
-    public static ServuxStructuresHandler<ServuxStructuresPacket.Payload> getInstance() { return INSTANCE; }
+    public static ServuxBlockEntitiesHandler<ServuxBlockEntitiesPacket.Payload> getInstance() { return INSTANCE; }
 
-    public static final Identifier CHANNEL_ID = Identifier.of("servux", "structures");
+    public static final Identifier CHANNEL_ID = Identifier.of("servux", "block_entities");
 
     private boolean servuxRegistered;
     private boolean payloadRegistered = false;
@@ -61,15 +61,18 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
         }
     }
 
-    public void decodeStructuresPacket(Identifier channel, ServuxStructuresPacket packet)
+    @Override
+    public <P extends IClientPayloadData> void decodeClientData(Identifier channel, P data)
     {
+        ServuxBlockEntitiesPacket packet = (ServuxBlockEntitiesPacket) data;
+
         if (channel.equals(CHANNEL_ID) == false)
         {
             return;
         }
         switch (packet.getType())
         {
-            case PACKET_S2C_STRUCTURE_DATA ->
+            case PACKET_S2C_BLOCK_ENTITY_DATA ->
             {
                 if (this.readingSessionKey == -1)
                 {
@@ -87,31 +90,39 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
 
                         if (nbt != null)
                         {
-                            NbtList structures = nbt.getList("Structures", Constants.NBT.TAG_COMPOUND);
-                            //MiniHUD.printDebug("decodeStructuresPacket(): received Structures Data of size {} (in bytes) // structures [{}]", nbt.getSizeInBytes(), structures.size());
+                            //NbtList structures = nbt.getList("Structures", Constants.NBT.TAG_COMPOUND);
+                            MiniHUD.printDebug("ServuxBlockEntitiesHandler#decodeClientData(): received Block Entity Data of size {} (in bytes)", nbt.getSizeInBytes());
 
-                            DataStorage.getInstance().addOrUpdateStructuresFromServer(structures, this.servuxRegistered);
+                            //BlockEntitiesData.getInstance().addOrUpdateStructuresFromServer(structures, this.servuxRegistered);
                         }
                         else
                         {
-                            MiniHUD.logger.warn("decodeStructuresPacket(): Structures Data: error reading fullBuffer NBT is NULL");
+                            MiniHUD.logger.warn("ServuxBlockEntitiesHandler#decodeClientData(): Block Entity Data: error reading fullBuffer NBT is NULL");
                         }
                     }
                     catch (Exception e)
                     {
-                        MiniHUD.logger.error("decodeStructuresPacket(): Structures Data: error reading fullBuffer [{}]", e.getLocalizedMessage());
+                        MiniHUD.logger.error("ServuxBlockEntitiesHandler#decodeClientData(): Block Entity Data: error reading fullBuffer [{}]", e.getLocalizedMessage());
                     }
                 }
             }
             case PACKET_S2C_METADATA ->
             {
-                if (DataStorage.getInstance().receiveServuxStrucutresMetadata(packet.getCompound()))
+                if (BlockEntitiesData.getInstance().receiveServuxMetadata(packet.getCompound()))
                 {
                     this.servuxRegistered = true;
                 }
             }
-            case PACKET_S2C_SPAWN_METADATA -> DataStorage.getInstance().receiveSpawnMetadata(packet.getCompound());
-            default -> MiniHUD.logger.warn("decodeStructuresPacket(): received unhandled packetType {} of size {} bytes.", packet.getPacketType(), packet.getTotalSize());
+            case PACKET_S2C_BLOCK_ENTITY_REQUEST_DENIED ->
+            {
+                /*
+                if (BlockEntitiesData.getInstance().receiveServuxMetadata(packet.getCompound()))
+                {
+                    this.servuxRegistered = true;
+                }
+                 */
+            }
+            default -> MiniHUD.logger.warn("ServuxBlockEntitiesHandler#decodeClientData(): received unhandled packetType {} of size {} bytes.", packet.getPacketType(), packet.getTotalSize());
         }
     }
 
@@ -139,7 +150,9 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
     {
         if (payload.getId().id().equals(CHANNEL_ID))
         {
-            ServuxStructuresHandler.INSTANCE.decodeStructuresPacket(CHANNEL_ID, ((ServuxStructuresPacket.Payload) payload).data());
+            //ServuxBlockEntitiesHandler.INSTANCE.decodeClientData(CHANNEL_ID, ((ServuxBlockEntitiesPacket.Payload) payload).data());
+            ((ClientPlayHandler<?>) ClientPlayHandler.getInstance()).decodeClientData(CHANNEL_ID, ((ServuxBlockEntitiesPacket.Payload) payload).data());
+            // This allows the data to be "shared" among multiple mods
         }
     }
 
@@ -149,16 +162,19 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
         // NO-OP
     }
 
-    public void encodeStructuresPacket(ServuxStructuresPacket packet)
+    @Override
+    public <P extends IClientPayloadData> void encodeClientData(P data)
     {
-        if (ServuxStructuresHandler.INSTANCE.sendPlayPayload(new ServuxStructuresPacket.Payload(packet)) == false)
+        ServuxBlockEntitiesPacket packet = (ServuxBlockEntitiesPacket) data;
+
+        if (ServuxBlockEntitiesHandler.INSTANCE.sendPlayPayload(new ServuxBlockEntitiesPacket.Payload(packet)) == false)
         {
             if (this.failures > MAX_FAILURES)
             {
-                MiniHUD.logger.warn("encodeStructuresPacket(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
+                MiniHUD.logger.warn("encodeClientData(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
                 this.servuxRegistered = false;
-                ServuxStructuresHandler.INSTANCE.unregisterPlayReceiver();
-                DataStorage.getInstance().onPacketFailure();
+                ServuxBlockEntitiesHandler.INSTANCE.unregisterPlayReceiver();
+                BlockEntitiesData.getInstance().onPacketFailure();
             }
             else
             {

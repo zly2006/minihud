@@ -117,7 +117,7 @@ public class DataStorage
 
     public Identifier getNetworkChannel() { return ServuxStructuresHandler.CHANNEL_ID; }
 
-    public IPluginClientPlayHandler<ServuxStructuresPacket.Payload> getPacketHandler() { return HANDLER; }
+    public IPluginClientPlayHandler<ServuxStructuresPacket.Payload> getNetworkHandler() { return HANDLER; }
 
     public MobCapDataHandler getMobCapData()
     {
@@ -915,12 +915,12 @@ public class DataStorage
         // Will re-add if they update it
     }
 
-    public boolean receiveServuxMetadata(NbtCompound data)
+    public boolean receiveServuxStrucutresMetadata(NbtCompound data)
     {
         if (this.servuxServer == false && this.hasIntegratedServer == false &&
             this.shouldRegisterStructureChannel)
         {
-            MiniHUD.printDebug("DataStorage#checkServuxMetadata(): received METADATA from Servux");
+            MiniHUD.printDebug("DataStorage#receiveServuxStrucutresMetadata(): received METADATA from Servux");
 
             if (data.getInt("version") != ServuxStructuresPacket.PROTOCOL_VERSION)
             {
@@ -973,7 +973,7 @@ public class DataStorage
                 MiniHUD.printDebug("DataStorage#unregisterStructureChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
 
                 HANDLER.encodeStructuresPacket(new ServuxStructuresPacket(ServuxStructuresPacket.Type.PACKET_C2S_STRUCTURES_UNREGISTER, new NbtCompound()));
-                HANDLER.reset(this.getNetworkChannel());
+                HANDLER.reset(HANDLER.getPayloadChannel());
             }
         }
         this.shouldRegisterStructureChannel = false;
