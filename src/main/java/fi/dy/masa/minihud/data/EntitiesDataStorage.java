@@ -7,17 +7,17 @@ import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.network.ServuxBlockEntitiesHandler;
-import fi.dy.masa.minihud.network.ServuxBlockEntitiesPacket;
+import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
+import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.util.DataStorage;
 
-public class BlockEntitiesData
+public class EntitiesDataStorage
 {
-    private static final BlockEntitiesData INSTANCE = new BlockEntitiesData();
+    private static final EntitiesDataStorage INSTANCE = new EntitiesDataStorage();
 
-    public static BlockEntitiesData getInstance() {return INSTANCE;}
+    public static EntitiesDataStorage getInstance() {return INSTANCE;}
 
-    private final static ServuxBlockEntitiesHandler<ServuxBlockEntitiesPacket.Payload> HANDLER = ServuxBlockEntitiesHandler.getInstance();
+    private final static ServuxEntitiesHandler<ServuxEntitiesPacket.Payload> HANDLER = ServuxEntitiesHandler.getInstance();
 
     private boolean servuxServer = false;
     private boolean hasInValidServux = false;
@@ -27,20 +27,20 @@ public class BlockEntitiesData
 
     private boolean enabled;
 
-    private BlockEntitiesData()
+    private EntitiesDataStorage()
     {
         this.enabled = false;
     }
 
-    public Identifier getNetworkChannel() {return ServuxBlockEntitiesHandler.CHANNEL_ID;}
+    public Identifier getNetworkChannel() {return ServuxEntitiesHandler.CHANNEL_ID;}
 
-    public IPluginClientPlayHandler<ServuxBlockEntitiesPacket.Payload> getNetworkHandler() {return HANDLER;}
+    public IPluginClientPlayHandler<ServuxEntitiesPacket.Payload> getNetworkHandler() {return HANDLER;}
 
     public void reset(boolean isLogout)
     {
         if (isLogout)
         {
-            MiniHUD.printDebug("BlockEntitiesData#reset() - log-out");
+            MiniHUD.printDebug("EntitiesDataStorage#reset() - log-out");
             HANDLER.reset(this.getNetworkChannel());
             HANDLER.resetFailures(this.getNetworkChannel());
             this.servuxServer = false;
@@ -48,14 +48,14 @@ public class BlockEntitiesData
         }
         else
         {
-            MiniHUD.printDebug("BlockEntitiesData#reset() - dimension change or log-in");
+            MiniHUD.printDebug("EntitiesDataStorage#reset() - dimension change or log-in");
         }
         // Clear data
     }
 
     public void setIsServuxServer()
     {
-        MiniHUD.printDebug("BlockEntitiesData#setIsServuxServer()");
+        MiniHUD.printDebug("EntitiesDataStorage#setIsServuxServer()");
         this.servuxServer = true;
         if (this.hasInValidServux)
         {
@@ -67,7 +67,7 @@ public class BlockEntitiesData
 
     public void setServuxVersion(String ver)
     {
-        MiniHUD.printDebug("BlockEntitiesData#setServuxVersion() version {}", ver);
+        MiniHUD.printDebug("EntitiesDataStorage#setServuxVersion() version {}", ver);
 
         if (ver != null && ver.isEmpty() == false)
         {
@@ -80,25 +80,25 @@ public class BlockEntitiesData
 
     public void onGameInit()
     {
-        MiniHUD.logger.warn("BlockEntitiesData#onGameInit()");
+        MiniHUD.logger.warn("EntitiesDataStorage#onGameInit()");
 
         ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
-        HANDLER.registerPlayPayload(ServuxBlockEntitiesPacket.Payload.ID, ServuxBlockEntitiesPacket.Payload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
+        HANDLER.registerPlayPayload(ServuxEntitiesPacket.Payload.ID, ServuxEntitiesPacket.Payload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
     }
 
     public void onWorldPre()
     {
-        MiniHUD.printDebug("BlockEntitiesData#onWorldPre()");
+        MiniHUD.printDebug("EntitiesDataStorage#onWorldPre()");
 
         if (DataStorage.getInstance().hasIntegratedServer() == false)
         {
-            HANDLER.registerPlayReceiver(ServuxBlockEntitiesPacket.Payload.ID, HANDLER::receivePlayPayload);
+            HANDLER.registerPlayReceiver(ServuxEntitiesPacket.Payload.ID, HANDLER::receivePlayPayload);
         }
     }
 
     public void onWorldJoin()
     {
-        MiniHUD.printDebug("BlockEntitiesData#onWorldJoin()");
+        MiniHUD.printDebug("EntitiesDataStorage#onWorldJoin()");
 
         if (DataStorage.getInstance().hasIntegratedServer() == false)
         {
@@ -115,7 +115,7 @@ public class BlockEntitiesData
 
     public void registerBlockEntitiesChannel()
     {
-        MiniHUD.printDebug("BlockEntitiesData#registerBlockEntitiesChannel()");
+        MiniHUD.printDebug("EntitiesDataStorage#registerBlockEntitiesChannel()");
 
         this.shouldRegisterBlockEntitiesChannel = true;
 
@@ -123,12 +123,12 @@ public class BlockEntitiesData
         {
             if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
             {
-                MiniHUD.printDebug("BlockEntitiesData#registerBlockEnitiesChannel(): sending BLOCK_ENTITY_REGISTER to Servux");
+                MiniHUD.printDebug("EntitiesDataStorage#registerBlockEnitiesChannel(): sending BLOCK_ENTITY_REGISTER to Servux");
 
                 NbtCompound nbt = new NbtCompound();
                 nbt.putString("version", Reference.MOD_STRING);
 
-                HANDLER.encodeClientData(new ServuxBlockEntitiesPacket(ServuxBlockEntitiesPacket.Type.PACKET_C2S_BLOCK_ENTITY_REGISTER, nbt));
+                HANDLER.encodeClientData(new ServuxEntitiesPacket(ServuxEntitiesPacket.Type.PACKET_C2S_ENTITY_REGISTER, nbt));
             }
         }
         else
@@ -139,27 +139,27 @@ public class BlockEntitiesData
 
     public void requestMetadata()
     {
-        MiniHUD.printDebug("BlockEntitiesData#requestMetadata()");
+        MiniHUD.printDebug("EntitiesDataStorage#requestMetadata()");
 
         if (DataStorage.getInstance().hasIntegratedServer() == false && this.hasServuxServer())
         {
             NbtCompound nbt = new NbtCompound();
             nbt.putString("version", Reference.MOD_STRING);
 
-            HANDLER.encodeClientData(new ServuxBlockEntitiesPacket(ServuxBlockEntitiesPacket.Type.PACKET_C2S_REQUEST_METADATA, nbt));
+            HANDLER.encodeClientData(new ServuxEntitiesPacket(ServuxEntitiesPacket.Type.PACKET_C2S_REQUEST_METADATA, nbt));
         }
     }
 
     public boolean receiveServuxMetadata(NbtCompound data)
     {
-        MiniHUD.printDebug("BlockEntitiesData#receiveServuxMetadata()");
+        MiniHUD.printDebug("EntitiesDataStorage#receiveServuxMetadata()");
 
         if (this.servuxServer == false && DataStorage.getInstance().hasIntegratedServer() == false &&
             this.shouldRegisterBlockEntitiesChannel)
         {
-            MiniHUD.printDebug("BlockEntitiesData#receiveServuxBlockEntitiesMetadata(): received METADATA from Servux");
+            MiniHUD.printDebug("EntitiesDataStorage#receiveServuxBlockEntitiesMetadata(): received METADATA from Servux");
 
-            if (data.getInt("version") != ServuxBlockEntitiesPacket.PROTOCOL_VERSION)
+            if (data.getInt("version") != ServuxEntitiesPacket.PROTOCOL_VERSION)
             {
                 MiniHUD.logger.warn("blockEntitiesChannel: Mis-matched protocol version!");
             }
@@ -184,16 +184,16 @@ public class BlockEntitiesData
 
     public void unregisterBlockEntitiesChannel()
     {
-        MiniHUD.printDebug("BlockEntitiesData#unregisterBlockEntitiesChannel()");
+        MiniHUD.printDebug("EntitiesDataStorage#unregisterBlockEntitiesChannel()");
 
         if (this.servuxServer)
         {
             this.servuxServer = false;
             if (this.hasInValidServux == false)
             {
-                MiniHUD.printDebug("BlockEntitiesData#unregisterBlockEntitiesChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
+                MiniHUD.printDebug("EntitiesDataStorage#unregisterBlockEntitiesChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
 
-                HANDLER.encodeClientData(new ServuxBlockEntitiesPacket(ServuxBlockEntitiesPacket.Type.PACKET_C2S_BLOCK_ENTITY_UNREGISTER, new NbtCompound()));
+                HANDLER.encodeClientData(new ServuxEntitiesPacket(ServuxEntitiesPacket.Type.PACKET_C2S_ENTITY_UNREGISTER, new NbtCompound()));
                 HANDLER.reset(this.getNetworkChannel());
             }
         }
@@ -202,7 +202,7 @@ public class BlockEntitiesData
 
     public void onPacketFailure()
     {
-        MiniHUD.printDebug("BlockEntitiesData#onPacketFailure()");
+        MiniHUD.printDebug("EntitiesDataStorage#onPacketFailure()");
 
         // Define how to handle multiple sendPayload failures
         this.shouldRegisterBlockEntitiesChannel = false;
@@ -214,13 +214,13 @@ public class BlockEntitiesData
 
     public JsonObject toJson()
     {
-        MiniHUD.printDebug("BlockEntitiesData#toJson()");
+        MiniHUD.printDebug("EntitiesDataStorage#toJson()");
 
         return new JsonObject();
     }
 
     public void fromJson(JsonObject obj)
     {
-        MiniHUD.printDebug("BlockEntitiesData#fromJson()");
+        MiniHUD.printDebug("EntitiesDataStorage#fromJson()");
     }
 }

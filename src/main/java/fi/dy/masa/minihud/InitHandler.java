@@ -4,7 +4,7 @@ import fi.dy.masa.malilib.config.ConfigManager;
 import fi.dy.masa.malilib.event.*;
 import fi.dy.masa.malilib.interfaces.IInitializationHandler;
 import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.BlockEntitiesData;
+import fi.dy.masa.minihud.data.EntitiesDataStorage;
 import fi.dy.masa.minihud.event.*;
 import fi.dy.masa.minihud.hotkeys.KeyCallbacks;
 import fi.dy.masa.minihud.util.DataStorage;
@@ -16,7 +16,7 @@ public class InitHandler implements IInitializationHandler
     {
         ConfigManager.getInstance().registerConfigHandler(Reference.MOD_ID, new Configs());
         DataStorage.getInstance().onGameInit();
-        BlockEntitiesData.getInstance().onGameInit();
+        EntitiesDataStorage.getInstance().onGameInit();
 
         InputEventHandler.getKeybindManager().registerKeybindProvider(InputHandler.getInstance());
         InputEventHandler.getInputManager().registerMouseInputHandler(InputHandler.getInstance());

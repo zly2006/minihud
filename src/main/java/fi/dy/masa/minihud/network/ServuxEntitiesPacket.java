@@ -10,14 +10,14 @@ import net.minecraft.network.packet.CustomPayload;
 import fi.dy.masa.malilib.network.IClientPayloadData;
 import fi.dy.masa.minihud.MiniHUD;
 
-public class ServuxBlockEntitiesPacket implements IClientPayloadData
+public class ServuxEntitiesPacket implements IClientPayloadData
 {
     private Type packetType;
     private NbtCompound nbt;
     private PacketByteBuf buffer;
     public static final int PROTOCOL_VERSION = 1;
 
-    public ServuxBlockEntitiesPacket(Type type, @Nullable NbtCompound nbt)
+    public ServuxEntitiesPacket(Type type, @Nullable NbtCompound nbt)
     {
         this.packetType = type;
 
@@ -33,7 +33,7 @@ public class ServuxBlockEntitiesPacket implements IClientPayloadData
         }
     }
 
-    public ServuxBlockEntitiesPacket(Type type, @Nonnull PacketByteBuf packet)
+    public ServuxEntitiesPacket(Type type, @Nonnull PacketByteBuf packet)
     {
         this.packetType = type;
         this.nbt = new NbtCompound();
@@ -99,7 +99,7 @@ public class ServuxBlockEntitiesPacket implements IClientPayloadData
     {
         output.writeVarInt(this.packetType.get());
 
-        if (this.packetType.equals(Type.PACKET_S2C_BLOCK_ENTITY_DATA))
+        if (this.packetType.equals(Type.PACKET_S2C_ENTITY_DATA))
         {
             // Write Packet Buffer
             try
@@ -126,7 +126,7 @@ public class ServuxBlockEntitiesPacket implements IClientPayloadData
     }
 
     @Nullable
-    public static ServuxBlockEntitiesPacket fromPacket(PacketByteBuf input)
+    public static ServuxEntitiesPacket fromPacket(PacketByteBuf input)
     {
         int i = input.readVarInt();
         Type type = getType(i);
@@ -136,12 +136,12 @@ public class ServuxBlockEntitiesPacket implements IClientPayloadData
             // Invalid Type
             MiniHUD.logger.warn("MiniHUDBlockEntitiesPacket#fromPacket: invalid packet type received");
         }
-        else if (type.equals(Type.PACKET_S2C_BLOCK_ENTITY_DATA))
+        else if (type.equals(Type.PACKET_S2C_ENTITY_DATA))
         {
             // Read Packet Buffer
             try
             {
-                return new ServuxBlockEntitiesPacket(type, new PacketByteBuf(input.readBytes(input.readableBytes())));
+                return new ServuxEntitiesPacket(type, new PacketByteBuf(input.readBytes(input.readableBytes())));
             }
             catch (Exception e)
             {
@@ -153,7 +153,7 @@ public class ServuxBlockEntitiesPacket implements IClientPayloadData
             // Read Nbt
             try
             {
-                return new ServuxBlockEntitiesPacket(type, input.readNbt());
+                return new ServuxEntitiesPacket(type, input.readNbt());
             }
             catch (Exception e)
             {
@@ -198,12 +198,12 @@ public class ServuxBlockEntitiesPacket implements IClientPayloadData
     {
         PACKET_S2C_METADATA(1),
         PACKET_C2S_REQUEST_METADATA(2),
-        PACKET_C2S_BLOCK_ENTITY_REGISTER(3),
-        PACKET_C2S_BLOCK_ENTITY_UNREGISTER(4),
-        PACKET_S2C_BLOCK_ENTITY_DATA_START(5),
-        PACKET_S2C_BLOCK_ENTITY_DATA(6),
-        PACKET_C2S_BLOCK_ENTITY_REQUEST(7),
-        PACKET_S2C_BLOCK_ENTITY_REQUEST_DENIED(8);
+        PACKET_C2S_ENTITY_REGISTER(3),
+        PACKET_C2S_ENTITY_UNREGISTER(4),
+        PACKET_S2C_ENTITY_DATA_START(5),
+        PACKET_S2C_ENTITY_DATA(6),
+        PACKET_C2S_ENTITY_REQUEST(7),
+        PACKET_S2C_ENTITY_REQUEST_DENIED(8);
 
         private final int type;
 
@@ -215,9 +215,9 @@ public class ServuxBlockEntitiesPacket implements IClientPayloadData
         int get() { return this.type; }
     }
 
-    public record Payload(ServuxBlockEntitiesPacket data) implements CustomPayload
+    public record Payload(ServuxEntitiesPacket data) implements CustomPayload
     {
-        public static final Id<Payload> ID = new Id<>(ServuxBlockEntitiesHandler.CHANNEL_ID);
+        public static final Id<Payload> ID = new Id<>(ServuxEntitiesHandler.CHANNEL_ID);
         public static final PacketCodec<PacketByteBuf, Payload> CODEC = CustomPayload.codecOf(Payload::write, Payload::new);
 
         public Payload(PacketByteBuf input)
