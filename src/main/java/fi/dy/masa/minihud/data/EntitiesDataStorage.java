@@ -1,8 +1,6 @@
 package fi.dy.masa.minihud.data;
 
 import com.google.gson.JsonObject;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.Identifier;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.minihud.MiniHUD;
@@ -10,6 +8,17 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
 import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.util.DataStorage;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
+import java.util.UUID;
 
 public class EntitiesDataStorage
 {
@@ -26,6 +35,38 @@ public class EntitiesDataStorage
     private boolean shouldRegisterBlockEntitiesChannel;
 
     private boolean enabled;
+
+    static private class CacheEntry<T> {
+        T value;
+        int ticksAdded;
+
+        public CacheEntry(T value, int ticksAdded) {
+            this.value = value;
+            this.ticksAdded = ticksAdded;
+        }
+    }
+
+    private Map<BlockPos, CacheEntry<BlockEntity>> blockEntityCache;
+    private Map<UUID, CacheEntry<Entity>> entityCache;
+
+    // BlockEntity.createNbtWithIdentifyingData
+    @Nullable
+    public BlockEntity handleBlockEntityData(World world, NbtCompound nbt) {
+        if (nbt == null) return null;
+        BlockPos pos = BlockEntity.posFromNbt(nbt);
+        BlockEntity blockEntity = BlockEntity.createFromNbt(pos, world.getBlockState(pos), nbt, world.getRegistryManager());
+        blockEntityCache.put(pos, new CacheEntry<>(blockEntity, 0));
+        return blockEntity;
+    }
+
+    // Entity.saveSelfNbt
+    @Nullable
+    public Entity handleEntityData(World world, NbtCompound nbt) {
+        if (nbt == null) return null;
+        Entity entity = EntityType.getEntityFromNbt(nbt, world).orElse(null);
+        entityCache.put(entity.getUuid(), new CacheEntry<>(entity, 0));
+        return entity;
+    }
 
     private EntitiesDataStorage()
     {
