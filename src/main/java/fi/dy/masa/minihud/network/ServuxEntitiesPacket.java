@@ -41,13 +41,16 @@ public class ServuxEntitiesPacket implements IClientPayloadData
     // Entity simple response
     public ServuxEntitiesPacket(int entityId, NbtCompound nbt)
     {
+        this.packetType = Type.PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE;
         this.nbt = nbt.copy();
         this.entityId = entityId;
         this.clearPacket();
     }
 
+    // Block entity simple response
     public ServuxEntitiesPacket(BlockPos pos, NbtCompound nbt)
     {
+        this.packetType = Type.PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE;
         this.nbt = nbt.copy();
         this.pos = pos;
     }
