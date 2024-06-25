@@ -8,6 +8,7 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
 import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.util.DataStorage;
+import fi.dy.masa.minihud.util.EntityUtils;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
@@ -79,7 +80,7 @@ public class EntitiesDataStorage
         Entity entity = this.getWorld().getEntityById(entityId);
         if (entity != null)
         {
-            entity.readNbt(nbt);
+            EntityUtils.loadNbtIntoEntity(entity, nbt);
         }
         return entity;
     }
