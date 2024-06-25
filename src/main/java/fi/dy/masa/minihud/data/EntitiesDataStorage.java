@@ -13,9 +13,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -34,20 +31,6 @@ public class EntitiesDataStorage
     private boolean servuxServer = false;
     private boolean hasInValidServux = false;
     private String servuxVersion;
-
-    record UpdateBlockEntityS2CPayload(BlockPos pos, NbtCompound nbt) implements CustomPayload {
-        public static final Id<UpdateBlockEntityS2CPayload> ID = new Id<>(Identifier.of("servux", "update_block_entity"));
-        public static final PacketCodec<PacketByteBuf, UpdateBlockEntityS2CPayload> CODEC = PacketCodec.of((value, buf) -> {
-            buf.writeBlockPos(value.pos);
-            buf.writeNbt(value.nbt);
-        }, buf -> new UpdateBlockEntityS2CPayload(buf.readBlockPos(), buf.readNbt()));
-
-        @Override
-        public Id<? extends CustomPayload> getId()
-        {
-            return ID;
-        }
-    }
 
     private Set<BlockPos> pendingBlockEntities = new HashSet<>();
     private Set<Integer> pendingEntities = new HashSet<>();

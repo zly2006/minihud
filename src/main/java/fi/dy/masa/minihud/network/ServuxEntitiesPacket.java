@@ -342,11 +342,6 @@ public class ServuxEntitiesPacket implements IClientPayloadData
         return null;
     }
 
-    public BlockPos getBlockPos()
-    {
-        return pos;
-    }
-
     public enum Type
     {
         PACKET_S2C_METADATA(1),

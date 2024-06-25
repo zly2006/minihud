@@ -112,7 +112,7 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
             }
             case PACKET_S2C_BLOCK_NBT_RESPONSE_DATA ->
             {
-                EntitiesDataStorage.getInstance().handleBlockEntityData(packet.getBlockPos(), packet.getCompound());
+                EntitiesDataStorage.getInstance().handleBlockEntityData(packet.getPos(), packet.getCompound());
             }
             case PACKET_S2C_ENTITY_NBT_RESPONSE_DATA ->
             {
