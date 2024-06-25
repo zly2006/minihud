@@ -1,39 +1,37 @@
 {
-  "required": true,
-  "package": "fi.dy.masa.minihud.mixin",
-  "compatibilityLevel": "JAVA_17",
-  "minVersion": "0.8",
-  "client": [
-    "IMixinAbstractFurnaceBlockEntity",
-    "IMixinBeaconBlockEntity",
-    "IMixinBiomeAccess",
-    "IMixinChunkDeltaUpdateS2CPacket",
-    "IMixinEntityNavigation",
-    "IMixinServerWorld",
-    "IMixinWorld",
-    "IMixinWorldRenderer",
-    "MixinBeaconBlockEntity",
-    "MixinBlockOutlineDebugRenderer",
-    "MixinChatScreen",
-    "MixinChunkTicketManager",
-    "MixinClientPlayerInteractionManager",
-    "MixinClientPlayNetworkHandler",
-    "MixinConduitBlockEntity",
-    "MixinDebugInfoSender",
-    "MixinDebugRenderer",
-    "MixinHeightmapDebugRenderer",
-    "MixinItemStack",
-    "MixinMinecraftClient",
-    "MixinMinecraftServer",
-    "MixinNeighborUpdateDebugRenderer",
-    "MixinServerEntityManager",
-    "MixinServerWorld",
-    "MixinSubtitlesHud"
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  },
-  "mixins": [
-    "IMixinMerchantEntity"
-  ]
+    "required": true,
+    "package": "fi.dy.masa.minihud.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "minVersion": "0.8",
+    "client": [
+        "IMixinAbstractFurnaceBlockEntity",
+        "IMixinBeaconBlockEntity",
+        "IMixinBiomeAccess",
+        "IMixinChunkDeltaUpdateS2CPacket",
+        "IMixinEntityNavigation",
+        "IMixinMerchantEntity",
+        "IMixinServerWorld",
+        "IMixinWorld",
+        "IMixinWorldRenderer",
+        "MixinBeaconBlockEntity",
+        "MixinBlockOutlineDebugRenderer",
+        "MixinChatScreen",
+        "MixinChunkTicketManager",
+        "MixinClientPlayerInteractionManager",
+        "MixinClientPlayNetworkHandler",
+        "MixinConduitBlockEntity",
+        "MixinDebugInfoSender",
+        "MixinDebugRenderer",
+        "MixinHeightmapDebugRenderer",
+        "MixinItemStack",
+        "MixinMinecraftClient",
+        "MixinMinecraftServer",
+        "MixinNeighborUpdateDebugRenderer",
+        "MixinServerEntityManager",
+        "MixinServerWorld",
+        "MixinSubtitlesHud"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
 }
