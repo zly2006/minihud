@@ -8,6 +8,7 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
 import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.util.DataStorage;
+import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -156,7 +157,7 @@ public class EntitiesDataStorage
             NbtCompound nbt = new NbtCompound();
             nbt.putString("version", Reference.MOD_STRING);
 
-            HANDLER.encodeClientData(new ServuxEntitiesPacket(nbt, true));
+            HANDLER.encodeClientData(ServuxEntitiesPacket.MetadataRequest(nbt));
         }
     }
 
@@ -186,15 +187,17 @@ public class EntitiesDataStorage
     }
 
     // TODO --> Add Data Handling Here
-    public void requestBlockEntity(BlockPos pos)
+    public void requestBlockEntity(World world, BlockPos pos)
     {
-        if (this.hasServuxServer())
+        if (world.getBlockState(pos).getBlock() instanceof BlockEntityProvider)
         {
-            this.requestServuxBlockEntityData(pos);
-        }
-        else
-        {
-            this.requestQueryBlockEntity(pos);
+            if (this.hasServuxServer())
+            {
+                this.requestServuxBlockEntityData(pos);
+            } else
+            {
+                this.requestQueryBlockEntity(pos);
+            }
         }
     }
 
@@ -226,7 +229,6 @@ public class EntitiesDataStorage
 
     public void requestQueryEntityData(int entityId)
     {
-        // FIXME
         ClientPlayNetworkHandler handler = this.getVanillaHandler();
 
         if (handler != null)
@@ -241,20 +243,14 @@ public class EntitiesDataStorage
 
     public void requestServuxBlockEntityData(BlockPos pos)
     {
-        // FIXME
-        int transactionId = -1;
-
         pendingBlockEntities.add(pos);
-        HANDLER.encodeClientData(new ServuxEntitiesPacket(pos));
+        HANDLER.encodeClientData(ServuxEntitiesPacket.BlockEntityRequest(pos));
     }
 
     public void requestServuxEntityData(int entityId)
     {
-        // FIXME
-        int transactionId = -1;
-
         pendingEntities.add(entityId);
-        HANDLER.encodeClientData(new ServuxEntitiesPacket(entityId));
+        HANDLER.encodeClientData(ServuxEntitiesPacket.EntityRequest(entityId));
     }
 
     public JsonObject toJson()

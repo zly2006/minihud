@@ -981,7 +981,7 @@ public class RenderHandler implements IRenderer
 
             if (!(world instanceof ServerWorld))
             {
-                EntitiesDataStorage.getInstance().requestBlockEntity(posLooking);
+                EntitiesDataStorage.getInstance().requestBlockEntity(world, posLooking);
             }
             // The method in World now checks that the caller is from the same thread...
             return chunk != null ? chunk.getBlockEntity(posLooking) : null;
