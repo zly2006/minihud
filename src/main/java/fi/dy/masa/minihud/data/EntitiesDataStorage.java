@@ -57,48 +57,21 @@ public class EntitiesDataStorage implements IClientTickHandler
         return mc.world;
     }
 
-    // BlockEntity.createNbtWithIdentifyingData
-    @Nullable
-    public BlockEntity handleBlockEntityData(BlockPos pos, NbtCompound nbt)
-    {
-        pendingBlockEntities.remove(pos);
-        if (nbt == null || this.getWorld() == null) return null;
-
-        BlockEntity blockEntity = this.getWorld().getBlockEntity(pos);
-        if (blockEntity != null)
-        {
-            blockEntity.read(nbt, this.getWorld().getRegistryManager());
-            return blockEntity;
-        }
-        else
-        {
-            BlockEntity blockEntity2 = BlockEntity.createFromNbt(pos, this.getWorld().getBlockState(pos), nbt, mc.world.getRegistryManager());
-            if (blockEntity2 != null)
-            {
-                this.getWorld().addBlockEntity(blockEntity2);
-                return blockEntity2;
-            }
-        }
-
-        return null;
-    }
-
-    // Entity.saveSelfNbt
-    @Nullable
-    public Entity handleEntityData(int entityId, NbtCompound nbt)
-    {
-        pendingEntities.remove(entityId);
-        if (nbt == null || this.getWorld() == null) return null;
-        Entity entity = this.getWorld().getEntityById(entityId);
-        if (entity != null)
-        {
-            EntityUtils.loadNbtIntoEntity(entity, nbt);
-        }
-        return entity;
-    }
-
     private EntitiesDataStorage()
     {
+    }
+
+    @Override
+    public void onClientTick(MinecraftClient mc)
+    {
+        uptimeTicks++;
+        if (System.currentTimeMillis() - resetRateLimiterTime > 50)
+        {
+            // reset out rate limiter
+            pendingBlockEntities.clear();
+            pendingEntities.clear();
+            resetRateLimiterTime = System.currentTimeMillis();
+        }
     }
 
     public Identifier getNetworkChannel()
@@ -294,14 +267,44 @@ public class EntitiesDataStorage implements IClientTickHandler
         }
     }
 
-    public JsonObject toJson()
+    // BlockEntity.createNbtWithIdentifyingData
+    @Nullable
+    public BlockEntity handleBlockEntityData(BlockPos pos, NbtCompound nbt)
     {
-        return new JsonObject();
+        pendingBlockEntities.remove(pos);
+        if (nbt == null || this.getWorld() == null) return null;
+
+        BlockEntity blockEntity = this.getWorld().getBlockEntity(pos);
+        if (blockEntity != null)
+        {
+            blockEntity.read(nbt, this.getWorld().getRegistryManager());
+            return blockEntity;
+        }
+        else
+        {
+            BlockEntity blockEntity2 = BlockEntity.createFromNbt(pos, this.getWorld().getBlockState(pos), nbt, mc.world.getRegistryManager());
+            if (blockEntity2 != null)
+            {
+                this.getWorld().addBlockEntity(blockEntity2);
+                return blockEntity2;
+            }
+        }
+
+        return null;
     }
 
-    public void fromJson(JsonObject obj)
+    // Entity.saveSelfNbt
+    @Nullable
+    public Entity handleEntityData(int entityId, NbtCompound nbt)
     {
-        // NO-OP
+        pendingEntities.remove(entityId);
+        if (nbt == null || this.getWorld() == null) return null;
+        Entity entity = this.getWorld().getEntityById(entityId);
+        if (entity != null)
+        {
+            EntityUtils.loadNbtIntoEntity(entity, nbt);
+        }
+        return entity;
     }
 
     public void handleVanillaQueryNbt(int transactionId, NbtCompound nbt)
@@ -314,16 +317,14 @@ public class EntitiesDataStorage implements IClientTickHandler
         }
     }
 
-    @Override
-    public void onClientTick(MinecraftClient mc)
+    // TODO --> Only in case we need to save config settings in the future
+    public JsonObject toJson()
     {
-        uptimeTicks++;
-        if (System.currentTimeMillis() - resetRateLimiterTime > 50)
-        {
-            // reset out rate limiter
-            pendingBlockEntities.clear();
-            pendingEntities.clear();
-            resetRateLimiterTime = System.currentTimeMillis();
-        }
+        return new JsonObject();
+    }
+
+    public void fromJson(JsonObject obj)
+    {
+        // NO-OP
     }
 }

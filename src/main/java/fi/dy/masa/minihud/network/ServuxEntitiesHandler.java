@@ -80,11 +80,13 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
                     this.servuxRegistered = true;
                 }
             }
-            case PACKET_S2C_NBT_RESPONSE_SIMPLE ->
+            case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE ->
             {
-                MiniHUD.printDebug("ServuxEntitiesHandler#decodeClientData(): received Entity Data of size {} (in bytes)", packet.getTotalSize());
-
-                EntitiesDataStorage.getInstance().handleEntityData(packet.getTransactionId(), packet.getCompound());
+                EntitiesDataStorage.getInstance().handleBlockEntityData(packet.getPos(), packet.getCompound());
+            }
+            case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE ->
+            {
+                EntitiesDataStorage.getInstance().handleEntityData(packet.getEntityId(), packet.getCompound());
             }
             case PACKET_S2C_NBT_RESPONSE_DATA ->
             {
@@ -109,14 +111,6 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
                         MiniHUD.logger.error("ServuxEntitiesHandler#decodeClientData(): Entity Data: error reading fullBuffer [{}]", e.getLocalizedMessage());
                     }
                 }
-            }
-            case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE ->
-            {
-                EntitiesDataStorage.getInstance().handleBlockEntityData(packet.getPos(), packet.getCompound());
-            }
-            case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE ->
-            {
-                EntitiesDataStorage.getInstance().handleEntityData(packet.getEntityId(), packet.getCompound());
             }
             default -> MiniHUD.logger.warn("ServuxEntitiesHandler#decodeClientData(): received unhandled packetType {} of size {} bytes.", packet.getPacketType(), packet.getTotalSize());
         }
