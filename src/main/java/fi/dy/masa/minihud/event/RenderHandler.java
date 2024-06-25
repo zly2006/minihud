@@ -903,11 +903,9 @@ public class RenderHandler implements IRenderer
         {
             if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
             {
-                Entity lookedEntity = ((EntityHitResult) mc.crosshairTarget).getEntity();
-
-                if (lookedEntity instanceof LivingEntity)
+                Entity lookedEntity = this.getTargetEntity(world, mc);
+                if (lookedEntity instanceof LivingEntity living)
                 {
-                    LivingEntity living = (LivingEntity) lookedEntity;
                     this.addLine(String.format("Entity: %s - HP: %.1f / %.1f",
                             living.getName().getString(), living.getHealth(), living.getMaxHealth()));
                 }
@@ -921,12 +919,12 @@ public class RenderHandler implements IRenderer
         {
             if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
             {
-                Entity lookedEntity = ((EntityHitResult) mc.crosshairTarget).getEntity();
+                Entity lookedEntity = this.getTargetEntity(world, mc);
                 Identifier regName = EntityType.getId(lookedEntity.getType());
 
                 if (regName != null)
                 {
-                    this.addLine(String.format("Entity reg name: %s", regName.toString()));
+                    this.addLine(String.format("Entity reg name: %s", regName));
                 }
             }
         }
@@ -969,6 +967,21 @@ public class RenderHandler implements IRenderer
         {
             this.getBlockProperties(mc);
         }
+    }
+
+    @Nullable
+    private Entity getTargetEntity(World world, MinecraftClient mc)
+    {
+        if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
+        {
+            Entity lookedEntity = ((EntityHitResult) mc.crosshairTarget).getEntity();
+            if (!(world instanceof ServerWorld))
+            {
+                EntitiesDataStorage.getInstance().requestEntity(lookedEntity.getId());
+            }
+            return lookedEntity;
+        }
+        return null;
     }
 
     @Nullable
