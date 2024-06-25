@@ -5,6 +5,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
+import net.minecraft.network.packet.s2c.play.NbtQueryResponseS2CPacket;
+import fi.dy.masa.minihud.data.EntitiesDataStorage;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.NotificationUtils;
 
@@ -59,5 +61,11 @@ public abstract class MixinClientPlayNetworkHandler
     private void onPostGameJoin(GameJoinS2CPacket packet, CallbackInfo ci)
     {
         DataStorage.getInstance().setSimulationDistance(packet.simulationDistance());
+    }
+
+    @Inject(method = "onNbtQueryResponse", at = @At("HEAD"))
+    private void onQueryResponse(NbtQueryResponseS2CPacket packet, CallbackInfo ci)
+    {
+        EntitiesDataStorage.getInstance().handleVanillaQueryNbt(packet.getTransactionId(), packet.getNbt());
     }
 }
