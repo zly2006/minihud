@@ -294,7 +294,10 @@ public class EntitiesDataStorage
     public void handleVanillaQueryNbt(int transactionId, NbtCompound nbt)
     {
         Either<BlockPos, Integer> either = transactionToBlockPosOrEntityId.remove(transactionId);
-        either.ifLeft(pos -> handleBlockEntityData(pos, nbt))
-                .ifRight(entityId -> handleEntityData(entityId, nbt));
+        if (either != null)
+        {
+            either.ifLeft(pos -> handleBlockEntityData(pos, nbt))
+                    .ifRight(entityId -> handleEntityData(entityId, nbt));
+        }
     }
 }
