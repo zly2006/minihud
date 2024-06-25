@@ -38,6 +38,20 @@ public class ServuxEntitiesPacket implements IClientPayloadData
         this.clearPacket();
     }
 
+    // Entity simple response
+    public ServuxEntitiesPacket(int entityId, NbtCompound nbt)
+    {
+        this.nbt = nbt.copy();
+        this.entityId = entityId;
+        this.clearPacket();
+    }
+
+    public ServuxEntitiesPacket(BlockPos pos, NbtCompound nbt)
+    {
+        this.nbt = nbt.copy();
+        this.pos = pos;
+    }
+
     // Block Entity Query
     public ServuxEntitiesPacket(BlockPos pos)
     {
@@ -297,6 +311,28 @@ public class ServuxEntitiesPacket implements IClientPayloadData
                     MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Metadata Request from packet: [{}]", e.getLocalizedMessage());
                 }
             }
+            case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE ->
+            {
+                try
+                {
+                    return new ServuxEntitiesPacket(input.readBlockPos(), input.readNbt());
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Block Entity Response from packet: [{}]", e.getLocalizedMessage());
+                }
+            }
+            case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE ->
+            {
+                try
+                {
+                    return new ServuxEntitiesPacket(input.readVarInt(), input.readNbt());
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Entity Response from packet: [{}]", e.getLocalizedMessage());
+                }
+            }
             default ->
             {
                 // Read Nbt
@@ -351,8 +387,8 @@ public class ServuxEntitiesPacket implements IClientPayloadData
         PACKET_S2C_NBT_RESPONSE_START(5),
         PACKET_S2C_NBT_RESPONSE_SIMPLE(6),
         PACKET_S2C_NBT_RESPONSE_DATA(7),
-        PACKET_S2C_BLOCK_NBT_RESPONSE_DATA(8),
-        PACKET_S2C_ENTITY_NBT_RESPONSE_DATA(9);
+        PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE(8),
+        PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE(9);
 
         private final int type;
 
