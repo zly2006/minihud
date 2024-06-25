@@ -1,10 +1,12 @@
 package fi.dy.masa.minihud.data;
 
 import com.google.gson.JsonObject;
+import com.mojang.datafixers.util.Either;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.mixin.IMixinDataQueryHandler;
 import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
 import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.util.DataStorage;
@@ -20,7 +22,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class EntitiesDataStorage
@@ -40,6 +44,7 @@ public class EntitiesDataStorage
 
     private Set<BlockPos> pendingBlockEntities = new HashSet<>();
     private Set<Integer> pendingEntities = new HashSet<>();
+    private Map<Integer, Either<BlockPos, Integer>> transactionToBlockPosOrEntityId = new HashMap<>();
 
     @Nullable
     public World getWorld()
@@ -51,6 +56,7 @@ public class EntitiesDataStorage
     @Nullable
     public BlockEntity handleBlockEntityData(BlockPos pos, NbtCompound nbt)
     {
+        pendingBlockEntities.remove(pos);
         if (nbt == null || this.getWorld() == null) return null;
 
         BlockEntity blockEntity = this.getWorld().getBlockEntity(pos);
@@ -76,6 +82,7 @@ public class EntitiesDataStorage
     @Nullable
     public Entity handleEntityData(int entityId, NbtCompound nbt)
     {
+        pendingEntities.remove(entityId);
         if (nbt == null || this.getWorld() == null) return null;
         Entity entity = this.getWorld().getEntityById(entityId);
         if (entity != null)
@@ -238,11 +245,12 @@ public class EntitiesDataStorage
 
         if (handler != null)
         {
-            pendingBlockEntities.add(pos);
             handler.getDataQueryHandler().queryBlockNbt(pos, nbtCompound ->
             {
                 handleBlockEntityData(pos, nbtCompound);
             });
+            pendingBlockEntities.add(pos);
+            transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.left(pos));
         }
     }
 
@@ -252,11 +260,12 @@ public class EntitiesDataStorage
 
         if (handler != null)
         {
-            pendingEntities.add(entityId);
             handler.getDataQueryHandler().queryEntityNbt(entityId, nbtCompound ->
             {
                 handleEntityData(entityId, nbtCompound);
             });
+            pendingEntities.add(entityId);
+            transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.right(entityId));
         }
     }
 
@@ -280,5 +289,12 @@ public class EntitiesDataStorage
     public void fromJson(JsonObject obj)
     {
         // NO-OP
+    }
+
+    public void handleVanillaQueryNbt(int transactionId, NbtCompound nbt)
+    {
+        Either<BlockPos, Integer> either = transactionToBlockPosOrEntityId.remove(transactionId);
+        either.ifLeft(pos -> handleBlockEntityData(pos, nbt))
+                .ifRight(entityId -> handleEntityData(entityId, nbt));
     }
 }
