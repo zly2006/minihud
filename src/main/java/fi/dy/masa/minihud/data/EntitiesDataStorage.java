@@ -1,6 +1,14 @@
 package fi.dy.masa.minihud.data;
 
+import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.c2s.play.QueryBlockNbtC2SPacket;
+import net.minecraft.network.packet.c2s.play.QueryEntityNbtC2SPacket;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.minihud.MiniHUD;
@@ -23,18 +31,13 @@ import java.util.UUID;
 public class EntitiesDataStorage
 {
     private static final EntitiesDataStorage INSTANCE = new EntitiesDataStorage();
-
-    public static EntitiesDataStorage getInstance() {return INSTANCE;}
+    public static EntitiesDataStorage getInstance() { return INSTANCE; }
 
     private final static ServuxEntitiesHandler<ServuxEntitiesPacket.Payload> HANDLER = ServuxEntitiesHandler.getInstance();
-
+    private final static MinecraftClient mc = MinecraftClient.getInstance();
     private boolean servuxServer = false;
     private boolean hasInValidServux = false;
     private String servuxVersion;
-    private int servuxTimeout;
-    private boolean shouldRegisterBlockEntitiesChannel;
-
-    private boolean enabled;
 
     static private class CacheEntry<T> {
         T value;
@@ -68,14 +71,21 @@ public class EntitiesDataStorage
         return entity;
     }
 
-    private EntitiesDataStorage()
-    {
-        this.enabled = false;
-    }
+    private EntitiesDataStorage() { }
 
     public Identifier getNetworkChannel() {return ServuxEntitiesHandler.CHANNEL_ID;}
 
-    public IPluginClientPlayHandler<ServuxEntitiesPacket.Payload> getNetworkHandler() {return HANDLER;}
+    private static ClientPlayNetworkHandler getVanillaHandler()
+    {
+        if (mc.player != null)
+        {
+            return mc.player.networkHandler;
+        }
+
+        return null;
+    }
+
+    public IPluginClientPlayHandler<ServuxEntitiesPacket.Payload> getNetworkHandler() { return HANDLER; }
 
     public void reset(boolean isLogout)
     {
@@ -96,24 +106,20 @@ public class EntitiesDataStorage
 
     public void setIsServuxServer()
     {
-        MiniHUD.printDebug("EntitiesDataStorage#setIsServuxServer()");
         this.servuxServer = true;
-        if (this.hasInValidServux)
-        {
-            this.hasInValidServux = false;
-        }
+        this.hasInValidServux = false;
     }
 
     public boolean hasServuxServer() { return this.servuxServer; }
 
     public void setServuxVersion(String ver)
     {
-        MiniHUD.printDebug("EntitiesDataStorage#setServuxVersion() version {}", ver);
-
         if (ver != null && ver.isEmpty() == false)
         {
             this.servuxVersion = ver;
-        } else
+            MiniHUD.logger.warn("entityDataChannel: joining Servux version {}", ver);
+        }
+        else
         {
             this.servuxVersion = "unknown";
         }
@@ -121,16 +127,12 @@ public class EntitiesDataStorage
 
     public void onGameInit()
     {
-        MiniHUD.logger.warn("EntitiesDataStorage#onGameInit()");
-
         ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
         HANDLER.registerPlayPayload(ServuxEntitiesPacket.Payload.ID, ServuxEntitiesPacket.Payload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
     }
 
     public void onWorldPre()
     {
-        MiniHUD.printDebug("EntitiesDataStorage#onWorldPre()");
-
         if (DataStorage.getInstance().hasIntegratedServer() == false)
         {
             HANDLER.registerPlayReceiver(ServuxEntitiesPacket.Payload.ID, HANDLER::receivePlayPayload);
@@ -139,129 +141,130 @@ public class EntitiesDataStorage
 
     public void onWorldJoin()
     {
-        MiniHUD.printDebug("EntitiesDataStorage#onWorldJoin()");
-
-        if (DataStorage.getInstance().hasIntegratedServer() == false)
-        {
-            if (this.enabled)
-            {
-                this.registerBlockEntitiesChannel();
-            }
-            else
-            {
-                this.unregisterBlockEntitiesChannel();
-            }
-        }
-    }
-
-    public void registerBlockEntitiesChannel()
-    {
-        MiniHUD.printDebug("EntitiesDataStorage#registerBlockEntitiesChannel()");
-
-        this.shouldRegisterBlockEntitiesChannel = true;
-
-        if (this.servuxServer == false && DataStorage.getInstance().hasIntegratedServer() == false && this.hasInValidServux == false)
-        {
-            if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
-            {
-                MiniHUD.printDebug("EntitiesDataStorage#registerBlockEnitiesChannel(): sending BLOCK_ENTITY_REGISTER to Servux");
-
-                NbtCompound nbt = new NbtCompound();
-                nbt.putString("version", Reference.MOD_STRING);
-
-                HANDLER.encodeClientData(new ServuxEntitiesPacket(ServuxEntitiesPacket.Type.PACKET_C2S_ENTITY_REGISTER, nbt));
-            }
-        }
-        else
-        {
-            this.shouldRegisterBlockEntitiesChannel = false;
-        }
+        // NO-OP
     }
 
     public void requestMetadata()
     {
-        MiniHUD.printDebug("EntitiesDataStorage#requestMetadata()");
-
-        if (DataStorage.getInstance().hasIntegratedServer() == false && this.hasServuxServer())
+        if (DataStorage.getInstance().hasIntegratedServer() == false)
         {
             NbtCompound nbt = new NbtCompound();
             nbt.putString("version", Reference.MOD_STRING);
 
-            HANDLER.encodeClientData(new ServuxEntitiesPacket(ServuxEntitiesPacket.Type.PACKET_C2S_REQUEST_METADATA, nbt));
+            HANDLER.encodeClientData(new ServuxEntitiesPacket(nbt, true));
         }
     }
 
     public boolean receiveServuxMetadata(NbtCompound data)
     {
-        MiniHUD.printDebug("EntitiesDataStorage#receiveServuxMetadata()");
-
-        if (this.servuxServer == false && DataStorage.getInstance().hasIntegratedServer() == false &&
-            this.shouldRegisterBlockEntitiesChannel)
+        if (DataStorage.getInstance().hasIntegratedServer() == false)
         {
-            MiniHUD.printDebug("EntitiesDataStorage#receiveServuxBlockEntitiesMetadata(): received METADATA from Servux");
+            MiniHUD.printDebug("EntitiesDataStorage#receiveServuxMetadata(): received METADATA from Servux");
 
             if (data.getInt("version") != ServuxEntitiesPacket.PROTOCOL_VERSION)
             {
-                MiniHUD.logger.warn("blockEntitiesChannel: Mis-matched protocol version!");
+                MiniHUD.logger.warn("entityDataChannel: Mis-matched protocol version!");
             }
-            this.servuxTimeout = data.getInt("timeout");
             this.setServuxVersion(data.getString("servux"));
             this.setIsServuxServer();
 
-            // FIXME
-            if (this.enabled && !this.hasServuxServer())
-            {
-                this.registerBlockEntitiesChannel();
-                return true;
-            }
-            else
-            {
-                this.unregisterBlockEntitiesChannel();
-            }
+            return true;
         }
 
         return false;
     }
 
-    public void unregisterBlockEntitiesChannel()
-    {
-        MiniHUD.printDebug("EntitiesDataStorage#unregisterBlockEntitiesChannel()");
-
-        if (this.servuxServer)
-        {
-            this.servuxServer = false;
-            if (this.hasInValidServux == false)
-            {
-                MiniHUD.printDebug("EntitiesDataStorage#unregisterBlockEntitiesChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
-
-                HANDLER.encodeClientData(new ServuxEntitiesPacket(ServuxEntitiesPacket.Type.PACKET_C2S_ENTITY_UNREGISTER, new NbtCompound()));
-                HANDLER.reset(this.getNetworkChannel());
-            }
-        }
-        this.shouldRegisterBlockEntitiesChannel = false;
-    }
-
     public void onPacketFailure()
     {
-        MiniHUD.printDebug("EntitiesDataStorage#onPacketFailure()");
-
-        // Define how to handle multiple sendPayload failures
-        this.shouldRegisterBlockEntitiesChannel = false;
         this.servuxServer = false;
         this.hasInValidServux = true;
     }
 
     // TODO --> Add Data Handling Here
+    public void requestBlockEntity(BlockPos pos)
+    {
+        if (this.hasServuxServer())
+        {
+            this.requestServuxBlockEntityData(pos);
+        }
+        else
+        {
+            this.requestQueryBlockEntity(pos);
+        }
+    }
+
+    public void requestEntity(int entityId)
+    {
+        if (this.hasServuxServer())
+        {
+            this.requestServuxEntityData(entityId);
+        }
+        else
+        {
+            this.requestQueryEntityData(entityId);
+        }
+    }
+
+    public void requestQueryBlockEntity(BlockPos pos)
+    {
+        // FIXME
+        int transactionId = -1;
+        ClientPlayNetworkHandler handler = this.getVanillaHandler();
+
+        if (handler != null)
+        {
+            handler.sendPacket(new QueryBlockNbtC2SPacket(transactionId, pos));
+        }
+    }
+
+    public void requestQueryEntityData(int entityId)
+    {
+        // FIXME
+        int transactionId = -1;
+        ClientPlayNetworkHandler handler = this.getVanillaHandler();
+
+        if (handler != null)
+        {
+            handler.sendPacket(new QueryEntityNbtC2SPacket(transactionId, entityId));
+        }
+    }
+
+    public void requestServuxBlockEntityData(BlockPos pos)
+    {
+        // FIXME
+        int transactionId = -1;
+
+        HANDLER.encodeClientData(new ServuxEntitiesPacket(transactionId, pos));
+    }
+
+    public void requestServuxEntityData(int entityId)
+    {
+        // FIXME
+        int transactionId = -1;
+
+        HANDLER.encodeClientData(new ServuxEntitiesPacket(transactionId, entityId));
+    }
+
+    public void handleEntityData(int transactionId, @Nullable NbtCompound nbt)
+    {
+        // Handle
+        if (nbt != null && nbt.isEmpty() == false)
+        {
+            MiniHUD.printDebug("EntitiesDataStorage#handleEntityData(): received transactionId {} // {}", transactionId, nbt.toString());
+        }
+        else
+        {
+            MiniHUD.printDebug("EntitiesDataStorage#handleEntityData(): received transactionId {} // <EMPTY>", transactionId);
+        }
+    }
 
     public JsonObject toJson()
     {
-        MiniHUD.printDebug("EntitiesDataStorage#toJson()");
-
         return new JsonObject();
     }
 
     public void fromJson(JsonObject obj)
     {
-        MiniHUD.printDebug("EntitiesDataStorage#fromJson()");
+        // NO-OP
     }
 }
