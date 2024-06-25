@@ -25,7 +25,11 @@ import java.util.Set;
 public class EntitiesDataStorage
 {
     private static final EntitiesDataStorage INSTANCE = new EntitiesDataStorage();
-    public static EntitiesDataStorage getInstance() { return INSTANCE; }
+
+    public static EntitiesDataStorage getInstance()
+    {
+        return INSTANCE;
+    }
 
     private final static ServuxEntitiesHandler<ServuxEntitiesPacket.Payload> HANDLER = ServuxEntitiesHandler.getInstance();
     private final static MinecraftClient mc = MinecraftClient.getInstance();
@@ -37,13 +41,15 @@ public class EntitiesDataStorage
     private Set<Integer> pendingEntities = new HashSet<>();
 
     @Nullable
-    public World getWorld() {
+    public World getWorld()
+    {
         return mc.world;
     }
 
     // BlockEntity.createNbtWithIdentifyingData
     @Nullable
-    public BlockEntity handleBlockEntityData(BlockPos pos, NbtCompound nbt) {
+    public BlockEntity handleBlockEntityData(BlockPos pos, NbtCompound nbt)
+    {
         if (nbt == null || this.getWorld() == null) return null;
 
         BlockEntity blockEntity = this.getWorld().getBlockEntity(pos);
@@ -52,7 +58,8 @@ public class EntitiesDataStorage
             blockEntity.read(nbt, this.getWorld().getRegistryManager());
             return blockEntity;
         }
-        else {
+        else
+        {
             BlockEntity blockEntity2 = BlockEntity.createFromNbt(pos, this.getWorld().getBlockState(pos), nbt, mc.world.getRegistryManager());
             if (blockEntity2 != null)
             {
@@ -77,9 +84,14 @@ public class EntitiesDataStorage
         return entity;
     }
 
-    private EntitiesDataStorage() { }
+    private EntitiesDataStorage()
+    {
+    }
 
-    public Identifier getNetworkChannel() {return ServuxEntitiesHandler.CHANNEL_ID;}
+    public Identifier getNetworkChannel()
+    {
+        return ServuxEntitiesHandler.CHANNEL_ID;
+    }
 
     private static ClientPlayNetworkHandler getVanillaHandler()
     {
@@ -91,7 +103,10 @@ public class EntitiesDataStorage
         return null;
     }
 
-    public IPluginClientPlayHandler<ServuxEntitiesPacket.Payload> getNetworkHandler() { return HANDLER; }
+    public IPluginClientPlayHandler<ServuxEntitiesPacket.Payload> getNetworkHandler()
+    {
+        return HANDLER;
+    }
 
     public void reset(boolean isLogout)
     {
@@ -116,7 +131,10 @@ public class EntitiesDataStorage
         this.hasInValidServux = false;
     }
 
-    public boolean hasServuxServer() { return this.servuxServer; }
+    public boolean hasServuxServer()
+    {
+        return this.servuxServer;
+    }
 
     public void setServuxVersion(String ver)
     {
@@ -186,7 +204,6 @@ public class EntitiesDataStorage
         this.hasInValidServux = true;
     }
 
-    // TODO --> Add Data Handling Here
     public void requestBlockEntity(World world, BlockPos pos)
     {
         if (world.getBlockState(pos).getBlock() instanceof BlockEntityProvider)
@@ -194,7 +211,8 @@ public class EntitiesDataStorage
             if (this.hasServuxServer())
             {
                 this.requestServuxBlockEntityData(pos);
-            } else
+            }
+            else
             {
                 this.requestQueryBlockEntity(pos);
             }
