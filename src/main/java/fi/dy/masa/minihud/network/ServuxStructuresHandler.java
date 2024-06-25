@@ -105,7 +105,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
             }
             case PACKET_S2C_METADATA ->
             {
-                if (DataStorage.getInstance().receiveServuxMetadata(packet.getCompound()))
+                if (DataStorage.getInstance().receiveServuxStrucutresMetadata(packet.getCompound()))
                 {
                     this.servuxRegistered = true;
                 }
