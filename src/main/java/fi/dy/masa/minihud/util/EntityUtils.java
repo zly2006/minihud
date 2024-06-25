@@ -12,6 +12,19 @@ public class EntityUtils
     // entity.readNbt(nbt);
     public static void loadNbtIntoEntity(Entity entity, NbtCompound nbt)
     {
+        entity.fallDistance = nbt.getFloat("FallDistance");
+        entity.setFireTicks(nbt.getShort("Fire"));
+        if (nbt.contains("Air")) {
+            entity.setAir(nbt.getShort("Air"));
+        }
+
+        entity.setOnGround(nbt.getBoolean("OnGround"));
+        entity.setInvulnerable(nbt.getBoolean("Invulnerable"));
+        entity.setPortalCooldown(nbt.getInt("PortalCooldown"));
+        if (nbt.containsUuid("UUID")) {
+            entity.setUuid(nbt.getUuid("UUID"));
+        }
+
         if (nbt.contains("CustomName", NbtElement.STRING_TYPE)) {
             String string = nbt.getString("CustomName");
             entity.setCustomName(Text.Serialization.fromJson(string, entity.getRegistryManager()));
@@ -25,34 +38,13 @@ public class EntityUtils
         if (nbt.contains("Tags", NbtElement.LIST_TYPE)) {
             entity.getCommandTags().clear();
             NbtList nbtList4 = nbt.getList("Tags", NbtElement.STRING_TYPE);
-            int i = Math.min(nbtList4.size(), 1024);
+            int max = Math.min(nbtList4.size(), 1024);
 
-            for(int j = 0; j < i; ++j) {
-                entity.getCommandTags().add(nbtList4.getString(j));
+            for(int i = 0; i < max; ++i) {
+                entity.getCommandTags().add(nbtList4.getString(i));
             }
         }
 
         ((IMixinEntity) entity).readCustomDataFromNbt(nbt);
-    }
-
-    public static void loadNbtIntoEntity0(Entity entity, NbtCompound nbt)
-    {
-        double prevX = entity.prevX;
-        double prevY = entity.prevY;
-        double prevZ = entity.prevZ;
-        double lastRenderX = entity.lastRenderX;
-        double lastRenderY = entity.lastRenderY;
-        double lastRenderZ = entity.lastRenderZ;
-        float prevYaw = entity.prevYaw;
-        float prevPitch = entity.prevPitch;
-        entity.readNbt(nbt);
-        entity.prevX = prevX;
-        entity.prevY = prevY;
-        entity.prevZ = prevZ;
-        entity.lastRenderX = lastRenderX;
-        entity.lastRenderY = lastRenderY;
-        entity.lastRenderZ = lastRenderZ;
-        entity.prevYaw = prevYaw;
-        entity.prevPitch = prevPitch;
     }
 }
