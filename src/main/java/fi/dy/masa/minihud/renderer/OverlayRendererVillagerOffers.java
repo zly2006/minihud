@@ -4,6 +4,7 @@ import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.data.EntitiesDataStorage;
 import fi.dy.masa.minihud.mixin.IMixinMerchantEntity;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.client.MinecraftClient;
@@ -54,6 +55,10 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
         List<VillagerEntity> librarians = world.getEntitiesByClass(VillagerEntity.class, box, villager -> villager.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN);
         for (VillagerEntity librarian : librarians)
         {
+            if (librarian.isClient())
+            {
+                EntitiesDataStorage.getInstance().requestEntity(librarian.getId());
+            }
             List<String> overlay = new ArrayList<>();
             TradeOfferList offers = ((IMixinMerchantEntity) librarian).offers();
             if (offers == null)
