@@ -1,15 +1,16 @@
 package fi.dy.masa.minihud.network;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import fi.dy.masa.malilib.network.IClientPayloadData;
+import fi.dy.masa.minihud.MiniHUD;
 import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.math.BlockPos;
-import fi.dy.masa.malilib.network.IClientPayloadData;
-import fi.dy.masa.minihud.MiniHUD;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class ServuxEntitiesPacket implements IClientPayloadData
 {
@@ -21,40 +22,55 @@ public class ServuxEntitiesPacket implements IClientPayloadData
     private PacketByteBuf buffer;
     public static final int PROTOCOL_VERSION = 1;
 
-    // Metadata/Request Packet
-    public ServuxEntitiesPacket(NbtCompound nbt, boolean request)
+    private ServuxEntitiesPacket(Type type)
     {
-        if (request)
-        {
-            this.packetType = Type.PACKET_C2S_METADATA_REQUEST;
-        }
-        else
-        {
-            this.packetType = Type.PACKET_S2C_METADATA;
-        }
-        this.nbt = new NbtCompound();
-        this.nbt.copyFrom(nbt);
+        this.packetType = type;
         this.clearPacket();
     }
 
-    // Block Entity Query
-    public ServuxEntitiesPacket(int transactionId, BlockPos pos)
+    public static ServuxEntitiesPacket MetadataRequest(NbtCompound nbt)
     {
-        this.packetType = Type.PACKET_C2S_BLOCK_ENTITY_REQUEST;
-        this.transactionId = transactionId;
-        this.pos = pos;
-        this.nbt = new NbtCompound();
-        this.clearPacket();
+        var packet = new ServuxEntitiesPacket(Type.PACKET_C2S_METADATA_REQUEST);
+        packet.nbt = nbt.copy();
+        return packet;
     }
 
-    // Entity Query
-    public ServuxEntitiesPacket(int transactionId, int entityId)
+    public static ServuxEntitiesPacket MetadataResponse(NbtCompound nbt)
     {
-        this.packetType = Type.PACKET_C2S_ENTITY_REQUEST;
-        this.transactionId = transactionId;
-        this.entityId = entityId;
-        this.nbt = new NbtCompound();
-        this.clearPacket();
+        var packet = new ServuxEntitiesPacket(Type.PACKET_S2C_METADATA);
+        packet.nbt = nbt.copy();
+        return packet;
+    }
+
+    // Entity simple response
+    static ServuxEntitiesPacket SimpleEntityResponse(int entityId, NbtCompound nbt)
+    {
+        var packet = new ServuxEntitiesPacket(Type.PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE);
+        packet.nbt = nbt.copy();
+        packet.entityId = entityId;
+        return packet;
+    }
+
+    static ServuxEntitiesPacket SimpleBlockResponse(BlockPos pos, NbtCompound nbt)
+    {
+        var packet = new ServuxEntitiesPacket(Type.PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE);
+        packet.nbt = nbt.copy();
+        packet.pos = pos.toImmutable();
+        return packet;
+    }
+
+    public static ServuxEntitiesPacket BlockEntityRequest(BlockPos pos)
+    {
+        var packet = new ServuxEntitiesPacket(Type.PACKET_C2S_BLOCK_ENTITY_REQUEST);
+        packet.pos = pos.toImmutable();
+        return packet;
+    }
+
+    public static ServuxEntitiesPacket EntityRequest(int entityId)
+    {
+        var packet = new ServuxEntitiesPacket(Type.PACKET_C2S_ENTITY_REQUEST);
+        packet.entityId = entityId;
+        return packet;
     }
 
     // Response Nbt Packet, set splitter to true to use Packet Splitter
@@ -243,7 +259,7 @@ public class ServuxEntitiesPacket implements IClientPayloadData
                 // Read Packet Buffer
                 try
                 {
-                    return new ServuxEntitiesPacket(input.readVarInt(), input.readBlockPos());
+                    return ServuxEntitiesPacket.BlockEntityRequest(input.readBlockPos());
                 }
                 catch (Exception e)
                 {
@@ -255,7 +271,7 @@ public class ServuxEntitiesPacket implements IClientPayloadData
                 // Read Packet Buffer
                 try
                 {
-                    return new ServuxEntitiesPacket(input.readVarInt(), input.readVarInt());
+                    return ServuxEntitiesPacket.EntityRequest(input.readVarInt());
                 }
                 catch (Exception e)
                 {
@@ -291,24 +307,53 @@ public class ServuxEntitiesPacket implements IClientPayloadData
                 // Read Nbt
                 try
                 {
-                    return new ServuxEntitiesPacket(input.readNbt(), true);
+                    return ServuxEntitiesPacket.MetadataRequest(input.readNbt());
                 }
                 catch (Exception e)
                 {
                     MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Metadata Request from packet: [{}]", e.getLocalizedMessage());
                 }
             }
-            default ->
+            case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE ->
             {
-                // Read Nbt
                 try
                 {
-                    return new ServuxEntitiesPacket(input.readNbt(), false);
+                    return ServuxEntitiesPacket.SimpleBlockResponse(input.readBlockPos(), input.readNbt());
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading NBT from packet: [{}]", e.getLocalizedMessage());
+                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Block Entity Response from packet: [{}]", e.getLocalizedMessage());
                 }
+            }
+            case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE ->
+            {
+                try
+                {
+                    return ServuxEntitiesPacket.SimpleEntityResponse(input.readVarInt(), input.readNbt());
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Entity Response from packet: [{}]", e.getLocalizedMessage());
+                }
+            }
+            case PACKET_S2C_METADATA ->
+            {
+                try
+                {
+                    return ServuxEntitiesPacket.MetadataResponse(input.readNbt());
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Metadata Response from packet: [{}]", e.getLocalizedMessage());
+                }
+            }
+            case PACKET_S2C_NBT_RESPONSE_START ->
+            {
+                // NO-OP
+            }
+            default ->
+            {
+                MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: Unknown packet type!");
             }
         }
 
@@ -351,7 +396,9 @@ public class ServuxEntitiesPacket implements IClientPayloadData
         PACKET_C2S_ENTITY_REQUEST(4),
         PACKET_S2C_NBT_RESPONSE_START(5),
         PACKET_S2C_NBT_RESPONSE_SIMPLE(6),
-        PACKET_S2C_NBT_RESPONSE_DATA(7);
+        PACKET_S2C_NBT_RESPONSE_DATA(7),
+        PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE(8),
+        PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE(9);
 
         private final int type;
 

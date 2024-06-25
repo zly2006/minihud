@@ -8,6 +8,8 @@
                 "IMixinBeaconBlockEntity",
                 "IMixinBiomeAccess",
                 "IMixinChunkDeltaUpdateS2CPacket",
+                "IMixinDataQueryHandler",
+                "IMixinEntity",
                 "IMixinEntityNavigation",
                 "IMixinServerWorld",
                 "IMixinWorld",
