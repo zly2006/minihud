@@ -96,11 +96,6 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
                                 highest *= 2;
                             }
 
-                            if (highest > 64)
-                            {
-                                highest = 64;
-                            }
-
                             if (tradeOffer.getFirstBuyItem().count() > MathHelper.lerp(Configs.Generic.VILLAGER_OFFER_PRICE_THRESHOLD.getDoubleValue(), lowest, highest))
                             {
                                 continue;
