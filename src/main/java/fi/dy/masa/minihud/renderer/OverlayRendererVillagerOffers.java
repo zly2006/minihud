@@ -11,13 +11,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.EnchantmentTags;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
@@ -25,6 +24,7 @@ import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class OverlayRendererVillagerOffers extends OverlayRendererBase
 {
@@ -90,16 +90,19 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
 
                             int lowest = 2 + 3 * entry.getIntValue();
                             int highest = 6 + 13 * entry.getIntValue();
-                            if (entry.getKey().isIn(EnchantmentTags.DOUBLE_TRADE_PRICE)) {
+                            if (entry.getKey().isIn(EnchantmentTags.DOUBLE_TRADE_PRICE))
+                            {
                                 lowest *= 2;
                                 highest *= 2;
                             }
 
-                            if (highest > 64) {
+                            if (highest > 64)
+                            {
                                 highest = 64;
                             }
 
-                            if (tradeOffer.getFirstBuyItem().count() > MathHelper.lerp(Configs.Generic.VILLAGER_OFFER_PRICE_THRESHOLD.getDoubleValue(), lowest, highest)) {
+                            if (tradeOffer.getFirstBuyItem().count() > MathHelper.lerp(Configs.Generic.VILLAGER_OFFER_PRICE_THRESHOLD.getDoubleValue(), lowest, highest))
+                            {
                                 continue;
                             }
                         }
@@ -109,9 +112,22 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
             }
 
             double hypot = MathHelper.hypot(entity.getX() - librarian.getX(), entity.getZ() - librarian.getZ());
-            double x = librarian.getX() + (entity.getX() - librarian.getX()) / hypot / 2;
-            double z = librarian.getZ() + (entity.getZ() - librarian.getZ()) / hypot / 2;
+            double distance = 0.8;
+            double x = librarian.getX() + (entity.getX() - librarian.getX()) / hypot * distance;
+            double z = librarian.getZ() + (entity.getZ() - librarian.getZ()) / hypot * distance;
             double y = librarian.getY() + 1.5 + 0.1 * overlay.size();
+
+            // Render the overlay at its job site, this is useful in trading halls
+            Optional<GlobalPos> jobSite = librarian.getBrain().getOptionalMemory(MemoryModuleType.JOB_SITE);
+            if (jobSite.isPresent())
+            {
+                BlockPos pos = jobSite.get().pos();
+                if (librarian.getPos().distanceTo(pos.toCenterPos()) < 1.7)
+                {
+                    x = pos.getX() + 0.5;
+                    z = pos.getZ() + 0.5;
+                }
+            }
 
             for (String line : overlay)
             {
