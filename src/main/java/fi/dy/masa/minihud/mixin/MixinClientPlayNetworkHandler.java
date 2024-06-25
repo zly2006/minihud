@@ -66,6 +66,6 @@ public abstract class MixinClientPlayNetworkHandler
     @Inject(method = "onNbtQueryResponse", at = @At("HEAD"))
     private void onQueryResponse(NbtQueryResponseS2CPacket packet, CallbackInfo ci)
     {
-        EntitiesDataStorage.getInstance().handleEntityData(packet.getTransactionId(), packet.getNbt());
+        EntitiesDataStorage.getInstance().handleVanillaQueryNbt(packet.getTransactionId(), packet.getNbt());
     }
 }
