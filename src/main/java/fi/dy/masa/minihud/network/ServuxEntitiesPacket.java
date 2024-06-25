@@ -1,15 +1,16 @@
 package fi.dy.masa.minihud.network;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import fi.dy.masa.malilib.network.IClientPayloadData;
+import fi.dy.masa.minihud.MiniHUD;
 import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.math.BlockPos;
-import fi.dy.masa.malilib.network.IClientPayloadData;
-import fi.dy.masa.minihud.MiniHUD;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class ServuxEntitiesPacket implements IClientPayloadData
 {
@@ -38,20 +39,18 @@ public class ServuxEntitiesPacket implements IClientPayloadData
     }
 
     // Block Entity Query
-    public ServuxEntitiesPacket(int transactionId, BlockPos pos)
+    public ServuxEntitiesPacket(BlockPos pos)
     {
         this.packetType = Type.PACKET_C2S_BLOCK_ENTITY_REQUEST;
-        this.transactionId = transactionId;
         this.pos = pos;
         this.nbt = new NbtCompound();
         this.clearPacket();
     }
 
     // Entity Query
-    public ServuxEntitiesPacket(int transactionId, int entityId)
+    public ServuxEntitiesPacket(int entityId)
     {
         this.packetType = Type.PACKET_C2S_ENTITY_REQUEST;
-        this.transactionId = transactionId;
         this.entityId = entityId;
         this.nbt = new NbtCompound();
         this.clearPacket();
@@ -243,7 +242,7 @@ public class ServuxEntitiesPacket implements IClientPayloadData
                 // Read Packet Buffer
                 try
                 {
-                    return new ServuxEntitiesPacket(input.readVarInt(), input.readBlockPos());
+                    return new ServuxEntitiesPacket(input.readBlockPos());
                 }
                 catch (Exception e)
                 {
@@ -255,7 +254,7 @@ public class ServuxEntitiesPacket implements IClientPayloadData
                 // Read Packet Buffer
                 try
                 {
-                    return new ServuxEntitiesPacket(input.readVarInt(), input.readVarInt());
+                    return new ServuxEntitiesPacket(input.readVarInt());
                 }
                 catch (Exception e)
                 {
@@ -343,6 +342,11 @@ public class ServuxEntitiesPacket implements IClientPayloadData
         return null;
     }
 
+    public BlockPos getBlockPos()
+    {
+        return pos;
+    }
+
     public enum Type
     {
         PACKET_S2C_METADATA(1),
@@ -351,7 +355,9 @@ public class ServuxEntitiesPacket implements IClientPayloadData
         PACKET_C2S_ENTITY_REQUEST(4),
         PACKET_S2C_NBT_RESPONSE_START(5),
         PACKET_S2C_NBT_RESPONSE_SIMPLE(6),
-        PACKET_S2C_NBT_RESPONSE_DATA(7);
+        PACKET_S2C_NBT_RESPONSE_DATA(7),
+        PACKET_S2C_BLOCK_NBT_RESPONSE_DATA(8),
+        PACKET_S2C_ENTITY_NBT_RESPONSE_DATA(9);
 
         private final int type;
 

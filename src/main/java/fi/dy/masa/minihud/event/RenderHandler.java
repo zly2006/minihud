@@ -1,12 +1,24 @@
 package fi.dy.masa.minihud.event;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import org.joml.Matrix4f;
-
+import fi.dy.masa.malilib.config.HudAlignment;
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.interfaces.IRenderer;
+import fi.dy.masa.malilib.render.RenderUtils;
+import fi.dy.masa.malilib.util.BlockUtils;
+import fi.dy.masa.malilib.util.InventoryUtils;
+import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.InfoToggle;
+import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.data.MobCapDataHandler;
+import fi.dy.masa.minihud.mixin.IMixinServerWorld;
+import fi.dy.masa.minihud.mixin.IMixinWorldRenderer;
+import fi.dy.masa.minihud.renderer.OverlayRenderer;
+import fi.dy.masa.minihud.util.DataStorage;
+import fi.dy.masa.minihud.util.IServerEntityManager;
+import fi.dy.masa.minihud.util.MiscUtils;
 import net.minecraft.block.BeehiveBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
@@ -43,25 +55,13 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
+import org.joml.Matrix4f;
 
-import fi.dy.masa.malilib.config.HudAlignment;
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.interfaces.IRenderer;
-import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.BlockUtils;
-import fi.dy.masa.malilib.util.InventoryUtils;
-import fi.dy.masa.malilib.util.StringUtils;
-import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.config.InfoToggle;
-import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.MobCapDataHandler;
-import fi.dy.masa.minihud.mixin.IMixinServerWorld;
-import fi.dy.masa.minihud.mixin.IMixinWorldRenderer;
-import fi.dy.masa.minihud.renderer.OverlayRenderer;
-import fi.dy.masa.minihud.util.DataStorage;
-import fi.dy.masa.minihud.util.IServerEntityManager;
-import fi.dy.masa.minihud.util.MiscUtils;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class RenderHandler implements IRenderer
 {
@@ -979,6 +979,10 @@ public class RenderHandler implements IRenderer
             BlockPos posLooking = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
             WorldChunk chunk = this.getChunk(new ChunkPos(posLooking));
 
+            if (!(world instanceof ServerWorld))
+            {
+                EntitiesDataStorage.getInstance().requestBlockEntity(posLooking);
+            }
             // The method in World now checks that the caller is from the same thread...
             return chunk != null ? chunk.getBlockEntity(posLooking) : null;
         }

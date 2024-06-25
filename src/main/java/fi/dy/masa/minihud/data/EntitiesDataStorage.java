@@ -1,14 +1,6 @@
 package fi.dy.masa.minihud.data;
 
-import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.packet.c2s.play.QueryBlockNbtC2SPacket;
-import net.minecraft.network.packet.c2s.play.QueryEntityNbtC2SPacket;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.minihud.MiniHUD;
@@ -17,16 +9,20 @@ import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
 import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.util.DataStorage;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.Set;
 
 public class EntitiesDataStorage
 {
@@ -39,35 +35,61 @@ public class EntitiesDataStorage
     private boolean hasInValidServux = false;
     private String servuxVersion;
 
-    static private class CacheEntry<T> {
-        T value;
-        int ticksAdded;
+    record UpdateBlockEntityS2CPayload(BlockPos pos, NbtCompound nbt) implements CustomPayload {
+        public static final Id<UpdateBlockEntityS2CPayload> ID = new Id<>(Identifier.of("servux", "update_block_entity"));
+        public static final PacketCodec<PacketByteBuf, UpdateBlockEntityS2CPayload> CODEC = PacketCodec.of((value, buf) -> {
+            buf.writeBlockPos(value.pos);
+            buf.writeNbt(value.nbt);
+        }, buf -> new UpdateBlockEntityS2CPayload(buf.readBlockPos(), buf.readNbt()));
 
-        public CacheEntry(T value, int ticksAdded) {
-            this.value = value;
-            this.ticksAdded = ticksAdded;
+        @Override
+        public Id<? extends CustomPayload> getId()
+        {
+            return ID;
         }
     }
 
-    private Map<BlockPos, CacheEntry<BlockEntity>> blockEntityCache;
-    private Map<UUID, CacheEntry<Entity>> entityCache;
+    private Set<BlockPos> pendingBlockEntities = new HashSet<>();
+    private Set<Integer> pendingEntities = new HashSet<>();
+
+    @Nullable
+    public World getWorld() {
+        return mc.world;
+    }
 
     // BlockEntity.createNbtWithIdentifyingData
     @Nullable
-    public BlockEntity handleBlockEntityData(World world, NbtCompound nbt) {
-        if (nbt == null) return null;
-        BlockPos pos = BlockEntity.posFromNbt(nbt);
-        BlockEntity blockEntity = BlockEntity.createFromNbt(pos, world.getBlockState(pos), nbt, world.getRegistryManager());
-        blockEntityCache.put(pos, new CacheEntry<>(blockEntity, 0));
-        return blockEntity;
+    public BlockEntity handleBlockEntityData(BlockPos pos, NbtCompound nbt) {
+        if (nbt == null || this.getWorld() == null) return null;
+
+        BlockEntity blockEntity = this.getWorld().getBlockEntity(pos);
+        if (blockEntity != null)
+        {
+            blockEntity.read(nbt, this.getWorld().getRegistryManager());
+            return blockEntity;
+        }
+        else {
+            BlockEntity blockEntity2 = BlockEntity.createFromNbt(pos, this.getWorld().getBlockState(pos), nbt, mc.world.getRegistryManager());
+            if (blockEntity2 != null)
+            {
+                this.getWorld().addBlockEntity(blockEntity2);
+                return blockEntity2;
+            }
+        }
+
+        return null;
     }
 
     // Entity.saveSelfNbt
     @Nullable
-    public Entity handleEntityData(World world, NbtCompound nbt) {
-        if (nbt == null) return null;
-        Entity entity = EntityType.getEntityFromNbt(nbt, world).orElse(null);
-        entityCache.put(entity.getUuid(), new CacheEntry<>(entity, 0));
+    public Entity handleEntityData(int entityId, NbtCompound nbt)
+    {
+        if (nbt == null || this.getWorld() == null) return null;
+        Entity entity = this.getWorld().getEntityById(entityId);
+        if (entity != null)
+        {
+            entity.readNbt(nbt);
+        }
         return entity;
     }
 
@@ -207,25 +229,30 @@ public class EntitiesDataStorage
 
     public void requestQueryBlockEntity(BlockPos pos)
     {
-        // FIXME
-        int transactionId = -1;
         ClientPlayNetworkHandler handler = this.getVanillaHandler();
 
         if (handler != null)
         {
-            handler.sendPacket(new QueryBlockNbtC2SPacket(transactionId, pos));
+            pendingBlockEntities.add(pos);
+            handler.getDataQueryHandler().queryBlockNbt(pos, nbtCompound ->
+            {
+                handleBlockEntityData(pos, nbtCompound);
+            });
         }
     }
 
     public void requestQueryEntityData(int entityId)
     {
         // FIXME
-        int transactionId = -1;
         ClientPlayNetworkHandler handler = this.getVanillaHandler();
 
         if (handler != null)
         {
-            handler.sendPacket(new QueryEntityNbtC2SPacket(transactionId, entityId));
+            pendingEntities.add(entityId);
+            handler.getDataQueryHandler().queryEntityNbt(entityId, nbtCompound ->
+            {
+                handleEntityData(entityId, nbtCompound);
+            });
         }
     }
 
@@ -234,7 +261,8 @@ public class EntitiesDataStorage
         // FIXME
         int transactionId = -1;
 
-        HANDLER.encodeClientData(new ServuxEntitiesPacket(transactionId, pos));
+        pendingBlockEntities.add(pos);
+        HANDLER.encodeClientData(new ServuxEntitiesPacket(pos));
     }
 
     public void requestServuxEntityData(int entityId)
@@ -242,20 +270,8 @@ public class EntitiesDataStorage
         // FIXME
         int transactionId = -1;
 
-        HANDLER.encodeClientData(new ServuxEntitiesPacket(transactionId, entityId));
-    }
-
-    public void handleEntityData(int transactionId, @Nullable NbtCompound nbt)
-    {
-        // Handle
-        if (nbt != null && nbt.isEmpty() == false)
-        {
-            MiniHUD.printDebug("EntitiesDataStorage#handleEntityData(): received transactionId {} // {}", transactionId, nbt.toString());
-        }
-        else
-        {
-            MiniHUD.printDebug("EntitiesDataStorage#handleEntityData(): received transactionId {} // <EMPTY>", transactionId);
-        }
+        pendingEntities.add(entityId);
+        HANDLER.encodeClientData(new ServuxEntitiesPacket(entityId));
     }
 
     public JsonObject toJson()
