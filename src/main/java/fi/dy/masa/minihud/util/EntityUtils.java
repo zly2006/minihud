@@ -1,7 +1,11 @@
 package fi.dy.masa.minihud.util;
 
 import fi.dy.masa.minihud.mixin.IMixinEntity;
+import fi.dy.masa.minihud.mixin.IMixinWorld;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.Leashable;
+import net.minecraft.entity.decoration.LeashKnotEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -45,6 +49,30 @@ public class EntityUtils
             }
         }
 
+        if (entity instanceof Leashable)
+        {
+            readLeashableEntityCustomData(entity, nbt);
+        }
+        else
+        {
+            ((IMixinEntity) entity).readCustomDataFromNbt(nbt);
+        }
+    }
+
+    private static void readLeashableEntityCustomData(Entity entity, NbtCompound nbt)
+    {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        assert entity instanceof Leashable;
+        Leashable leashable = (Leashable) entity;
         ((IMixinEntity) entity).readCustomDataFromNbt(nbt);
+        if (leashable.getLeashData() != null && leashable.getLeashData().unresolvedLeashData != null)
+        {
+            leashable.getLeashData().unresolvedLeashData
+                    .ifLeft(uuid ->
+                            // We MUST use client-side world here.
+                            leashable.attachLeash(((IMixinWorld) mc.world).getEntityLookup().get(uuid), false))
+                    .ifRight(pos ->
+                            leashable.attachLeash(LeashKnotEntity.getOrCreate(mc.world, pos), false));
+        }
     }
 }
