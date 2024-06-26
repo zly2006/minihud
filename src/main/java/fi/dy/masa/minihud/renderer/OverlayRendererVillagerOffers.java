@@ -1,11 +1,8 @@
 package fi.dy.masa.minihud.renderer;
 
-import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
-import fi.dy.masa.minihud.mixin.IMixinMerchantEntity;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
@@ -21,10 +18,13 @@ import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.world.World;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.render.RenderUtils;
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.mixin.IMixinMerchantEntity;
 
 public class OverlayRendererVillagerOffers extends OverlayRendererBase
 {
@@ -52,7 +52,8 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
     {
         Box box = entity.getBoundingBox().expand(10, 10, 10);
         World world = WorldUtils.getBestWorld(mc);
-        List<VillagerEntity> librarians = world.getEntitiesByClass(VillagerEntity.class, box, villager -> villager.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN);
+        List<VillagerEntity> librarians = world != null ? world.getEntitiesByClass(VillagerEntity.class, box, villager -> villager.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN) : List.of();
+
         for (VillagerEntity librarian : librarians)
         {
             if (librarian.isClient())
@@ -70,31 +71,56 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
             {
                 if (tradeOffer.getSellItem().getItem() == Items.ENCHANTED_BOOK)
                 {
-                    for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : tradeOffer.getSellItem().get(DataComponentTypes.STORED_ENCHANTMENTS).getEnchantmentEntries())
+                    for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : tradeOffer.getSellItem().getOrDefault(DataComponentTypes.STORED_ENCHANTMENTS, null).getEnchantmentEntries())
                     {
+                        if (entry == null)
+                        {
+                            continue;
+                        }
                         StringBuilder sb = new StringBuilder();
+
                         if (entry.getKey().value().getMaxLevel() == entry.getIntValue())
                         {
-                            sb.append("§6");
+                            sb.append(GuiBase.TXT_GOLD);
                         }
                         else if (Configs.Generic.VILLAGER_OFFER_HIGHEST_LEVEL_ONLY.getBooleanValue())
                         {
                             continue;
                         }
                         sb.append(Enchantment.getName(entry.getKey(), entry.getIntValue()).getString());
-                        sb.append("§r");
+                        sb.append(GuiBase.TXT_RST);
+
                         if (tradeOffer.getFirstBuyItem().item().value() == Items.EMERALD)
                         {
-                            sb.append(" ");
-                            sb.append(tradeOffer.getFirstBuyItem().count());
-
+                            int emeraldCost = tradeOffer.getFirstBuyItem().count();
                             int lowest = 2 + 3 * entry.getIntValue();
                             int highest = 6 + 13 * entry.getIntValue();
+                            int maxCost = lowest + 4 + entry.getIntValue() * 10;
+
                             if (entry.getKey().isIn(EnchantmentTags.DOUBLE_TRADE_PRICE))
                             {
                                 lowest *= 2;
                                 highest *= 2;
+                                maxCost *= 2;
                             }
+
+                            sb.append(" ");
+                            if (emeraldCost <= (maxCost - lowest) / 3 + lowest)
+                            {
+                                sb.append(GuiBase.TXT_GREEN);
+                            }
+                            else if (emeraldCost <= (maxCost - lowest) / 3 * 2 + lowest)
+                            {
+                                sb.append(GuiBase.TXT_WHITE);
+                            }
+                            else
+                            {
+                                sb.append(GuiBase.TXT_RED);
+                            }
+
+                            // Can add additional formatting if you like, but this works as is
+                            sb.append(emeraldCost);
+                            sb.append(GuiBase.TXT_RST);
 
                             if (tradeOffer.getFirstBuyItem().count() > MathHelper.lerp(Configs.Generic.VILLAGER_OFFER_PRICE_THRESHOLD.getDoubleValue(), lowest, highest))
                             {
@@ -110,11 +136,12 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
             double distance = 0.8;
             double x = librarian.getX() + (entity.getX() - librarian.getX()) / hypot * distance;
             double z = librarian.getZ() + (entity.getZ() - librarian.getZ()) / hypot * distance;
-            double y = librarian.getY() + 1.5 + 0.1 * overlay.size();
+            double y = librarian.getY() + (1.5 + 0.1) * overlay.size();
+            // TODO This y calculation needs checking when they have more than 1 trade, in particular
 
             // Render the overlay at its job site, this is useful in trading halls
             Optional<GlobalPos> jobSite = librarian.getBrain().getOptionalMemory(MemoryModuleType.JOB_SITE);
-            if (jobSite.isPresent())
+            if (jobSite != null && jobSite.isPresent())
             {
                 BlockPos pos = jobSite.get().pos();
                 if (librarian.getPos().distanceTo(pos.toCenterPos()) < 1.7)
