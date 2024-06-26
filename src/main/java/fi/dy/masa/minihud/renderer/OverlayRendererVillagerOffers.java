@@ -136,8 +136,8 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
             double distance = 0.8;
             double x = librarian.getX() + (entity.getX() - librarian.getX()) / hypot * distance;
             double z = librarian.getZ() + (entity.getZ() - librarian.getZ()) / hypot * distance;
-            double y = librarian.getY() + (1.5 + 0.1) * overlay.size();
-            // TODO This y calculation needs checking when they have more than 1 trade, in particular
+            double y = librarian.getY() + 1.5 + 0.1 * overlay.size();
+            // TODO This y calculation needs checking, it tends to be very low over top of the villager.
 
             // Render the overlay at its job site, this is useful in trading halls
             Optional<GlobalPos> jobSite = librarian.getBrain().getOptionalMemory(MemoryModuleType.JOB_SITE);
