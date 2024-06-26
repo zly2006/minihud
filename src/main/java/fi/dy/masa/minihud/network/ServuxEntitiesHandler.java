@@ -4,6 +4,9 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
@@ -104,7 +107,18 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
                     try
                     {
                         this.readingSessionKey = -1;
-                        EntitiesDataStorage.getInstance().handleEntityData(fullPacket.readVarInt(), fullPacket.readNbt());
+                        NbtCompound nbt = fullPacket.readNbt();
+
+                        for (NbtElement element : nbt.getList("TileEntities", NbtElement.COMPOUND_TYPE))
+                        {
+                            NbtCompound compound = (NbtCompound) element;
+                            EntitiesDataStorage.getInstance().handleBlockEntityData(NbtHelper.toBlockPos(compound, "Pos").get(), compound.getCompound("Data"));
+                        }
+                        for (NbtElement element : nbt.getList("Entities", NbtElement.COMPOUND_TYPE))
+                        {
+                            NbtCompound compound = (NbtCompound) element;
+                            EntitiesDataStorage.getInstance().handleEntityData(compound.getInt("Id"), compound.getCompound("Data"));
+                        }
                     }
                     catch (Exception e)
                     {
