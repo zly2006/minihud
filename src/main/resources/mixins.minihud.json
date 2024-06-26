@@ -30,7 +30,8 @@
                 "MixinNeighborUpdateDebugRenderer",
                 "MixinServerEntityManager",
                 "MixinServerWorld",
-                "MixinSubtitlesHud"
+                "MixinSubtitlesHud",
+                "IMixinLeashable"
         ],
         "injectors": {
                 "defaultRequire": 1
