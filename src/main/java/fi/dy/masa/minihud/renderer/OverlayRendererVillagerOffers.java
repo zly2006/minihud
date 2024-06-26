@@ -72,12 +72,8 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
             {
                 if (tradeOffer.getSellItem().getItem() == Items.ENCHANTED_BOOK)
                 {
-                    for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : tradeOffer.getSellItem().getOrDefault(DataComponentTypes.STORED_ENCHANTMENTS, null).getEnchantmentEntries())
+                    for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : tradeOffer.getSellItem().getOrDefault(DataComponentTypes.STORED_ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT).getEnchantmentEntries())
                     {
-                        if (entry == null)
-                        {
-                            continue;
-                        }
                         StringBuilder sb = new StringBuilder();
 
                         if (entry.getKey().value().getMaxLevel() == entry.getIntValue())
