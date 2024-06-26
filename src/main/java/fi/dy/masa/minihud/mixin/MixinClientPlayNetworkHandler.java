@@ -63,7 +63,7 @@ public abstract class MixinClientPlayNetworkHandler
         DataStorage.getInstance().setSimulationDistance(packet.simulationDistance());
     }
 
-    @Inject(method = "onNbtQueryResponse", at = @At("HEAD"))
+    @Inject(method = "onNbtQueryResponse", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/DataQueryHandler;handleQueryResponse(ILnet/minecraft/nbt/NbtCompound;)Z"))
     private void onQueryResponse(NbtQueryResponseS2CPacket packet, CallbackInfo ci)
     {
         EntitiesDataStorage.getInstance().handleVanillaQueryNbt(packet.getTransactionId(), packet.getNbt());
