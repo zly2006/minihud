@@ -7,6 +7,7 @@ import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.mixin.IMixinDataQueryHandler;
 import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
 import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
@@ -42,7 +43,7 @@ public class EntitiesDataStorage implements IClientTickHandler
     private String servuxVersion;
 
     private long serverTickTime = 0;
-    // To limit our request rate for the same object
+    // Requests to be executed
     private Set<BlockPos> pendingBlockEntitiesQueue = new LinkedHashSet<>();
     private Set<Integer> pendingEntitiesQueue = new LinkedHashSet<>();
     // To save vanilla query packet transaction
@@ -67,7 +68,7 @@ public class EntitiesDataStorage implements IClientTickHandler
             // In this block, we do something every server tick
 
             // 5 queries / server tick
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < Configs.Generic.SERVER_NBT_REQUEST_RATE.getIntegerValue(); i++)
             {
                 if (!pendingBlockEntitiesQueue.isEmpty())
                 {
