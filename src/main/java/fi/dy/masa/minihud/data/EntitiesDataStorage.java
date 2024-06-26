@@ -7,6 +7,7 @@ import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.mixin.IMixinDataQueryHandler;
 import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
 import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
@@ -23,10 +24,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class EntitiesDataStorage implements IClientTickHandler
 {
@@ -44,10 +42,10 @@ public class EntitiesDataStorage implements IClientTickHandler
     private boolean hasInValidServux = false;
     private String servuxVersion;
 
-    private long resetRateLimiterTime = 0;
-    // To limit our request rate for the same object
-    private Set<BlockPos> pendingBlockEntities = new HashSet<>();
-    private Set<Integer> pendingEntities = new HashSet<>();
+    private long serverTickTime = 0;
+    // Requests to be executed
+    private Set<BlockPos> pendingBlockEntitiesQueue = new LinkedHashSet<>();
+    private Set<Integer> pendingEntitiesQueue = new LinkedHashSet<>();
     // To save vanilla query packet transaction
     private Map<Integer, Either<BlockPos, Integer>> transactionToBlockPosOrEntityId = new HashMap<>();
 
@@ -65,12 +63,43 @@ public class EntitiesDataStorage implements IClientTickHandler
     public void onClientTick(MinecraftClient mc)
     {
         uptimeTicks++;
-        if (System.currentTimeMillis() - resetRateLimiterTime > 50)
+        if (System.currentTimeMillis() - serverTickTime > 50)
         {
-            // reset out rate limiter
-            pendingBlockEntities.clear();
-            pendingEntities.clear();
-            resetRateLimiterTime = System.currentTimeMillis();
+            // In this block, we do something every server tick
+
+            // 5 queries / server tick
+            for (int i = 0; i < Configs.Generic.SERVER_NBT_REQUEST_RATE.getIntegerValue(); i++)
+            {
+                if (!pendingBlockEntitiesQueue.isEmpty())
+                {
+                    var iter = pendingBlockEntitiesQueue.iterator();
+                    BlockPos pos = iter.next();
+                    iter.remove();
+                    if (this.hasServuxServer())
+                    {
+                        requestServuxBlockEntityData(pos);
+                    }
+                    else
+                    {
+                        requestQueryBlockEntity(pos);
+                    }
+                }
+                if (!pendingEntitiesQueue.isEmpty())
+                {
+                    var iter = pendingEntitiesQueue.iterator();
+                    int entityId = iter.next();
+                    iter.remove();
+                    if (this.hasServuxServer())
+                    {
+                        requestServuxEntityData(entityId);
+                    }
+                    else
+                    {
+                        requestQueryEntityData(entityId);
+                    }
+                }
+            }
+            serverTickTime = System.currentTimeMillis();
         }
     }
 
@@ -194,84 +223,58 @@ public class EntitiesDataStorage implements IClientTickHandler
     {
         if (world.getBlockState(pos).getBlock() instanceof BlockEntityProvider)
         {
-            if (this.hasServuxServer())
-            {
-                this.requestServuxBlockEntityData(pos);
-            }
-            else
-            {
-                this.requestQueryBlockEntity(pos);
-            }
+            pendingBlockEntitiesQueue.add(pos);
         }
     }
 
     public void requestEntity(int entityId)
     {
-        if (this.hasServuxServer())
-        {
-            this.requestServuxEntityData(entityId);
-        }
-        else
-        {
-            this.requestQueryEntityData(entityId);
-        }
+        pendingEntitiesQueue.add(entityId);
     }
 
-    public void requestQueryBlockEntity(BlockPos pos)
+    private void requestQueryBlockEntity(BlockPos pos)
     {
         ClientPlayNetworkHandler handler = this.getVanillaHandler();
 
         if (handler != null)
         {
-            if (pendingBlockEntities.add(pos))
+            handler.getDataQueryHandler().queryBlockNbt(pos, nbtCompound ->
             {
-                handler.getDataQueryHandler().queryBlockNbt(pos, nbtCompound ->
-                {
-                    handleBlockEntityData(pos, nbtCompound);
-                });
-                transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.left(pos));
-            }
+                handleBlockEntityData(pos, nbtCompound);
+            });
+            transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.left(pos));
         }
     }
 
-    public void requestQueryEntityData(int entityId)
+    private void requestQueryEntityData(int entityId)
     {
         ClientPlayNetworkHandler handler = this.getVanillaHandler();
 
         if (handler != null)
         {
-            if (pendingEntities.add(entityId))
+            handler.getDataQueryHandler().queryEntityNbt(entityId, nbtCompound ->
             {
-                handler.getDataQueryHandler().queryEntityNbt(entityId, nbtCompound ->
-                {
-                    handleEntityData(entityId, nbtCompound);
-                });
-                transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.right(entityId));
-            }
+                handleEntityData(entityId, nbtCompound);
+            });
+            transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.right(entityId));
         }
     }
 
-    public void requestServuxBlockEntityData(BlockPos pos)
+    private void requestServuxBlockEntityData(BlockPos pos)
     {
-        if (pendingBlockEntities.add(pos))
-        {
-            HANDLER.encodeClientData(ServuxEntitiesPacket.BlockEntityRequest(pos));
-        }
+        HANDLER.encodeClientData(ServuxEntitiesPacket.BlockEntityRequest(pos));
     }
 
-    public void requestServuxEntityData(int entityId)
+    private void requestServuxEntityData(int entityId)
     {
-        if (pendingEntities.add(entityId))
-        {
-            HANDLER.encodeClientData(ServuxEntitiesPacket.EntityRequest(entityId));
-        }
+        HANDLER.encodeClientData(ServuxEntitiesPacket.EntityRequest(entityId));
     }
 
     // BlockEntity.createNbtWithIdentifyingData
     @Nullable
     public BlockEntity handleBlockEntityData(BlockPos pos, NbtCompound nbt)
     {
-        pendingBlockEntities.remove(pos);
+        pendingBlockEntitiesQueue.remove(pos);
         if (nbt == null || this.getWorld() == null) return null;
 
         BlockEntity blockEntity = this.getWorld().getBlockEntity(pos);
@@ -297,7 +300,7 @@ public class EntitiesDataStorage implements IClientTickHandler
     @Nullable
     public Entity handleEntityData(int entityId, NbtCompound nbt)
     {
-        pendingEntities.remove(entityId);
+        pendingEntitiesQueue.remove(entityId);
         if (nbt == null || this.getWorld() == null) return null;
         Entity entity = this.getWorld().getEntityById(entityId);
         if (entity != null)
