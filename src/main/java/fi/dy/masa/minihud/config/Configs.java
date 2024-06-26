@@ -170,6 +170,8 @@ public class Configs implements IConfigHandler
                 TEXT_POS_Y,
                 TIME_DAY_DIVISOR,
                 TIME_TOTAL_DIVISOR,
+                VILLAGER_CONVERSION_TICKS,
+                VILLAGER_OFFER_ENCHANTMENT_BOOKS,
                 VILLAGER_OFFER_HIGHEST_LEVEL_ONLY,
                 VILLAGER_OFFER_LOWEST_PRICE_NEARBY,
                 VILLAGER_OFFER_PRICE_THRESHOLD
