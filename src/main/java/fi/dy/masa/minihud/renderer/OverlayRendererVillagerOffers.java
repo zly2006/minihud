@@ -1,8 +1,12 @@
 package fi.dy.masa.minihud.renderer;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.render.RenderUtils;
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.mixin.IMixinMerchantEntity;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
@@ -18,13 +22,10 @@ import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.world.World;
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
-import fi.dy.masa.minihud.mixin.IMixinMerchantEntity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class OverlayRendererVillagerOffers extends OverlayRendererBase
 {
@@ -92,28 +93,24 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
 
                         if (tradeOffer.getFirstBuyItem().item().value() == Items.EMERALD)
                         {
+                            sb.append(" ");
                             int emeraldCost = tradeOffer.getFirstBuyItem().count();
                             int lowest = 2 + 3 * entry.getIntValue();
                             int highest = 6 + 13 * entry.getIntValue();
-                            int maxCost = lowest + 4 + entry.getIntValue() * 10;
-
                             if (entry.getKey().isIn(EnchantmentTags.DOUBLE_TRADE_PRICE))
                             {
                                 lowest *= 2;
                                 highest *= 2;
-                                maxCost *= 2;
                             }
-
-                            sb.append(" ");
-                            if (emeraldCost <= (maxCost - lowest) / 3 + lowest)
+                            if (emeraldCost > MathHelper.lerp(Configs.Generic.VILLAGER_OFFER_PRICE_THRESHOLD.getDoubleValue(), lowest, highest))
+                            {
+                                continue;
+                            }
+                            if (emeraldCost < MathHelper.lerp(1.0 / 3, lowest, highest))
                             {
                                 sb.append(GuiBase.TXT_GREEN);
                             }
-                            else if (emeraldCost <= (maxCost - lowest) / 3 * 2 + lowest)
-                            {
-                                sb.append(GuiBase.TXT_WHITE);
-                            }
-                            else
+                            if (emeraldCost > MathHelper.lerp(2.0 / 3, lowest, highest))
                             {
                                 sb.append(GuiBase.TXT_RED);
                             }
@@ -121,11 +118,6 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
                             // Can add additional formatting if you like, but this works as is
                             sb.append(emeraldCost);
                             sb.append(GuiBase.TXT_RST);
-
-                            if (tradeOffer.getFirstBuyItem().count() > MathHelper.lerp(Configs.Generic.VILLAGER_OFFER_PRICE_THRESHOLD.getDoubleValue(), lowest, highest))
-                            {
-                                continue;
-                            }
                         }
                         overlay.add(sb.toString());
                     }
