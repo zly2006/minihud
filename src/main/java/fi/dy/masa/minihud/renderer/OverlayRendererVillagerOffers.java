@@ -50,7 +50,7 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
     @Override
     public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
     {
-        Box box = entity.getBoundingBox().expand(10, 10, 10);
+        Box box = entity.getBoundingBox().expand(30, 10, 30);
         World world = WorldUtils.getBestWorld(mc);
         List<VillagerEntity> librarians = world != null ? world.getEntitiesByClass(VillagerEntity.class, box, villager -> villager.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN) : List.of();
 
@@ -126,7 +126,7 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
                             int emeraldCost = tradeOffer.getFirstBuyItem().count();
                             if (Configs.Generic.VILLAGER_OFFER_LOWEST_PRICE_NEARBY.getBooleanValue())
                             {
-                                if (emeraldCost > lowestPrices.getOrDefault(entry, 0))
+                                if (emeraldCost > lowestPrices.getOrDefault(entry, Integer.MAX_VALUE))
                                 {
                                     continue;
                                 }
