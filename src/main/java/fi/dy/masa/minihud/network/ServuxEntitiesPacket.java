@@ -333,6 +333,28 @@ public class ServuxEntitiesPacket implements IClientPayloadData
                     MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Metadata Response from packet: [{}]", e.getLocalizedMessage());
                 }
             }
+            case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE ->
+            {
+                try
+                {
+                    return ServuxEntitiesPacket.SimpleBlockResponse(input.readBlockPos(), input.readNbt());
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Block Entity Response from packet: [{}]", e.getLocalizedMessage());
+                }
+            }
+            case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE ->
+            {
+                try
+                {
+                    return ServuxEntitiesPacket.SimpleEntityResponse(input.readVarInt(), input.readNbt());
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Entity Response from packet: [{}]", e.getLocalizedMessage());
+                }
+            }
             default ->
             {
                 MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: Unknown packet type!");
