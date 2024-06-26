@@ -10,6 +10,7 @@ import fi.dy.masa.minihud.mixin.IMixinMerchantEntity;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.brain.MemoryModuleType;
@@ -23,9 +24,7 @@ import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class OverlayRendererVillagerOffers extends OverlayRendererBase
 {
@@ -54,6 +53,40 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
         Box box = entity.getBoundingBox().expand(10, 10, 10);
         World world = WorldUtils.getBestWorld(mc);
         List<VillagerEntity> librarians = world != null ? world.getEntitiesByClass(VillagerEntity.class, box, villager -> villager.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN) : List.of();
+
+        Map<Object2IntMap.Entry<RegistryEntry<Enchantment>>, Integer> lowestPrices = new HashMap<>();;
+        if (Configs.Generic.VILLAGER_OFFER_LOWEST_PRICE_NEARBY.getBooleanValue())
+        {
+            for (VillagerEntity librarian : librarians)
+            {
+                TradeOfferList offers = ((IMixinMerchantEntity) librarian).offers();
+                if (offers != null)
+                {
+                    for (TradeOffer tradeOffer : offers)
+                    {
+                        if (tradeOffer.getSellItem().getItem() == Items.ENCHANTED_BOOK && tradeOffer.getFirstBuyItem().item().value() == Items.EMERALD)
+                        {
+                            for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : tradeOffer.getSellItem().getOrDefault(DataComponentTypes.STORED_ENCHANTMENTS, null).getEnchantmentEntries())
+                            {
+                                int emeraldCost = tradeOffer.getFirstBuyItem().count();
+                                if (lowestPrices.containsKey(entry))
+                                {
+                                    if (emeraldCost < lowestPrices.get(entry))
+                                    {
+                                        lowestPrices.put(entry, emeraldCost);
+                                    }
+                                }
+                                else
+                                {
+                                    lowestPrices.put(entry,emeraldCost);
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
 
         for (VillagerEntity librarian : librarians)
         {
@@ -91,6 +124,13 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
                         {
                             sb.append(" ");
                             int emeraldCost = tradeOffer.getFirstBuyItem().count();
+                            if (Configs.Generic.VILLAGER_OFFER_LOWEST_PRICE_NEARBY.getBooleanValue())
+                            {
+                                if (emeraldCost > lowestPrices.getOrDefault(entry, 0))
+                                {
+                                    continue;
+                                }
+                            }
                             int lowest = 2 + 3 * entry.getIntValue();
                             int highest = 6 + 13 * entry.getIntValue();
                             if (entry.getKey().isIn(EnchantmentTags.DOUBLE_TRADE_PRICE))
