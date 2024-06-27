@@ -1,24 +1,11 @@
 package fi.dy.masa.minihud.config;
 
-import java.io.File;
-import java.util.List;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import fi.dy.masa.malilib.config.ConfigUtils;
-import fi.dy.masa.malilib.config.HudAlignment;
-import fi.dy.masa.malilib.config.IConfigBase;
-import fi.dy.masa.malilib.config.IConfigHandler;
-import fi.dy.masa.malilib.config.IConfigValue;
-import fi.dy.masa.malilib.config.options.ConfigBoolean;
-import fi.dy.masa.malilib.config.options.ConfigBooleanHotkeyed;
-import fi.dy.masa.malilib.config.options.ConfigColor;
-import fi.dy.masa.malilib.config.options.ConfigDouble;
-import fi.dy.masa.malilib.config.options.ConfigHotkey;
-import fi.dy.masa.malilib.config.options.ConfigInteger;
-import fi.dy.masa.malilib.config.options.ConfigOptionList;
-import fi.dy.masa.malilib.config.options.ConfigString;
+import fi.dy.masa.malilib.config.*;
+import fi.dy.masa.malilib.config.options.*;
 import fi.dy.masa.malilib.hotkeys.IHotkey;
 import fi.dy.masa.malilib.hotkeys.KeybindSettings;
 import fi.dy.masa.malilib.util.FileUtils;
@@ -30,6 +17,9 @@ import fi.dy.masa.minihud.util.BlockGridMode;
 import fi.dy.masa.minihud.util.LightLevelMarkerMode;
 import fi.dy.masa.minihud.util.LightLevelNumberMode;
 import fi.dy.masa.minihud.util.LightLevelRenderCondition;
+
+import java.io.File;
+import java.util.List;
 
 public class Configs implements IConfigHandler
 {
@@ -104,6 +94,11 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       USE_CUSTOMIZED_COORDINATES          = new ConfigBoolean("useCustomizedCoordinateFormat", true, "Use the customized coordinate format string");
         public static final ConfigBoolean       USE_FONT_SHADOW                     = new ConfigBoolean("useFontShadow", false, "Use font shadow");
         public static final ConfigBoolean       USE_TEXT_BACKGROUND                 = new ConfigBoolean("useTextBackground", true, "Use a solid background color behind the text");
+        public static final ConfigBoolean       VILLAGER_CONVERSION_TICKS           = new ConfigBoolean("villagerConversionTicks", true, "Show the conversion ticks for zombie villagers");
+        public static final ConfigBoolean       VILLAGER_OFFER_ENCHANTMENT_BOOKS    = new ConfigBoolean("villagerOfferEnchantmentBooks", true, "Show villager offers for enchanted books");
+        public static final ConfigBoolean       VILLAGER_OFFER_HIGHEST_LEVEL_ONLY   = new ConfigBoolean("villagerOfferHighestLevelOnly", false, "Show only villager offers for highest level enchanted books");
+        public static final ConfigBoolean       VILLAGER_OFFER_LOWEST_PRICE_NEARBY  = new ConfigBoolean("villagerOfferLowestPriceNearby" , false, "Only show villager offers with the lowest price for the same enchantment");
+        public static final ConfigDouble        VILLAGER_OFFER_PRICE_THRESHOLD      = new ConfigDouble("villagerOfferPriceThreshold", 1, 0, 1, "Only show villager offers with prices below this in ratio\nSet to 1.0 to display all offers");
 
         public static final ImmutableList<IConfigBase> OPTIONS = ImmutableList.of(
                 AXOLOTL_TOOLTIPS,
@@ -174,7 +169,12 @@ public class Configs implements IConfigHandler
                 TEXT_POS_X,
                 TEXT_POS_Y,
                 TIME_DAY_DIVISOR,
-                TIME_TOTAL_DIVISOR
+                TIME_TOTAL_DIVISOR,
+                VILLAGER_CONVERSION_TICKS,
+                VILLAGER_OFFER_ENCHANTMENT_BOOKS,
+                VILLAGER_OFFER_HIGHEST_LEVEL_ONLY,
+                VILLAGER_OFFER_LOWEST_PRICE_NEARBY,
+                VILLAGER_OFFER_PRICE_THRESHOLD
         );
 
         public static final List<IHotkey> HOTKEY_LIST = ImmutableList.of(
