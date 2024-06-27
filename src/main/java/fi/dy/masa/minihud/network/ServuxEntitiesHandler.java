@@ -1,23 +1,21 @@
 package fi.dy.masa.minihud.network;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.random.Random;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IClientPayloadData;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.network.PacketSplitter;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.random.Random;
 
 @Environment(EnvType.CLIENT)
 public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements IPluginClientPlayHandler<T>
@@ -85,7 +83,7 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
             }
             case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE ->
             {
-                EntitiesDataStorage.getInstance().handleBlockEntityData(packet.getPos(), packet.getCompound());
+                EntitiesDataStorage.getInstance().handleBlockEntityData(packet.getPos(), packet.getCompound(), null);
             }
             case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE ->
             {
@@ -108,17 +106,7 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
                     {
                         this.readingSessionKey = -1;
                         NbtCompound nbt = fullPacket.readNbt();
-
-                        for (NbtElement element : nbt.getList("TileEntities", NbtElement.COMPOUND_TYPE))
-                        {
-                            NbtCompound compound = (NbtCompound) element;
-                            EntitiesDataStorage.getInstance().handleBlockEntityData(NbtHelper.toBlockPos(compound, "Pos").get(), compound.getCompound("Data"));
-                        }
-                        for (NbtElement element : nbt.getList("Entities", NbtElement.COMPOUND_TYPE))
-                        {
-                            NbtCompound compound = (NbtCompound) element;
-                            EntitiesDataStorage.getInstance().handleEntityData(compound.getInt("Id"), compound.getCompound("Data"));
-                        }
+                        EntitiesDataStorage.getInstance().handleBulkEntityData(nbt);
                     }
                     catch (Exception e)
                     {
