@@ -71,7 +71,6 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       MAP_PREVIEW_REQUIRE_SHIFT           = new ConfigBoolean("mapPreviewRequireShift", true, "Whether holding shift is required for the Map Preview");
         public static final ConfigInteger       MAP_PREVIEW_SIZE                    = new ConfigInteger("mapPreviewSize", 160, 16, 512, "The size of the rendered map previews");
         public static final ConfigHotkey        MOVE_SHAPE_TO_PLAYER                = new ConfigHotkey("moveShapeToPlayer", "", "Move the currently selected shape to the player's\n(or the camera's) current location");
-        public static final ConfigBoolean       LOOKING_AT_HORSE                    = new ConfigBoolean("infoLookAtHorse", true, "Displays the Horse's Run speed and Jump strength\nwhen looking at them, and not only when riding.");
         public static final ConfigBoolean       OFFSET_SUBTITLE_HUD                 = new ConfigBoolean("offsetSubtitleHud", true, "If the Info Lines HUD is set to the bottom right corner,\nand subtitles are enabled, then the subtitles will\nbe offset to appear above the Info Lines text.");
         public static final ConfigHotkey        OPEN_CONFIG_GUI                     = new ConfigHotkey("openConfigGui", "H,C", "A hotkey to open the in-game Config GUI");
         public static final ConfigBoolean       REQUIRE_SNEAK                       = new ConfigBoolean("requireSneak", false, "Require the player to be sneaking to render the info line HUD");
@@ -164,7 +163,6 @@ public class Configs implements IConfigHandler
                 LIGHT_LEVEL_THRESHOLD_DIM,
                 LIGHT_LEVEL_THRESHOLD_SAFE,
                 LIGHT_LEVEL_RENDER_OFFSET,
-                LOOKING_AT_HORSE,
                 MAP_PREVIEW_SIZE,
                 SLIME_CHUNK_OVERLAY_RADIUS,
                 SPAWNABLE_COLUMNS_OVERLAY_RADIUS,

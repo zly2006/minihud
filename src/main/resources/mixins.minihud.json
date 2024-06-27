@@ -12,9 +12,11 @@
                 "IMixinEntity",
                 "IMixinEntityNavigation",
                 "IMixinMerchantEntity",
+                "IMixinPassiveEntity",
                 "IMixinServerWorld",
                 "IMixinWorld",
                 "IMixinWorldRenderer",
+                "IMixinZombieVillagerEntity",
                 "MixinBeaconBlockEntity",
                 "MixinBlockOutlineDebugRenderer",
                 "MixinChatScreen",
@@ -38,6 +40,5 @@
                 "defaultRequire": 1
         },
         "mixins": [
-                "IMixinZombieVillagerEntity"
         ]
 }

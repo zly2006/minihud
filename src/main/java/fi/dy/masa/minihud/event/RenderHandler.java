@@ -16,6 +16,7 @@ import fi.dy.masa.minihud.data.EntitiesDataStorage;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.mixin.IMixinServerWorld;
 import fi.dy.masa.minihud.mixin.IMixinWorldRenderer;
+import fi.dy.masa.minihud.mixin.IMixinPassiveEntity;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.IServerEntityManager;
@@ -56,6 +57,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.joml.Matrix4f;
 
 import javax.annotation.Nonnull;
@@ -652,7 +654,7 @@ public class RenderHandler implements IRenderer
             }
 
             World bestWorld = WorldUtils.getBestWorld(mc);
-            Entity targeted = Configs.Generic.LOOKING_AT_HORSE.getBooleanValue() ? this.getTargetEntity(world, this.mc) : null;
+            Entity targeted = this.getTargetEntity(world, this.mc);
             Entity vehicle = targeted == null ? this.mc.player.getVehicle() : targeted;
 
             if ((vehicle instanceof AbstractHorseEntity) == false)
@@ -684,29 +686,26 @@ public class RenderHandler implements IRenderer
                 AnimalType = "Horse";
             }
 
-            if (horse.isSaddled() || Configs.Generic.LOOKING_AT_HORSE.getBooleanValue())
+            if (InfoToggle.HORSE_SPEED.getBooleanValue())
             {
-                if (InfoToggle.HORSE_SPEED.getBooleanValue())
-                {
-                    float speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horse.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED);
-                    speed *= 42.1629629629629f;
-                    this.addLine(String.format(AnimalType + " Speed: %.3f m/s", speed));
-                }
-
-                if (InfoToggle.HORSE_JUMP.getBooleanValue())
-                {
-                    double jump = horse.getAttributeValue(EntityAttributes.GENERIC_JUMP_STRENGTH);
-                    double calculatedJumpHeight =
-                            -0.1817584952d * jump * jump * jump +
-                                    3.689713992d * jump * jump +
-                                    2.128599134d * jump +
-                                    -0.343930367;
-                    this.addLine(String.format(AnimalType + " Jump: %.3f m", calculatedJumpHeight));
-                }
-
-                this.addedTypes.add(InfoToggle.HORSE_SPEED);
-                this.addedTypes.add(InfoToggle.HORSE_JUMP);
+                float speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horse.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+                speed *= 42.1629629629629f;
+                this.addLine(String.format(AnimalType + " Speed: %.3f m/s", speed));
             }
+
+            if (InfoToggle.HORSE_JUMP.getBooleanValue())
+            {
+                double jump = horse.getAttributeValue(EntityAttributes.GENERIC_JUMP_STRENGTH);
+                double calculatedJumpHeight =
+                        -0.1817584952d * jump * jump * jump +
+                                3.689713992d * jump * jump +
+                                2.128599134d * jump +
+                                -0.343930367;
+                this.addLine(String.format(AnimalType + " Jump: %.3f m", calculatedJumpHeight));
+            }
+
+            this.addedTypes.add(InfoToggle.HORSE_SPEED);
+            this.addedTypes.add(InfoToggle.HORSE_JUMP);
         }
         else if (type == InfoToggle.ROTATION_YAW ||
                  type == InfoToggle.ROTATION_PITCH ||
@@ -909,8 +908,18 @@ public class RenderHandler implements IRenderer
                 Entity lookedEntity = this.getTargetEntity(world, mc);
                 if (lookedEntity instanceof LivingEntity living)
                 {
-                    this.addLine(String.format("Entity: %s - HP: %.1f / %.1f",
-                            living.getName().getString(), living.getHealth(), living.getMaxHealth()));
+                    String entityLine = String.format("Entity: %s - HP: %.1f / %.1f", living.getName().getString(), living.getHealth(), living.getMaxHealth());
+
+                    if (living instanceof PassiveEntity passive)
+                    {
+                        if (passive.getBreedingAge() < 0)
+                        {
+                            int untilGrown = ((IMixinPassiveEntity) passive).getRealBreedingAge() * (-1);
+                            entityLine = entityLine+ " [" + DurationFormatUtils.formatDurationWords(untilGrown * 50, true, true) + " remaining]";
+                        }
+                    }
+
+                    this.addLine(entityLine);
                 }
                 else
                 {
