@@ -8,6 +8,7 @@ import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -97,12 +98,12 @@ public class RenderHandler implements IRenderer
 
     public static void fixDebugRendererState()
     {
-        if (Configs.Generic.FIX_VANILLA_DEBUG_RENDERERS.getBooleanValue())
-        {
+        //if (Configs.Generic.FIX_VANILLA_DEBUG_RENDERERS.getBooleanValue())
+        //{
             //RenderSystem.disableLighting();
             //RenderUtils.color(1, 1, 1, 1);
             //OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240f, 240f);
-        }
+        //}
     }
 
     @Override
@@ -650,7 +651,9 @@ public class RenderHandler implements IRenderer
                 return;
             }
 
-            Entity vehicle = this.mc.player.getVehicle();
+            World bestWorld = WorldUtils.getBestWorld(mc);
+            Entity targeted = Configs.Generic.LOOKING_AT_HORSE.getBooleanValue() ? this.getTargetEntity(world, this.mc) : null;
+            Entity vehicle = targeted == null ? this.mc.player.getVehicle() : targeted;
 
             if ((vehicle instanceof AbstractHorseEntity) == false)
             {
@@ -681,13 +684,13 @@ public class RenderHandler implements IRenderer
                 AnimalType = "Horse";
             }
 
-            if (horse.isSaddled())
+            if (horse.isSaddled() || Configs.Generic.LOOKING_AT_HORSE.getBooleanValue())
             {
                 if (InfoToggle.HORSE_SPEED.getBooleanValue())
                 {
-                    float speed = horse.getMovementSpeed();
+                    float speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horse.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED);
                     speed *= 42.1629629629629f;
-                    this.addLine(String.format(AnimalType+" Speed: %.3f m/s", speed));
+                    this.addLine(String.format(AnimalType + " Speed: %.3f m/s", speed));
                 }
 
                 if (InfoToggle.HORSE_JUMP.getBooleanValue())
@@ -695,10 +698,10 @@ public class RenderHandler implements IRenderer
                     double jump = horse.getAttributeValue(EntityAttributes.GENERIC_JUMP_STRENGTH);
                     double calculatedJumpHeight =
                             -0.1817584952d * jump * jump * jump +
-                            3.689713992d * jump * jump +
-                            2.128599134d * jump +
-                            -0.343930367;
-                    this.addLine(String.format(AnimalType+" Jump: %.3f m", calculatedJumpHeight));
+                                    3.689713992d * jump * jump +
+                                    2.128599134d * jump +
+                                    -0.343930367;
+                    this.addLine(String.format(AnimalType + " Jump: %.3f m", calculatedJumpHeight));
                 }
 
                 this.addedTypes.add(InfoToggle.HORSE_SPEED);
