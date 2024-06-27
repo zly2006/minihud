@@ -96,9 +96,9 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       USE_TEXT_BACKGROUND                 = new ConfigBoolean("useTextBackground", true, "Use a solid background color behind the text");
         public static final ConfigBoolean       VILLAGER_CONVERSION_TICKS           = new ConfigBoolean("villagerConversionTicks", true, "Show the conversion ticks for zombie villagers");
         public static final ConfigBoolean       VILLAGER_OFFER_ENCHANTMENT_BOOKS    = new ConfigBoolean("villagerOfferEnchantmentBooks", true, "Show villager offers for enchanted books");
-        public static final ConfigBoolean       VILLAGER_OFFER_HIGHEST_LEVEL_ONLY   = new ConfigBoolean("villagerOfferHighestLevelOnly", false, "Show only villager offers for highest level enchanted books");
+        public static final ConfigBoolean       VILLAGER_OFFER_HIGHEST_LEVEL_ONLY   = new ConfigBoolean("villagerOfferHighestLevelOnly", false, "Show only villager offers for the highest level enchanted books");
         public static final ConfigBoolean       VILLAGER_OFFER_LOWEST_PRICE_NEARBY  = new ConfigBoolean("villagerOfferLowestPriceNearby" , false, "Only show villager offers with the lowest price for the same enchantment");
-        public static final ConfigDouble        VILLAGER_OFFER_PRICE_THRESHOLD      = new ConfigDouble("villagerOfferPriceThreshold", 1, 0, 1, "Only show villager offers with prices below this in ratio\nSet to 1.0 to display all offers");
+        public static final ConfigDouble        VILLAGER_OFFER_PRICE_THRESHOLD      = new ConfigDouble("villagerOfferPriceThreshold", 1, 0, 1, "Only show villager offers with prices below this ratio\nSet to 1.0 to display all offers");
 
         public static final ImmutableList<IConfigBase> OPTIONS = ImmutableList.of(
                 AXOLOTL_TOOLTIPS,

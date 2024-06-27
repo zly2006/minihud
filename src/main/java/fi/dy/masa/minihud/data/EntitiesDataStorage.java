@@ -156,7 +156,7 @@ public class EntitiesDataStorage implements IClientTickHandler
         if (ver != null && ver.isEmpty() == false)
         {
             this.servuxVersion = ver;
-            MiniHUD.logger.warn("entityDataChannel: joining Servux version {}", ver);
+            MiniHUD.printDebug("entityDataChannel: joining Servux version {}", ver);
         }
         else
         {
