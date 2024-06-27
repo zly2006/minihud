@@ -15,10 +15,14 @@ import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.EntityUtils;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtHelper;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -240,7 +244,7 @@ public class EntitiesDataStorage implements IClientTickHandler
         {
             handler.getDataQueryHandler().queryBlockNbt(pos, nbtCompound ->
             {
-                handleBlockEntityData(pos, nbtCompound);
+                handleBlockEntityData(pos, nbtCompound, null);
             });
             transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.left(pos));
         }
@@ -270,24 +274,26 @@ public class EntitiesDataStorage implements IClientTickHandler
         HANDLER.encodeClientData(ServuxEntitiesPacket.EntityRequest(entityId));
     }
 
-    // BlockEntity.createNbtWithIdentifyingData
     @Nullable
-    public BlockEntity handleBlockEntityData(BlockPos pos, NbtCompound nbt)
+    public BlockEntity handleBlockEntityData(BlockPos pos, NbtCompound nbt, @Nullable Identifier type)
     {
         pendingBlockEntitiesQueue.remove(pos);
         if (nbt == null || this.getWorld() == null) return null;
 
         BlockEntity blockEntity = this.getWorld().getBlockEntity(pos);
-        if (blockEntity != null)
+        if (blockEntity != null && (type == null || type.equals(BlockEntityType.getId(blockEntity.getType()))))
         {
             blockEntity.read(nbt, this.getWorld().getRegistryManager());
             return blockEntity;
         }
-        else
+
+        BlockEntityType<?> beType = Registries.BLOCK_ENTITY_TYPE.get(type);
+        if (beType != null && beType.supports(this.getWorld().getBlockState(pos)))
         {
-            BlockEntity blockEntity2 = BlockEntity.createFromNbt(pos, this.getWorld().getBlockState(pos), nbt, mc.world.getRegistryManager());
+            BlockEntity blockEntity2 = beType.instantiate(pos, this.getWorld().getBlockState(pos));
             if (blockEntity2 != null)
             {
+                blockEntity2.read(nbt, this.getWorld().getRegistryManager());
                 this.getWorld().addBlockEntity(blockEntity2);
                 return blockEntity2;
             }
@@ -296,7 +302,6 @@ public class EntitiesDataStorage implements IClientTickHandler
         return null;
     }
 
-    // Entity.saveSelfNbt
     @Nullable
     public Entity handleEntityData(int entityId, NbtCompound nbt)
     {
@@ -310,12 +315,29 @@ public class EntitiesDataStorage implements IClientTickHandler
         return entity;
     }
 
+    public void handleBulkEntityData(NbtCompound nbt)
+    {
+        if (nbt == null || this.getWorld() == null) return;
+
+        for (NbtElement element : nbt.getList("TileEntities", NbtElement.COMPOUND_TYPE))
+        {
+            NbtCompound compound = (NbtCompound) element;
+            handleBlockEntityData(NbtHelper.toBlockPos(compound, "Pos").get(), compound.getCompound("Data"), Identifier.of(compound.getString("Type")));
+        }
+
+        for (NbtElement element : nbt.getList("Entities", NbtElement.COMPOUND_TYPE))
+        {
+            NbtCompound compound = (NbtCompound) element;
+            handleEntityData(compound.getInt("Id"), compound.getCompound("Data"));
+        }
+    }
+
     public void handleVanillaQueryNbt(int transactionId, NbtCompound nbt)
     {
         Either<BlockPos, Integer> either = transactionToBlockPosOrEntityId.remove(transactionId);
         if (either != null)
         {
-            either.ifLeft(pos -> handleBlockEntityData(pos, nbt))
+            either.ifLeft(pos -> handleBlockEntityData(pos, nbt, null))
                     .ifRight(entityId -> handleEntityData(entityId, nbt));
         }
     }
