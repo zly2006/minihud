@@ -5,14 +5,17 @@
         "minVersion": "0.8",
         "client": [
                 "IMixinAbstractFurnaceBlockEntity",
+                "IMixinAbstractHorseEntity",
                 "IMixinBeaconBlockEntity",
                 "IMixinBiomeAccess",
                 "IMixinChunkDeltaUpdateS2CPacket",
                 "IMixinDataQueryHandler",
                 "IMixinEntity",
                 "IMixinEntityNavigation",
+                "IMixinLeashable",
                 "IMixinMerchantEntity",
                 "IMixinPassiveEntity",
+                "IMixinPiglinEntity",
                 "IMixinServerWorld",
                 "IMixinWorld",
                 "IMixinWorldRenderer",
@@ -33,12 +36,9 @@
                 "MixinNeighborUpdateDebugRenderer",
                 "MixinServerEntityManager",
                 "MixinServerWorld",
-                "MixinSubtitlesHud",
-                "IMixinLeashable"
+                "MixinSubtitlesHud"
         ],
         "injectors": {
                 "defaultRequire": 1
-        },
-        "mixins": [
-        ]
+        }
 }

@@ -1,21 +1,22 @@
 package fi.dy.masa.minihud.renderer;
 
-import java.util.Collection;
+import fi.dy.masa.malilib.util.*;
+import fi.dy.masa.minihud.gui.InventoryOverlayScreen;
+import fi.dy.masa.minihud.renderer.shapes.SideQuad;
+import fi.dy.masa.minihud.util.RayTraceUtils;
+import fi.dy.masa.minihud.util.ShapeRenderType;
+import fi.dy.masa.minihud.util.shape.SphereUtils;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
-import fi.dy.masa.malilib.util.Color4f;
-import fi.dy.masa.malilib.util.EntityUtils;
-import fi.dy.masa.malilib.util.LayerRange;
-import fi.dy.masa.malilib.util.PositionUtils;
-import fi.dy.masa.minihud.renderer.shapes.SideQuad;
-import fi.dy.masa.minihud.util.ShapeRenderType;
-import fi.dy.masa.minihud.util.shape.SphereUtils;
+
+import java.util.Collection;
 
 public class RenderUtils
 {
@@ -487,5 +488,12 @@ public class RenderUtils
 
             return remainder == 0.0 ? value : value + interval - remainder;
         }
+    }
+
+    public static void renderInventoryOverlay(RayTraceUtils.TargetInventory inventory, DrawContext drawContext)
+    {
+        var screen = new InventoryOverlayScreen(inventory);
+        screen.init(MinecraftClient.getInstance(), 0, 0);
+        screen.render(drawContext, 0, 0, 0);
     }
 }

@@ -1,16 +1,15 @@
 package fi.dy.masa.minihud.network;
 
-import fi.dy.masa.malilib.network.IClientPayloadData;
-import fi.dy.masa.minihud.MiniHUD;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.math.BlockPos;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import fi.dy.masa.malilib.network.IClientPayloadData;
+import fi.dy.masa.minihud.MiniHUD;
 
 public class ServuxEntitiesPacket implements IClientPayloadData
 {
@@ -53,18 +52,24 @@ public class ServuxEntitiesPacket implements IClientPayloadData
     }
 
     // Entity simple response
-    public static ServuxEntitiesPacket SimpleEntityResponse(int entityId, NbtCompound nbt)
+    public static ServuxEntitiesPacket SimpleEntityResponse(int entityId, @Nullable NbtCompound nbt)
     {
         var packet = new ServuxEntitiesPacket(Type.PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE);
-        packet.nbt = nbt.copy();
+        if (nbt != null)
+        {
+            packet.nbt.copyFrom(nbt);
+        }
         packet.entityId = entityId;
         return packet;
     }
 
-    public static ServuxEntitiesPacket SimpleBlockResponse(BlockPos pos, NbtCompound nbt)
+    public static ServuxEntitiesPacket SimpleBlockResponse(BlockPos pos, @Nullable NbtCompound nbt)
     {
         var packet = new ServuxEntitiesPacket(Type.PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE);
-        packet.nbt = nbt.copy();
+        if (nbt != null)
+        {
+            packet.nbt.copyFrom(nbt);
+        }
         packet.pos = pos.toImmutable();
         return packet;
     }
@@ -83,18 +88,32 @@ public class ServuxEntitiesPacket implements IClientPayloadData
         return packet;
     }
 
-    // Response Nbt Packet, using Packet Splitter
-    public static ServuxEntitiesPacket ResponseStart(@Nonnull NbtCompound nbt)
+    // Nbt Packet, using Packet Splitter
+    public static ServuxEntitiesPacket ResponseS2CStart(@Nonnull NbtCompound nbt)
     {
         var packet = new ServuxEntitiesPacket(Type.PACKET_S2C_NBT_RESPONSE_START);
         packet.nbt.copyFrom(nbt);
         return packet;
     }
 
-    // Response Packet Slice (Packet Splitter)
-    public static ServuxEntitiesPacket ResponseData(@Nonnull PacketByteBuf buffer)
+    public static ServuxEntitiesPacket ResponseS2CData(@Nonnull PacketByteBuf buffer)
     {
         var packet = new ServuxEntitiesPacket(Type.PACKET_S2C_NBT_RESPONSE_DATA);
+        packet.buffer = buffer;
+        packet.nbt = new NbtCompound();
+        return packet;
+    }
+
+    public static ServuxEntitiesPacket ResponseC2SStart(@Nonnull NbtCompound nbt)
+    {
+        var packet = new ServuxEntitiesPacket(Type.PACKET_C2S_NBT_RESPONSE_START);
+        packet.nbt.copyFrom(nbt);
+        return packet;
+    }
+
+    public static ServuxEntitiesPacket ResponseC2SData(@Nonnull PacketByteBuf buffer)
+    {
+        var packet = new ServuxEntitiesPacket(Type.PACKET_C2S_NBT_RESPONSE_DATA);
         packet.buffer = buffer;
         packet.nbt = new NbtCompound();
         return packet;
@@ -126,7 +145,7 @@ public class ServuxEntitiesPacket implements IClientPayloadData
     {
         int total = 2;
 
-        if (this.nbt != null && this.nbt.isEmpty() == false)
+        if (this.nbt != null && !this.nbt.isEmpty())
         {
             total += this.nbt.getSizeInBytes();
         }
@@ -226,7 +245,7 @@ public class ServuxEntitiesPacket implements IClientPayloadData
                     MiniHUD.logger.error("ServuxEntitiesPacket#toPacket: error writing Entity Response to packet: [{}]", e.getLocalizedMessage());
                 }
             }
-            case PACKET_S2C_NBT_RESPONSE_DATA ->
+            case PACKET_S2C_NBT_RESPONSE_DATA, PACKET_C2S_NBT_RESPONSE_DATA ->
             {
                 // Write Packet Buffer (Slice)
                 try
@@ -250,10 +269,7 @@ public class ServuxEntitiesPacket implements IClientPayloadData
                     MiniHUD.logger.error("ServuxEntitiesPacket#toPacket: error writing NBT to packet: [{}]", e.getLocalizedMessage());
                 }
             }
-            default ->
-            {
-                MiniHUD.logger.error("ServuxEntitiesPacket#toPacket: Unknown packet type!");
-            }
+            default -> MiniHUD.logger.error("ServuxEntitiesPacket#toPacket: Unknown packet type!");
         }
     }
 
@@ -297,16 +313,50 @@ public class ServuxEntitiesPacket implements IClientPayloadData
                     MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Entity Request from packet: [{}]", e.getLocalizedMessage());
                 }
             }
+            case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE ->
+            {
+                try
+                {
+                    return ServuxEntitiesPacket.SimpleBlockResponse(input.readBlockPos(), input.readNbt());
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Block Entity Response from packet: [{}]", e.getLocalizedMessage());
+                }
+            }
+            case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE ->
+            {
+                try
+                {
+                    return ServuxEntitiesPacket.SimpleEntityResponse(input.readVarInt(), input.readNbt());
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Entity Response from packet: [{}]", e.getLocalizedMessage());
+                }
+            }
             case PACKET_S2C_NBT_RESPONSE_DATA ->
             {
                 // Read Packet Buffer Slice
                 try
                 {
-                    return ServuxEntitiesPacket.ResponseData(new PacketByteBuf(input.readBytes(input.readableBytes())));
+                    return ServuxEntitiesPacket.ResponseS2CData(new PacketByteBuf(input.readBytes(input.readableBytes())));
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Block Response Buffer from packet: [{}]", e.getLocalizedMessage());
+                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading S2C Bulk Response Buffer from packet: [{}]", e.getLocalizedMessage());
+                }
+            }
+            case PACKET_C2S_NBT_RESPONSE_DATA ->
+            {
+                // Read Packet Buffer Slice
+                try
+                {
+                    return ServuxEntitiesPacket.ResponseC2SData(new PacketByteBuf(input.readBytes(input.readableBytes())));
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading C2S Bulk Response Buffer from packet: [{}]", e.getLocalizedMessage());
                 }
             }
             case PACKET_C2S_METADATA_REQUEST ->
@@ -333,32 +383,7 @@ public class ServuxEntitiesPacket implements IClientPayloadData
                     MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Metadata Response from packet: [{}]", e.getLocalizedMessage());
                 }
             }
-            case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE ->
-            {
-                try
-                {
-                    return ServuxEntitiesPacket.SimpleBlockResponse(input.readBlockPos(), input.readNbt());
-                }
-                catch (Exception e)
-                {
-                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Block Entity Response from packet: [{}]", e.getLocalizedMessage());
-                }
-            }
-            case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE ->
-            {
-                try
-                {
-                    return ServuxEntitiesPacket.SimpleEntityResponse(input.readVarInt(), input.readNbt());
-                }
-                catch (Exception e)
-                {
-                    MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: error reading Entity Response from packet: [{}]", e.getLocalizedMessage());
-                }
-            }
-            default ->
-            {
-                MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: Unknown packet type!");
-            }
+            default -> MiniHUD.logger.error("ServuxEntitiesPacket#fromPacket: Unknown packet type!");
         }
 
         return null;
@@ -367,7 +392,7 @@ public class ServuxEntitiesPacket implements IClientPayloadData
     @Override
     public void clear()
     {
-        if (this.nbt != null && this.nbt.isEmpty() == false)
+        if (this.nbt != null && !this.nbt.isEmpty())
         {
             this.nbt = new NbtCompound();
         }
@@ -400,9 +425,12 @@ public class ServuxEntitiesPacket implements IClientPayloadData
         PACKET_C2S_ENTITY_REQUEST(4),
         PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE(5),
         PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE(6),
-        // For Packet Splitter (Oversize Packets)
+        // For Packet Splitter (Oversize Packets, S2C)
         PACKET_S2C_NBT_RESPONSE_START(10),
-        PACKET_S2C_NBT_RESPONSE_DATA(11);
+        PACKET_S2C_NBT_RESPONSE_DATA(11),
+        // For Packet Splitter (Oversize Packets, C2S)
+        PACKET_C2S_NBT_RESPONSE_START(12),
+        PACKET_C2S_NBT_RESPONSE_DATA(13);
 
         private final int type;
 

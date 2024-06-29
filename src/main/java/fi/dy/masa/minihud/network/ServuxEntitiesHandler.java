@@ -1,20 +1,23 @@
 package fi.dy.masa.minihud.network;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.random.Random;
+import io.netty.buffer.Unpooled;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IClientPayloadData;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.network.PacketSplitter;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.random.Random;
 
 @Environment(EnvType.CLIENT)
 public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements IPluginClientPlayHandler<T>
@@ -65,7 +68,7 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
     {
         ServuxEntitiesPacket packet = (ServuxEntitiesPacket) data;
 
-        if (channel.equals(CHANNEL_ID) == false)
+        if (!channel.equals(CHANNEL_ID))
         {
             return;
         }
@@ -73,21 +76,13 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
         {
             case PACKET_S2C_METADATA ->
             {
-                MiniHUD.printDebug("ServuxEntitiesHandler#decodeClientData(): received metadata packet of size {} bytes.", packet.getTotalSize());
-
                 if (EntitiesDataStorage.getInstance().receiveServuxMetadata(packet.getCompound()))
                 {
                     this.servuxRegistered = true;
                 }
             }
-            case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE ->
-            {
-                EntitiesDataStorage.getInstance().handleBlockEntityData(packet.getPos(), packet.getCompound());
-            }
-            case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE ->
-            {
-                EntitiesDataStorage.getInstance().handleEntityData(packet.getEntityId(), packet.getCompound());
-            }
+            case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE -> EntitiesDataStorage.getInstance().handleBlockEntityData(packet.getPos(), packet.getCompound(), null);
+            case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE -> EntitiesDataStorage.getInstance().handleEntityData(packet.getEntityId(), packet.getCompound());
             case PACKET_S2C_NBT_RESPONSE_DATA ->
             {
                 if (this.readingSessionKey == -1)
@@ -96,7 +91,6 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
                 }
 
                 MiniHUD.printDebug("ServuxEntitiesHandler#decodeClientData(): received Entity Data Packet Slice of size {} (in bytes) // reading session key [{}]", packet.getTotalSize(), this.readingSessionKey);
-
                 PacketByteBuf fullPacket = PacketSplitter.receive(this, this.readingSessionKey, packet.getBuffer());
 
                 if (fullPacket != null)
@@ -104,7 +98,8 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
                     try
                     {
                         this.readingSessionKey = -1;
-                        EntitiesDataStorage.getInstance().handleEntityData(fullPacket.readVarInt(), fullPacket.readNbt());
+                        NbtCompound nbt = fullPacket.readNbt();
+                        EntitiesDataStorage.getInstance().handleBulkEntityData(nbt);
                     }
                     catch (Exception e)
                     {
@@ -148,7 +143,8 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
     @Override
     public void encodeWithSplitter(PacketByteBuf buffer, ClientPlayNetworkHandler handler)
     {
-        // NO-OP
+        // Send each PacketSplitter buffer slice
+        ServuxEntitiesHandler.INSTANCE.sendPlayPayload(new ServuxEntitiesPacket.Payload(ServuxEntitiesPacket.ResponseC2SData(buffer)));
     }
 
     @Override
@@ -156,7 +152,14 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
     {
         ServuxEntitiesPacket packet = (ServuxEntitiesPacket) data;
 
-        if (ServuxEntitiesHandler.INSTANCE.sendPlayPayload(new ServuxEntitiesPacket.Payload(packet)) == false)
+        if (packet.getType().equals(ServuxEntitiesPacket.Type.PACKET_C2S_NBT_RESPONSE_START))
+        {
+            PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+            buffer.writeVarInt(packet.getTransactionId());
+            buffer.writeNbt(packet.getCompound());
+            PacketSplitter.send(this, buffer, MinecraftClient.getInstance().getNetworkHandler());
+        }
+        else if (!ServuxEntitiesHandler.INSTANCE.sendPlayPayload(new ServuxEntitiesPacket.Payload(packet)))
         {
             if (this.failures > MAX_FAILURES)
             {
