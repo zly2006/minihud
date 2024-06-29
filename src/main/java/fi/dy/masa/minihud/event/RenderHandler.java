@@ -8,24 +8,26 @@ import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
+import fi.dy.masa.minihud.mixin.IMixinPassiveEntity;
 import fi.dy.masa.minihud.mixin.IMixinServerWorld;
 import fi.dy.masa.minihud.mixin.IMixinWorldRenderer;
-import fi.dy.masa.minihud.mixin.IMixinPassiveEntity;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.IServerEntityManager;
 import fi.dy.masa.minihud.util.MiscUtils;
+import fi.dy.masa.minihud.util.RayTraceUtils;
 import net.minecraft.block.BeehiveBlock;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.PlayerListEntry;
@@ -141,6 +143,15 @@ public class RenderHandler implements IRenderer
             boolean useShadow = Configs.Generic.USE_FONT_SHADOW.getBooleanValue();
 
             RenderUtils.renderText(x, y, Configs.Generic.FONT_SCALE.getDoubleValue(), textColor, bgColor, alignment, useBackground, useShadow, this.lines, context);
+        }
+
+        if (Configs.Generic.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
+        {
+            var inventory = RayTraceUtils.getTargetInventory(this.mc);
+            if (inventory != null)
+            {
+                fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(inventory, context);
+            }
         }
     }
 
@@ -982,7 +993,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Nullable
-    private Entity getTargetEntity(World world, MinecraftClient mc)
+    public Entity getTargetEntity(World world, MinecraftClient mc)
     {
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
         {
@@ -997,22 +1008,39 @@ public class RenderHandler implements IRenderer
     }
 
     @Nullable
-    private BlockEntity getTargetedBlockEntity(World world, MinecraftClient mc)
+    public BlockEntity getTargetedBlockEntity(World world, MinecraftClient mc)
     {
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK)
         {
             BlockPos posLooking = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
             WorldChunk chunk = this.getChunk(new ChunkPos(posLooking));
 
-            if (!(world instanceof ServerWorld))
-            {
-                EntitiesDataStorage.getInstance().requestBlockEntity(world, posLooking);
-            }
+            requestBlockEntityAt(world, posLooking);
             // The method in World now checks that the caller is from the same thread...
             return chunk != null ? chunk.getBlockEntity(posLooking) : null;
         }
 
         return null;
+    }
+
+    public void requestBlockEntityAt(World world, BlockPos pos)
+    {
+        if (!(world instanceof ServerWorld))
+        {
+            EntitiesDataStorage.getInstance().requestBlockEntity(world, pos);
+
+            BlockState state = world.getBlockState(pos);
+            if (state.getBlock() instanceof ChestBlock)
+            {
+                ChestType type = state.get(ChestBlock.CHEST_TYPE);
+
+                if (type != ChestType.SINGLE)
+                {
+                    BlockPos posAdj = pos.offset(ChestBlock.getFacing(state));
+                    EntitiesDataStorage.getInstance().requestBlockEntity(world, posAdj);
+                }
+            }
+        }
     }
 
     @Nullable
