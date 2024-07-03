@@ -63,7 +63,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
 
     public void decodeStructuresPacket(Identifier channel, ServuxStructuresPacket packet)
     {
-        if (channel.equals(CHANNEL_ID) == false)
+        if (!channel.equals(CHANNEL_ID))
         {
             return;
         }
@@ -105,7 +105,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
             }
             case PACKET_S2C_METADATA ->
             {
-                if (DataStorage.getInstance().receiveServuxMetadata(packet.getCompound()))
+                if (DataStorage.getInstance().receiveServuxStrucutresMetadata(packet.getCompound()))
                 {
                     this.servuxRegistered = true;
                 }
@@ -151,11 +151,11 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
 
     public void encodeStructuresPacket(ServuxStructuresPacket packet)
     {
-        if (ServuxStructuresHandler.INSTANCE.sendPlayPayload(new ServuxStructuresPacket.Payload(packet)) == false)
+        if (!ServuxStructuresHandler.INSTANCE.sendPlayPayload(new ServuxStructuresPacket.Payload(packet)))
         {
             if (this.failures > MAX_FAILURES)
             {
-                MiniHUD.logger.warn("encodeStructuresPacket(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
+                MiniHUD.printDebug("encodeStructuresPacket(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
                 this.servuxRegistered = false;
                 ServuxStructuresHandler.INSTANCE.unregisterPlayReceiver();
                 DataStorage.getInstance().onPacketFailure();
