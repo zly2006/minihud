@@ -53,6 +53,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     ROTATION_PITCH          ("infoRotationPitch",           false, 12, "", "Show the player's pitch rotation"),
     ROTATION_YAW            ("infoRotationYaw",             false, 11, "", "Show the player's yaw rotation"),
     SERVER_TPS              ("infoServerTPS",               false,  9, "", "Show the server TPS and ms/tick (MSPT) values\nNote: This is only accurate when running a Carpet server\nand the TPSdisplay carpet rule is enabled.\nOtherwise it is estimated on the client side,\nbased on the world time update packet, and it can\nonly detect TPS values lower than 20 that way."),
+    SERVUX                  ("infoServux",                  false,  9, "", "Show the current version of the Servux mod"),
     SLIME_CHUNK             ("infoSlimeChunk",              false, 22, "", "Show whether the player is currently in a slime chunk.\nNOTE: This only works in single player without any user intervention!\nOn a server the player needs to either:\n  1) be admin/OP and run the /seed command manually EVERY TIME\n     they join or change dimensions, or\n  2) input the seed via chat, by sending a \"command\" like: minihud-seed 12345"),
     SPEED                   ("infoSpeed",                   false, 13, "", "Show the player's current moving speed"),
     SPEED_AXIS              ("infoSpeedAxis",               false, 13, "", "Show the player's current moving speed per axis"),
