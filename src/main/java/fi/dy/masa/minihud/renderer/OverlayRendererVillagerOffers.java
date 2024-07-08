@@ -41,7 +41,7 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
     @Override
     public boolean shouldRender(MinecraftClient mc)
     {
-        return RendererToggle.OVERLAY_VILLAGER_OFFERS.getBooleanValue();
+        return RendererToggle.OVERLAY_VILLAGER_INFO.getBooleanValue();
     }
 
     @Override
