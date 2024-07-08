@@ -130,4 +130,10 @@ public class InventoryOverlayScreen extends Screen
             }
         }
     }
+
+    @Override
+    public boolean shouldPause()
+    {
+        return false;
+    }
 }
