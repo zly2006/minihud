@@ -1,18 +1,12 @@
 package fi.dy.masa.minihud.data;
 
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
-import fi.dy.masa.malilib.interfaces.IClientTickHandler;
-import fi.dy.masa.malilib.network.ClientPlayHandler;
-import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
-import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.mixin.IMixinDataQueryHandler;
-import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
-import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
-import fi.dy.masa.minihud.util.DataStorage;
-import fi.dy.masa.minihud.util.EntityUtils;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -24,12 +18,17 @@ import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import fi.dy.masa.malilib.interfaces.IClientTickHandler;
+import fi.dy.masa.malilib.network.ClientPlayHandler;
+import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.mixin.IMixinDataQueryHandler;
+import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
+import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
+import fi.dy.masa.minihud.util.DataStorage;
+import fi.dy.masa.minihud.util.EntityUtils;
 
 public class EntitiesDataStorage implements IClientTickHandler
 {
@@ -71,6 +70,12 @@ public class EntitiesDataStorage implements IClientTickHandler
         if (System.currentTimeMillis() - serverTickTime > 50)
         {
             // In this block, we do something every server tick
+
+            if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() == false)
+            {
+                serverTickTime = System.currentTimeMillis();
+                return;
+            }
 
             // 5 queries / server tick
             for (int i = 0; i < Configs.Generic.SERVER_NBT_REQUEST_RATE.getIntegerValue(); i++)
@@ -190,7 +195,8 @@ public class EntitiesDataStorage implements IClientTickHandler
 
     public void requestMetadata()
     {
-        if (DataStorage.getInstance().hasIntegratedServer() == false)
+        if (DataStorage.getInstance().hasIntegratedServer() == false &&
+            Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
         {
             NbtCompound nbt = new NbtCompound();
             nbt.putString("version", Reference.MOD_STRING);
@@ -205,14 +211,18 @@ public class EntitiesDataStorage implements IClientTickHandler
         {
             MiniHUD.printDebug("EntitiesDataStorage#receiveServuxMetadata(): received METADATA from Servux");
 
-            if (data.getInt("version") != ServuxEntitiesPacket.PROTOCOL_VERSION)
+            if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
             {
-                MiniHUD.logger.warn("entityDataChannel: Mis-matched protocol version!");
-            }
-            this.setServuxVersion(data.getString("servux"));
-            this.setIsServuxServer();
+                if (data.getInt("version") != ServuxEntitiesPacket.PROTOCOL_VERSION)
+                {
+                    MiniHUD.logger.warn("entityDataChannel: Mis-matched protocol version!");
+                }
 
-            return true;
+                this.setServuxVersion(data.getString("servux"));
+                this.setIsServuxServer();
+
+                return true;
+            }
         }
 
         return false;
@@ -239,6 +249,11 @@ public class EntitiesDataStorage implements IClientTickHandler
 
     private void requestQueryBlockEntity(BlockPos pos)
     {
+        if (Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() == false)
+        {
+            return;
+        }
+
         ClientPlayNetworkHandler handler = this.getVanillaHandler();
 
         if (handler != null)
@@ -253,6 +268,11 @@ public class EntitiesDataStorage implements IClientTickHandler
 
     private void requestQueryEntityData(int entityId)
     {
+        if (Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() == false)
+        {
+            return;
+        }
+
         ClientPlayNetworkHandler handler = this.getVanillaHandler();
 
         if (handler != null)
@@ -267,11 +287,21 @@ public class EntitiesDataStorage implements IClientTickHandler
 
     private void requestServuxBlockEntityData(BlockPos pos)
     {
+        if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() == false)
+        {
+            return;
+        }
+
         HANDLER.encodeClientData(ServuxEntitiesPacket.BlockEntityRequest(pos));
     }
 
     private void requestServuxEntityData(int entityId)
     {
+        if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() == false)
+        {
+            return;
+        }
+
         HANDLER.encodeClientData(ServuxEntitiesPacket.EntityRequest(entityId));
     }
 
@@ -316,7 +346,7 @@ public class EntitiesDataStorage implements IClientTickHandler
         return entity;
     }
 
-    public void handleBulkEntityData(NbtCompound nbt)
+    public void handleBulkEntityData(int transactionId, NbtCompound nbt)
     {
         // todo
     }
