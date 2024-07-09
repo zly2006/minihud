@@ -1,5 +1,6 @@
 package fi.dy.masa.minihud.util;
 
+import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.minihud.mixin.IMixinEntity;
 import fi.dy.masa.minihud.mixin.IMixinWorld;
 import net.minecraft.client.MinecraftClient;
@@ -10,6 +11,12 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.Box;
+import net.minecraft.world.World;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Predicate;
 
 public class EntityUtils
 {
@@ -74,5 +81,17 @@ public class EntityUtils
                     .ifRight(pos ->
                             leashable.attachLeash(LeashKnotEntity.getOrCreate(mc.world, pos), false));
         }
+    }
+
+    public static <T extends Entity> List<T> getEntitiesByClass(MinecraftClient mc, Class<T> entityClass, Box box, Predicate<? super T> predicate)
+    {
+        if (mc.world == null)
+        {
+            return Collections.emptyList();
+        }
+
+        List<Integer> entityIds = mc.world.getEntitiesByClass(entityClass, box, predicate).stream().map(it -> it.getId()).toList();
+        World world = WorldUtils.getBestWorld(mc);
+        return entityIds.stream().map(it -> (T) world.getEntityById(it)).toList();
     }
 }
