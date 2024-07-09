@@ -1,14 +1,6 @@
 package fi.dy.masa.minihud.renderer;
 
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
-import fi.dy.masa.minihud.mixin.IMixinMerchantEntity;
-import fi.dy.masa.minihud.mixin.IMixinZombieVillagerEntity;
-import fi.dy.masa.minihud.util.EntityUtils;
+import java.util.*;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
@@ -27,8 +19,15 @@ import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.world.World;
-
-import java.util.*;
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.render.RenderUtils;
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.mixin.IMixinMerchantEntity;
+import fi.dy.masa.minihud.mixin.IMixinZombieVillagerEntity;
+import fi.dy.masa.minihud.util.EntityUtils;
 
 public class OverlayRendererVillagerInfo extends OverlayRendererBase
 {

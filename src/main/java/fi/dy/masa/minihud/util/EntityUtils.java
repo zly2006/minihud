@@ -25,7 +25,8 @@ public class EntityUtils
     {
         entity.fallDistance = nbt.getFloat("FallDistance");
         entity.setFireTicks(nbt.getShort("Fire"));
-        if (nbt.contains("Air")) {
+        if (nbt.contains("Air"))
+        {
             entity.setAir(nbt.getShort("Air"));
         }
 
@@ -46,12 +47,14 @@ public class EntityUtils
         entity.setNoGravity(nbt.getBoolean("NoGravity"));
         entity.setGlowing(nbt.getBoolean("Glowing"));
         entity.setFrozenTicks(nbt.getInt("TicksFrozen"));
-        if (nbt.contains("Tags", NbtElement.LIST_TYPE)) {
+        if (nbt.contains("Tags", NbtElement.LIST_TYPE))
+        {
             entity.getCommandTags().clear();
             NbtList nbtList4 = nbt.getList("Tags", NbtElement.STRING_TYPE);
             int max = Math.min(nbtList4.size(), 1024);
 
-            for(int i = 0; i < max; ++i) {
+            for(int i = 0; i < max; ++i)
+            {
                 entity.getCommandTags().add(nbtList4.getString(i));
             }
         }
