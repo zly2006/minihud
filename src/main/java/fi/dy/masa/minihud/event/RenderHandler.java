@@ -8,7 +8,6 @@ import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -17,6 +16,7 @@ import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.mixin.IMixinPassiveEntity;
 import fi.dy.masa.minihud.mixin.IMixinServerWorld;
 import fi.dy.masa.minihud.mixin.IMixinWorldRenderer;
+import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.IServerEntityManager;
@@ -61,6 +61,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
+import net.minecraft.world.level.LevelProperties;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.joml.Matrix4f;
 
@@ -415,6 +416,43 @@ public class RenderHandler implements IRenderer
             else
             {
                 this.addLine("Server TPS: <no valid data>");
+            }
+        }
+        else if (type == InfoToggle.SERVUX)
+        {
+            if (EntitiesDataStorage.getInstance().hasServuxServer())
+            {
+                this.addLine("Servux: %s // Protocol v%d".formatted(EntitiesDataStorage.getInstance().getServuxVersion(), ServuxEntitiesPacket.PROTOCOL_VERSION));
+            }
+        }
+        else if (type == InfoToggle.WEATHER)
+        {
+            World bestWorld = WorldUtils.getBestWorld(mc);
+            if (bestWorld.getLevelProperties().isThundering())
+            {
+                if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
+                {
+                    this.addLine("Weather: Thundering, " + lp.getThunderTime() + " ticks left");
+                }
+                else
+                {
+                    this.addLine("Weather: Thundering");
+                }
+            }
+            else if (bestWorld.getLevelProperties().isRaining())
+            {
+                if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
+                {
+                    this.addLine("Weather: Raining, " + lp.getRainTime() + " ticks left");
+                }
+                else
+                {
+                    this.addLine("Weather: Raining");
+                }
+            }
+            else
+            {
+                this.addLine("Weather: Clear");
             }
         }
         else if (type == InfoToggle.MOB_CAPS)
@@ -802,6 +840,14 @@ public class RenderHandler implements IRenderer
             else
             {
                 this.addLine(chunksClient);
+            }
+        }
+        else if (type == InfoToggle.PANDA_GENE)
+        {
+            if (this.getTargetEntity(world, mc) instanceof PandaEntity panda)
+            {
+                this.addLine("Main gene: " + panda.getMainGene().asString() + (panda.getMainGene().isRecessive() ? " (recessive)" : " (dominant)"));
+                this.addLine("Hidden gene: " + panda.getHiddenGene().asString() + (panda.getHiddenGene().isRecessive() ? " (recessive)" : " (dominant)"));
             }
         }
         else if (type == InfoToggle.PARTICLE_COUNT)

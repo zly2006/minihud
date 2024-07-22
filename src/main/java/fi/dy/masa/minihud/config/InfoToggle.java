@@ -47,12 +47,14 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     MEMORY_USAGE            ("infoMemoryUsage",             false,  0, "", "minihud.config.info_toggle.comment.infoMemoryUsage", "minihud.config.info_toggle.name.infoMemoryUsage"),
     MOB_CAPS                ("infoMobCaps",                 false, 10, "", "minihud.config.info_toggle.comment.infoMobCaps", "minihud.config.info_toggle.name.infoMobCaps"),
     LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       false, 31, "", "minihud.config.info_toggle.comment.infoLoadedChunksCount", "minihud.config.info_toggle.name.infoLoadedChunksCount"),
+    PANDA_GENE              ("infoPandaGene",               false, 37, "", "minihud.config.info_toggle.comment.infoPandaGene", "minihud.config.info_toggle.name.infoPandaGene"),
     PARTICLE_COUNT          ("infoParticleCount",           false, 17, "", "minihud.config.info_toggle.comment.infoParticleCount", "minihud.config.info_toggle.name.infoParticleCount"),
     PING                    ("infoPing",                    false, 36, "", "minihud.config.info_toggle.comment.infoPing", "minihud.config.info_toggle.name.infoPing"),
     REGION_FILE             ("infoRegionFile",              false, 29, "", "minihud.config.info_toggle.comment.infoRegionFile", "minihud.config.info_toggle.name.infoRegionFile"),
     ROTATION_PITCH          ("infoRotationPitch",           false, 12, "", "minihud.config.info_toggle.comment.infoRotationPitch", "minihud.config.info_toggle.name.infoRotationPitch"),
     ROTATION_YAW            ("infoRotationYaw",             false, 11, "", "minihud.config.info_toggle.comment.infoRotationYaw", "minihud.config.info_toggle.name.infoRotationYaw"),
     SERVER_TPS              ("infoServerTPS",               false,  9, "", "minihud.config.info_toggle.comment.infoServerTPS", "minihud.config.info_toggle.name.infoServerTPS"),
+    SERVUX                  ("infoServux",                  false, 10, "", "minihud.config.info_toggle.comment.infoServux", "minihud.config.info_toggle.name.infoServux"),
     SLIME_CHUNK             ("infoSlimeChunk",              false, 22, "", "minihud.config.info_toggle.comment.infoSlimeChunk", "minihud.config.info_toggle.name.infoSlimeChunk"),
     SPEED                   ("infoSpeed",                   false, 13, "", "minihud.config.info_toggle.comment.infoSpeed", "minihud.config.info_toggle.name.infoSpeed"),
     SPEED_AXIS              ("infoSpeedAxis",               false, 13, "", "minihud.config.info_toggle.comment.infoSpeedAxis", "minihud.config.info_toggle.name.infoSpeedAxis"),
@@ -63,7 +65,8 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     TIME_REAL               ("infoTimeIRL",                 true,   1, "", "minihud.config.info_toggle.comment.infoTimeIRL", "minihud.config.info_toggle.name.infoTimeIRL"),
     TIME_TOTAL_MODULO       ("infoTimeTotalModulo",         false, 34, "", "minihud.config.info_toggle.comment.infoTimeTotalModulo", "minihud.config.info_toggle.name.infoTimeTotalModulo"),
     TIME_WORLD              ("infoTimeWorld",               false,  2, "", "minihud.config.info_toggle.comment.infoTimeWorld", "minihud.config.info_toggle.name.infoTimeWorld"),
-    TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      false,  3, "", "minihud.config.info_toggle.comment.infoWorldTimeFormatted", "minihud.config.info_toggle.name.infoWorldTimeFormatted");
+    TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      false,  3, "", "minihud.config.info_toggle.comment.infoWorldTimeFormatted", "minihud.config.info_toggle.name.infoWorldTimeFormatted"),
+    WEATHER                 ("infoWeather",                 false, 4, "", "minihud.config.info_toggle.comment.infoWeather", "minihud.config.info_toggle.name.infoWeather"),;
 
     public static final ImmutableList<InfoToggle> VALUES = ImmutableList.copyOf(values());
 
