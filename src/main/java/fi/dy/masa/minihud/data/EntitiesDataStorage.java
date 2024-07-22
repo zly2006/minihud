@@ -189,6 +189,21 @@ public class EntitiesDataStorage implements IClientTickHandler
         }
     }
 
+    public String getServuxVersion()
+    {
+        return servuxVersion;
+    }
+
+    public int getPendingBLockEntitiesCount()
+    {
+        return this.pendingBlockEntitiesQueue.size();
+    }
+
+    public int getPendingEntitiesCount()
+    {
+        return this.pendingEntitiesQueue.size();
+    }
+
     public void onGameInit()
     {
         ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
@@ -385,10 +400,5 @@ public class EntitiesDataStorage implements IClientTickHandler
     public void fromJson(JsonObject obj)
     {
         // NO-OP
-    }
-
-    public String getServuxVersion()
-    {
-        return servuxVersion;
     }
 }

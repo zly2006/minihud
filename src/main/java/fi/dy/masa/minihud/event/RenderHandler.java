@@ -154,7 +154,8 @@ public class RenderHandler implements IRenderer
             RenderUtils.renderText(x, y, Configs.Generic.FONT_SCALE.getDoubleValue(), textColor, bgColor, alignment, useBackground, useShadow, this.lines, context);
         }
 
-        if (Configs.Generic.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
+        if (Configs.Generic.INVENTORY_PREVIEW_ENABLED.getBooleanValue() &&
+            Configs.Generic.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
         {
             var inventory = RayTraceUtils.getTargetInventory(this.mc);
             if (inventory != null)
@@ -428,7 +429,11 @@ public class RenderHandler implements IRenderer
         {
             if (EntitiesDataStorage.getInstance().hasServuxServer())
             {
-                this.addLine("Servux: %s // Protocol v%d".formatted(EntitiesDataStorage.getInstance().getServuxVersion(), ServuxEntitiesPacket.PROTOCOL_VERSION));
+                this.addLine("Servux: %s // Protocol v%d // pB: %02d, pE: %02d".formatted(
+                        EntitiesDataStorage.getInstance().getServuxVersion(),
+                        ServuxEntitiesPacket.PROTOCOL_VERSION, EntitiesDataStorage.getInstance().getPendingBLockEntitiesCount(),
+                        ServuxEntitiesPacket.PROTOCOL_VERSION, EntitiesDataStorage.getInstance().getPendingEntitiesCount()
+                ));
             }
         }
         else if (type == InfoToggle.WEATHER)
@@ -438,7 +443,7 @@ public class RenderHandler implements IRenderer
             {
                 if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
                 {
-                    this.addLine("Weather: Thundering, " + lp.getThunderTime() + " ticks left");
+                    this.addLine("Weather: Thundering, "+ DurationFormatUtils.formatDurationWords((lp.getThunderTime() / 20) * 1000, true, true) +" remaining");
                 }
                 else
                 {
@@ -449,7 +454,7 @@ public class RenderHandler implements IRenderer
             {
                 if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
                 {
-                    this.addLine("Weather: Raining, " + lp.getRainTime() + " ticks left");
+                    this.addLine("Weather: Raining, "+ DurationFormatUtils.formatDurationWords((lp.getRainTime() / 20) * 1000, true, true) +" remaining");
                 }
                 else
                 {
