@@ -44,6 +44,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     LOOKING_AT_BLOCK        ("infoLookingAtBlock",          false, 25, "", "minihud.config.info_toggle.comment.infoLookingAtBlock", "minihud.config.info_toggle.name.infoLookingAtBlock"),
     LOOKING_AT_BLOCK_CHUNK  ("infoLookingAtBlockInChunk",   false, 26, "", "minihud.config.info_toggle.comment.infoLookingAtBlockInChunk", "minihud.config.info_toggle.name.infoLookingAtBlockInChunk"),
     LOOKING_AT_ENTITY       ("infoLookingAtEntity",         false, 23, "", "minihud.config.info_toggle.comment.infoLookingAtEntity", "minihud.config.info_toggle.name.infoLookingAtEntity"),
+    LOOKING_AT_EFFECTS      ("infoLookingAtEffects",        false, 24, "", "minihud.config.info_toggle.comment.infoLookingAtEffects", "minihud.config.info_toggle.name.infoLookingAtEffects"),
     MEMORY_USAGE            ("infoMemoryUsage",             false,  0, "", "minihud.config.info_toggle.comment.infoMemoryUsage", "minihud.config.info_toggle.name.infoMemoryUsage"),
     MOB_CAPS                ("infoMobCaps",                 false, 10, "", "minihud.config.info_toggle.comment.infoMobCaps", "minihud.config.info_toggle.name.infoMobCaps"),
     LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       false, 31, "", "minihud.config.info_toggle.comment.infoLoadedChunksCount", "minihud.config.info_toggle.name.infoLoadedChunksCount"),
@@ -66,7 +67,8 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     TIME_TOTAL_MODULO       ("infoTimeTotalModulo",         false, 34, "", "minihud.config.info_toggle.comment.infoTimeTotalModulo", "minihud.config.info_toggle.name.infoTimeTotalModulo"),
     TIME_WORLD              ("infoTimeWorld",               false,  2, "", "minihud.config.info_toggle.comment.infoTimeWorld", "minihud.config.info_toggle.name.infoTimeWorld"),
     TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      false,  3, "", "minihud.config.info_toggle.comment.infoWorldTimeFormatted", "minihud.config.info_toggle.name.infoWorldTimeFormatted"),
-    WEATHER                 ("infoWeather",                 false, 4, "", "minihud.config.info_toggle.comment.infoWeather", "minihud.config.info_toggle.name.infoWeather"),;
+    WEATHER                 ("infoWeather",                 false, 4,  "", "minihud.config.info_toggle.comment.infoWeather", "minihud.config.info_toggle.name.infoWeather"),
+    ZOMBIE_CONVERSION       ("infoZombieConversion",        false, 25, "", "minihud.config.info_toggle.comment.infoZombieConversion", "minihud.config.info_toggle.name.infoZombieConversion");
 
     public static final ImmutableList<InfoToggle> VALUES = ImmutableList.copyOf(values());
 

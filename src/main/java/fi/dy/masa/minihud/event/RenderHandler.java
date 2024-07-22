@@ -8,6 +8,7 @@ import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -16,6 +17,7 @@ import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.mixin.IMixinPassiveEntity;
 import fi.dy.masa.minihud.mixin.IMixinServerWorld;
 import fi.dy.masa.minihud.mixin.IMixinWorldRenderer;
+import fi.dy.masa.minihud.mixin.IMixinZombieVillagerEntity;
 import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.DataStorage;
@@ -32,12 +34,15 @@ import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.mob.ZombieVillagerEntity;
 import net.minecraft.entity.passive.*;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
@@ -48,6 +53,7 @@ import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -991,6 +997,62 @@ public class RenderHandler implements IRenderer
                 else
                 {
                     this.addLine(String.format("Entity: %s", lookedEntity.getName().getString()));
+                }
+            }
+        }
+        else if (type == InfoToggle.LOOKING_AT_EFFECTS)
+        {
+            if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
+            {
+                Entity lookedEntity = this.getTargetEntity(world, mc);
+                if (lookedEntity instanceof LivingEntity living)
+                {
+                    Collection<StatusEffectInstance> effects = living.getStatusEffects();
+                    Iterator<StatusEffectInstance> iter = effects.iterator();
+
+                    while (iter.hasNext())
+                    {
+                        StatusEffectInstance effect = iter.next();
+
+                        if (effect.isInfinite() || effect.getDuration() > 0)
+                        {
+                            StringBuilder effectsLine = new StringBuilder();
+
+                            effectsLine.append("Status Effect: ");
+                            effectsLine.append(effect.getEffectType().getIdAsString() + " / ");
+
+                            if (effect.getAmplifier() > 0)
+                            {
+                                effectsLine.append("x"+effect.getAmplifier()+" / ");
+                            }
+
+                            if (effect.isInfinite())
+                            {
+                                effectsLine.append("INF");
+                            }
+                            else
+                            {
+                                effectsLine.append(DurationFormatUtils.formatDurationWords((effect.getDuration() / 20) * 1000, true, true));
+                            }
+
+                            this.addLine(String.format("%s remaining", effectsLine.toString()));
+                        }
+                    }
+                }
+            }
+        }
+        else if (type == InfoToggle.ZOMBIE_CONVERSION)
+        {
+            if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
+            {
+                Entity lookedEntity = this.getTargetEntity(world, mc);
+                if (lookedEntity instanceof ZombieVillagerEntity zombie)
+                {
+                    int conversionTimer = ((IMixinZombieVillagerEntity) zombie).conversionTimer();
+                    if (conversionTimer > 0)
+                    {
+                        this.addLine(String.format("Zombie Villager Cures in: %s", DurationFormatUtils.formatDurationWords((conversionTimer / 20) * 1000, true, true)));
+                    }
                 }
             }
         }
