@@ -49,6 +49,7 @@ public class Configs implements IConfigHandler
         public static final ConfigDouble        FONT_SCALE                          = new ConfigDouble("fontScale", 0.5, 0.01, 100.0, "minihud.config.generic.comment.fontScale").translatedName("minihud.config.generic.name.fontScale");
         public static final ConfigOptionList    HUD_ALIGNMENT                       = new ConfigOptionList("hudAlignment", HudAlignment.TOP_LEFT, "minihud.config.generic.comment.hudAlignment").translatedName("minihud.config.generic.name.hudAlignment");
         public static final ConfigHotkey        INVENTORY_PREVIEW                   = new ConfigHotkey("inventoryPreview", "LEFT_ALT", KeybindSettings.PRESS_ALLOWEXTRA, "minihud.config.generic.comment.inventoryPreview").translatedName("minihud.config.generic.name.inventoryPreview");
+        public static final ConfigBoolean       INVENTORY_PREVIEW_ENABLED           = new ConfigBoolean("inventoryPreviewEnabled", false, "minihud.config.generic.comment.inventoryPreviewEnabled").translatedName("minihud.config.generic.name.inventoryPreviewEnabled");
         public static final ConfigHotkey        INVENTORY_PREVIEW_TOGGLE_SCREEN     = new ConfigHotkey("inventoryPreviewToggleScreen", "BUTTON_3", KeybindSettings.create(KeybindSettings.Context.ANY, KeyAction.PRESS, true, true, false, true), "minihud.config.generic.comment.inventoryPreviewToggleScreen").translatedName("minihud.config.generic.name.inventoryPreviewToggleScreen");
         public static final ConfigBoolean       LIGHT_LEVEL_AUTO_HEIGHT             = new ConfigBoolean("lightLevelAutoHeight", false, "minihud.config.generic.comment.lightLevelAutoHeight").translatedName("minihud.config.generic.name.lightLevelAutoHeight");
         public static final ConfigBoolean       LIGHT_LEVEL_COLORED_NUMBERS         = new ConfigBoolean("lightLevelColoredNumbers", true, "minihud.config.generic.comment.lightLevelColoredNumbers").translatedName("minihud.config.generic.name.lightLevelColoredNumbers");
@@ -177,6 +178,7 @@ public class Configs implements IConfigHandler
                 TIME_DAY_DIVISOR,
                 TIME_TOTAL_DIVISOR,
                 INVENTORY_PREVIEW,
+                INVENTORY_PREVIEW_ENABLED,
                 INVENTORY_PREVIEW_TOGGLE_SCREEN,
                 VILLAGER_CONVERSION_TICKS,
                 VILLAGER_OFFER_ENCHANTMENT_BOOKS,
