@@ -10,7 +10,7 @@ import fi.dy.masa.minihud.util.DataStorage;
 
 public enum StructureToggle
 {
-    OVERLAY_STRUCTURE_ANCIENT_CITY      ("Ancient City",    "", "#41D10AE6", "#41D506C9", "minihud.config.structure_toggle.comment.ancient_city", "Ancient City", "ancient_city"),
+    OVERLAY_STRUCTURE_ANCIENT_CITY      ("Ancient City",    "", "#30D10AE6", "#30D506C9", "minihud.config.structure_toggle.comment.ancient_city", "Ancient City", "ancient_city"),
     OVERLAY_STRUCTURE_BASTION_REMNANT   ("Bastion Remnant", "", "#302171F5", "#302171F5", "minihud.config.structure_toggle.comment.bastion_remnant", "Bastion Remnant", "bastion_remnant"),
     OVERLAY_STRUCTURE_BURIED_TREASURE   ("Buried Treasure", "", "#302298E6", "#302298E6", "minihud.config.structure_toggle.comment.buried_treasure", "Buried Treasure", "buried_treasure"),
     OVERLAY_STRUCTURE_DESERT_PYRAMID    ("Desert Pyramid",  "", "#30FFFF00", "#30FFFF00", "minihud.config.structure_toggle.comment.desert_pyramid", "Desert Pyramid", "desert_pyramid"),
@@ -27,7 +27,7 @@ public enum StructureToggle
     OVERLAY_STRUCTURE_RUINED_PORTAL     ("Ruined Portal",   "", "#309F03D3", "#309F03D3", "minihud.config.structure_toggle.comment.ruined_portal", "Ruined Portal", "ruined_portal"),
     OVERLAY_STRUCTURE_SHIPWRECK         ("Shipwreck",       "", "#30EB1995", "#30EB1995", "minihud.config.structure_toggle.comment.shipwreck", "Shipwreck", "shipwreck"),
     OVERLAY_STRUCTURE_STRONGHOLD        ("Stronghold",      "", "#30009999", "#30009999", "minihud.config.structure_toggle.comment.stronghold", "Stronghold", "stronghold"),
-    OVERLAY_STRUCTURE_TRIAL_CHAMBERS    ("Trial Chambers",  "", "#3599664E", "#35CC8868", "minihud.config.structure_toggle.comment.trial_chambers", "Trial Chambers", "trial_chambers"),
+    OVERLAY_STRUCTURE_TRIAL_CHAMBERS    ("Trial Chambers",  "", "#3099664E", "#30CC8868", "minihud.config.structure_toggle.comment.trial_chambers", "Trial Chambers", "trial_chambers"),
     OVERLAY_STRUCTURE_VILLAGE           ("Village",         "", "#3054CB4E", "#3054CB4E", "minihud.config.structure_toggle.comment.village", "Village", "village"),
     OVERLAY_STRUCTURE_WITCH_HUT         ("Witch Hut",       "", "#30BE1DFC", "#300099FF", "minihud.config.structure_toggle.comment.swamp_hut", "Witch Hut", "swamp_hut"),
     OVERLAY_STRUCTURE_TRAIL_RUINS       ("Trail Ruins",     "", "#307F5AFF", "#307F5AFF", "minihud.config.structure_toggle.comment.trail_ruins", "Trail Ruins", "trail_ruins"),
@@ -53,7 +53,6 @@ public enum StructureToggle
 
         this.hotkey.getKeybind().setCallback((action, key) -> { this.toggleOption.toggleBooleanValue(); return true; });
         this.toggleOption.setValueChangeCallback((config) -> DataStorage.getInstance().setStructuresNeedUpdating());
-
     }
 
     StructureToggle(String name, String defaultHotkey, String colorMain, String colorComponents, String comment, String prettyName, String translateSubName)
