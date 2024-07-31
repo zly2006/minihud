@@ -11,7 +11,6 @@ import fi.dy.masa.minihud.gui.GuiConfigs;
 import fi.dy.masa.minihud.gui.GuiConfigs.ConfigGuiTab;
 import fi.dy.masa.minihud.gui.GuiShapeEditor;
 import fi.dy.masa.minihud.gui.GuiShapeManager;
-import fi.dy.masa.minihud.gui.InventoryOverlayScreen;
 import fi.dy.masa.minihud.renderer.OverlayRendererBeaconRange;
 import fi.dy.masa.minihud.renderer.OverlayRendererLightLevel;
 import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
@@ -20,7 +19,6 @@ import fi.dy.masa.minihud.renderer.shapes.ShapeBase;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.DebugInfoUtils;
-import fi.dy.masa.minihud.util.RayTraceUtils;
 
 public class KeyCallbacks
 {
@@ -32,7 +30,7 @@ public class KeyCallbacks
         Configs.Generic.MOVE_SHAPE_TO_PLAYER.getKeybind().setCallback(callback);
         Configs.Generic.OPEN_CONFIG_GUI.getKeybind().setCallback(callback);
         Configs.Generic.SHAPE_EDITOR.getKeybind().setCallback(callback);
-        Configs.Generic.INVENTORY_PREVIEW_TOGGLE_SCREEN.getKeybind().setCallback(callback);
+        //Configs.Generic.INVENTORY_PREVIEW_TOGGLE_SCREEN.getKeybind().setCallback(callback);
 
         Configs.Colors.BEACON_RANGE_LVL1_OVERLAY_COLOR.setValueChangeCallback((config) -> updateBeaconOverlay());
         Configs.Colors.BEACON_RANGE_LVL2_OVERLAY_COLOR.setValueChangeCallback((config) -> updateBeaconOverlay());
@@ -130,6 +128,8 @@ public class KeyCallbacks
                     GuiBase.openGui(new GuiShapeManager());
                 }
             }
+            // FIXME
+            /*
             else if (key == Configs.Generic.INVENTORY_PREVIEW_TOGGLE_SCREEN.getKeybind())
             {
                 if (mc.currentScreen instanceof InventoryOverlayScreen)
@@ -150,6 +150,7 @@ public class KeyCallbacks
                     return false;
                 }
             }
+             */
 
             return true;
         }

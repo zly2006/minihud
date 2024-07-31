@@ -154,11 +154,13 @@ public class RenderHandler implements IRenderer
         if (Configs.Generic.INVENTORY_PREVIEW_ENABLED.getBooleanValue() &&
             Configs.Generic.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
         {
+            /*
             var inventory = RayTraceUtils.getTargetInventory(this.mc);
             if (inventory != null)
             {
-                fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(inventory, context);
-            }
+             */
+                fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(this.mc, context);
+            //}
         }
     }
 
