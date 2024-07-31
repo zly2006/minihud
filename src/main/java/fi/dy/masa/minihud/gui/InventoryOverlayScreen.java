@@ -23,7 +23,6 @@ import fi.dy.masa.minihud.data.EntitiesDataStorage;
 import fi.dy.masa.minihud.event.RenderHandler;
 import fi.dy.masa.minihud.util.RayTraceUtils;
 
-// FIXME
 public class InventoryOverlayScreen extends Screen
 {
     private int ticks;

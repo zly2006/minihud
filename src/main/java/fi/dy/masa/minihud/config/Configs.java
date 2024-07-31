@@ -9,6 +9,7 @@ import com.google.gson.JsonPrimitive;
 import fi.dy.masa.malilib.config.*;
 import fi.dy.masa.malilib.config.options.*;
 import fi.dy.masa.malilib.hotkeys.IHotkey;
+import fi.dy.masa.malilib.hotkeys.KeyAction;
 import fi.dy.masa.malilib.hotkeys.KeybindSettings;
 import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
@@ -49,7 +50,7 @@ public class Configs implements IConfigHandler
         public static final ConfigOptionList    HUD_ALIGNMENT                       = new ConfigOptionList("hudAlignment", HudAlignment.TOP_LEFT, "minihud.config.generic.comment.hudAlignment").translatedName("minihud.config.generic.name.hudAlignment");
         public static final ConfigHotkey        INVENTORY_PREVIEW                   = new ConfigHotkey("inventoryPreview", "LEFT_ALT", KeybindSettings.PRESS_ALLOWEXTRA, "minihud.config.generic.comment.inventoryPreview").translatedName("minihud.config.generic.name.inventoryPreview");
         public static final ConfigBoolean       INVENTORY_PREVIEW_ENABLED           = new ConfigBoolean("inventoryPreviewEnabled", false, "minihud.config.generic.comment.inventoryPreviewEnabled").translatedName("minihud.config.generic.name.inventoryPreviewEnabled");
-        //public static final ConfigHotkey        INVENTORY_PREVIEW_TOGGLE_SCREEN     = new ConfigHotkey("inventoryPreviewToggleScreen", "BUTTON_3", KeybindSettings.create(KeybindSettings.Context.ANY, KeyAction.PRESS, true, true, false, true), "minihud.config.generic.comment.inventoryPreviewToggleScreen").translatedName("minihud.config.generic.name.inventoryPreviewToggleScreen");
+        public static final ConfigHotkey        INVENTORY_PREVIEW_TOGGLE_SCREEN     = new ConfigHotkey("inventoryPreviewToggleScreen", "BUTTON_3", KeybindSettings.create(KeybindSettings.Context.ANY, KeyAction.PRESS, true, true, false, true), "minihud.config.generic.comment.inventoryPreviewToggleScreen").translatedName("minihud.config.generic.name.inventoryPreviewToggleScreen");
         public static final ConfigBoolean       LIGHT_LEVEL_AUTO_HEIGHT             = new ConfigBoolean("lightLevelAutoHeight", false, "minihud.config.generic.comment.lightLevelAutoHeight").translatedName("minihud.config.generic.name.lightLevelAutoHeight");
         public static final ConfigBoolean       LIGHT_LEVEL_COLORED_NUMBERS         = new ConfigBoolean("lightLevelColoredNumbers", true, "minihud.config.generic.comment.lightLevelColoredNumbers").translatedName("minihud.config.generic.name.lightLevelColoredNumbers");
         public static final ConfigBoolean       LIGHT_LEVEL_COLLISION_CHECK         = new ConfigBoolean("lightLevelCollisionCheck", false, "minihud.config.generic.comment.lightLevelCollisionCheck").translatedName("minihud.config.generic.name.lightLevelCollisionCheck");
@@ -186,7 +187,7 @@ public class Configs implements IConfigHandler
                 TIME_TOTAL_DIVISOR,
                 INVENTORY_PREVIEW,
                 INVENTORY_PREVIEW_ENABLED,
-                //INVENTORY_PREVIEW_TOGGLE_SCREEN,
+                INVENTORY_PREVIEW_TOGGLE_SCREEN,
                 VILLAGER_CONVERSION_TICKS,
                 VILLAGER_OFFER_ENCHANTMENT_BOOKS,
                 VILLAGER_OFFER_HIGHEST_LEVEL_ONLY,
@@ -201,8 +202,8 @@ public class Configs implements IConfigHandler
                 REQUIRED_KEY,
                 SET_DISTANCE_REFERENCE_POINT,
                 SHAPE_EDITOR,
-                INVENTORY_PREVIEW
-                //INVENTORY_PREVIEW_TOGGLE_SCREEN
+                INVENTORY_PREVIEW,
+                INVENTORY_PREVIEW_TOGGLE_SCREEN
         );
     }
 

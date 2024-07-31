@@ -28,6 +28,7 @@ import fi.dy.masa.malilib.render.InventoryOverlay;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.gui.InventoryOverlayScreen;
 import fi.dy.masa.minihud.mixin.IMixinAbstractHorseEntity;
 import fi.dy.masa.minihud.renderer.shapes.SideQuad;
 import fi.dy.masa.minihud.util.RayTraceUtils;
@@ -506,16 +507,14 @@ public class RenderUtils
         }
     }
 
-    /* Bugs ?
-
     public static void renderInventoryOverlay(RayTraceUtils.InventoryPreviewData inventory, DrawContext drawContext)
     {
         var screen = new InventoryOverlayScreen(inventory);
         screen.init(MinecraftClient.getInstance(), 0, 0);
         screen.render(drawContext, 0, 0, 0);
     }
-     */
 
+    // OG Method (Works)
     public static void renderInventoryOverlay(MinecraftClient mc, DrawContext drawContext)
     {
         World world = fi.dy.masa.malilib.util.WorldUtils.getBestWorld(mc);

@@ -92,7 +92,6 @@ public class RayTraceUtils
         return result;
     }
 
-    // FIXME
     public static @Nullable RayTraceUtils.InventoryPreviewData getTargetInventory(MinecraftClient mc)
     {
         World world = mc.world;
