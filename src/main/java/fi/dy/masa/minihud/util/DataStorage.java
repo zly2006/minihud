@@ -1,18 +1,25 @@
 package fi.dy.masa.minihud.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.network.ClientPlayHandler;
+import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.util.*;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.data.MobCapDataHandler;
+import fi.dy.masa.minihud.network.ServuxStructuresHandler;
+import fi.dy.masa.minihud.network.ServuxStructuresPacket;
+import fi.dy.masa.minihud.renderer.*;
+import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
+import fi.dy.masa.minihud.renderer.worker.ChunkTask;
+import fi.dy.masa.minihud.renderer.worker.ThreadWorker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
@@ -38,21 +45,15 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.gen.structure.Structure;
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.network.ClientPlayHandler;
-import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
-import fi.dy.masa.malilib.util.*;
-import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.MobCapDataHandler;
-import fi.dy.masa.minihud.network.ServuxStructuresHandler;
-import fi.dy.masa.minihud.network.ServuxStructuresPacket;
-import fi.dy.masa.minihud.renderer.*;
-import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
-import fi.dy.masa.minihud.renderer.worker.ChunkTask;
-import fi.dy.masa.minihud.renderer.worker.ThreadWorker;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DataStorage
 {
@@ -498,6 +499,13 @@ public class DataStorage
     }
 
     public boolean hasServuxServer() { return this.servuxServer; }
+
+    public String getServuxVersion()
+    {
+        return servuxVersion;
+    }
+
+    public boolean hasInvalidServux() { return this.hasInValidServux; }
 
     public double getServerTPS()
     {

@@ -426,14 +426,42 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.SERVUX)
         {
+            String entities = "";
+            String structure = "";
+            String version = null;
             if (EntitiesDataStorage.getInstance().hasServuxServer())
             {
-                this.addLine("Servux: %s // Protocol v%d // pB: %02d, pE: %02d".formatted(
-                        EntitiesDataStorage.getInstance().getServuxVersion(),
+                entities = " / Entities v%d, pB: %02d, pE: %02d".formatted(
                         ServuxEntitiesPacket.PROTOCOL_VERSION,
                         EntitiesDataStorage.getInstance().getPendingBLockEntitiesCount(),
                         EntitiesDataStorage.getInstance().getPendingEntitiesCount()
-                ));
+                );
+                version = EntitiesDataStorage.getInstance().getServuxVersion();
+            }
+            else if (EntitiesDataStorage.getInstance().hasInvalidServux())
+            {
+                entities = GuiBase.TXT_RED + " / Entities: <Invalid Servux>" + GuiBase.TXT_RST;
+            }
+            if (DataStorage.getInstance().hasServuxServer())
+            {
+                structure = " / Structure: " + DataStorage.getInstance().getCopyOfStructureData().values().size();
+                version = DataStorage.getInstance().getServuxVersion();
+            }
+            else if (DataStorage.getInstance().hasInvalidServux())
+            {
+                structure = GuiBase.TXT_RED + " / Structure: <Invalid Servux>" + GuiBase.TXT_RST;
+            }
+            if (version != null)
+            {
+                this.addLine("Servux: " + GuiBase.TXT_AQUA + version + GuiBase.TXT_RST + entities + structure);
+            }
+            else if (structure.isEmpty() && entities.isEmpty())
+            {
+                this.addLine("Servux: <no data>");
+            }
+            else
+            {
+                this.addLine("Servux: <unidentifiable version>" + entities + structure);
             }
         }
         else if (type == InfoToggle.WEATHER)

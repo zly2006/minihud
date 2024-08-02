@@ -176,6 +176,11 @@ public class EntitiesDataStorage implements IClientTickHandler
         return this.servuxServer;
     }
 
+    public boolean hasInvalidServux()
+    {
+        return this.hasInValidServux;
+    }
+
     public void setServuxVersion(String ver)
     {
         if (ver != null && ver.isEmpty() == false)
