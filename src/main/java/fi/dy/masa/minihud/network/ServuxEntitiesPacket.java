@@ -4,6 +4,7 @@ import fi.dy.masa.malilib.network.IClientPayloadData;
 import fi.dy.masa.minihud.MiniHUD;
 import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
@@ -326,7 +327,7 @@ public class ServuxEntitiesPacket implements IClientPayloadData
             {
                 try
                 {
-                    return ServuxEntitiesPacket.SimpleBlockResponse(input.readBlockPos(), input.readNbt());
+                    return ServuxEntitiesPacket.SimpleBlockResponse(input.readBlockPos(), (NbtCompound) input.readNbt(NbtSizeTracker.ofUnlimitedBytes()));
                 }
                 catch (Exception e)
                 {
@@ -337,7 +338,7 @@ public class ServuxEntitiesPacket implements IClientPayloadData
             {
                 try
                 {
-                    return ServuxEntitiesPacket.SimpleEntityResponse(input.readVarInt(), input.readNbt());
+                    return ServuxEntitiesPacket.SimpleEntityResponse(input.readVarInt(), (NbtCompound) input.readNbt(NbtSizeTracker.ofUnlimitedBytes()));
                 }
                 catch (Exception e)
                 {
