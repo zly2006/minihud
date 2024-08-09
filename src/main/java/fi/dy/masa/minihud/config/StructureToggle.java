@@ -6,6 +6,7 @@ import fi.dy.masa.malilib.config.options.ConfigBoolean;
 import fi.dy.masa.malilib.config.options.ConfigColor;
 import fi.dy.masa.malilib.config.options.ConfigHotkey;
 import fi.dy.masa.malilib.hotkeys.IHotkey;
+import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.util.DataStorage;
 
 public enum StructureToggle
@@ -42,7 +43,7 @@ public enum StructureToggle
     private final ConfigColor colorMain;
     private final ConfigColor colorComponents;
     private final IHotkey hotkey;
-    private final String translateNameBase = "minihud.config.structure_toggle";
+    private static final String translateNameBase = Reference.MOD_ID+".config.structure_toggle";
 
     StructureToggle(String name, String defaultHotkey, String colorMain, String colorComponents, String comment, String prettyName)
     {

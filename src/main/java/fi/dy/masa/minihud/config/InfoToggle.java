@@ -12,83 +12,85 @@ import fi.dy.masa.malilib.hotkeys.KeybindMulti;
 import fi.dy.masa.malilib.hotkeys.KeybindSettings;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.Reference;
 
 public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 {
     // Basic Info
-    FPS                     ("infoFPS",                     false, "", "minihud.config.info_toggle.comment.infoFPS", "minihud.config.info_toggle.name.infoFPS"),
-    MEMORY_USAGE            ("infoMemoryUsage",             false, "", "minihud.config.info_toggle.comment.infoMemoryUsage", "minihud.config.info_toggle.name.infoMemoryUsage"),
-    TIME_REAL               ("infoTimeIRL",                 true,  "", "minihud.config.info_toggle.comment.infoTimeIRL", "minihud.config.info_toggle.name.infoTimeIRL"),
-    TIME_WORLD              ("infoTimeWorld",               false, "", "minihud.config.info_toggle.comment.infoTimeWorld", "minihud.config.info_toggle.name.infoTimeWorld"),
-    TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      false, "", "minihud.config.info_toggle.comment.infoWorldTimeFormatted", "minihud.config.info_toggle.name.infoWorldTimeFormatted"),
+    FPS                     ("infoFPS",                     false, ""),
+    MEMORY_USAGE            ("infoMemoryUsage",             false, ""),
+    TIME_REAL               ("infoTimeIRL",                 true,  ""),
+    TIME_WORLD              ("infoTimeWorld",               false, ""),
+    TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      false, ""),
 
     // Player (Camera)
-    COORDINATES             ("infoCoordinates",             true,  "", "minihud.config.info_toggle.comment.infoCoordinates", "minihud.config.info_toggle.name.infoCoordinates"),
-    COORDINATES_SCALED      ("infoCoordinatesScaled",       false, "", "minihud.config.info_toggle.comment.infoCoordinatesScaled", "minihud.config.info_toggle.name.infoCoordinatesScaled"),
-    BLOCK_POS               ("infoBlockPosition",           false, "", "minihud.config.info_toggle.comment.infoBlockPosition", "minihud.config.info_toggle.name.infoBlockPosition"),
-    CHUNK_POS               ("infoChunkPosition",           false, "", "minihud.config.info_toggle.comment.infoChunkPosition", "minihud.config.info_toggle.name.infoChunkPosition"),
-    BLOCK_IN_CHUNK          ("infoBlockInChunk",            false, "", "minihud.config.info_toggle.comment.infoBlockInChunk", "minihud.config.info_toggle.name.infoBlockInChunk"),
-    DIMENSION               ("infoDimensionId",             false, "", "minihud.config.info_toggle.comment.infoDimensionId", "minihud.config.info_toggle.name.infoDimensionId"),
-    FACING                  ("infoFacing",                  true,  "", "minihud.config.info_toggle.comment.infoFacing", "minihud.config.info_toggle.name.infoFacing"),
-    ROTATION_YAW            ("infoRotationYaw",             false, "", "minihud.config.info_toggle.comment.infoRotationYaw", "minihud.config.info_toggle.name.infoRotationYaw"),
-    ROTATION_PITCH          ("infoRotationPitch",           false, "", "minihud.config.info_toggle.comment.infoRotationPitch", "minihud.config.info_toggle.name.infoRotationPitch"),
+    COORDINATES             ("infoCoordinates",             true,  ""),
+    COORDINATES_SCALED      ("infoCoordinatesScaled",       false, ""),
+    BLOCK_POS               ("infoBlockPosition",           false, ""),
+    CHUNK_POS               ("infoChunkPosition",           false, ""),
+    BLOCK_IN_CHUNK          ("infoBlockInChunk",            false, ""),
+    DIMENSION               ("infoDimensionId",             false, ""),
+    FACING                  ("infoFacing",                  true,  ""),
+    ROTATION_YAW            ("infoRotationYaw",             false, ""),
+    ROTATION_PITCH          ("infoRotationPitch",           false, ""),
 
     // Player
-    BLOCK_BREAK_SPEED       ("infoBlockBreakSpeed",         false, "", "minihud.config.info_toggle.comment.infoBlockBreakSpeed", "minihud.config.info_toggle.name.infoBlockBreakSpeed"),
-    SPEED                   ("infoSpeed",                   false, "", "minihud.config.info_toggle.comment.infoSpeed", "minihud.config.info_toggle.name.infoSpeed"),
-    SPEED_AXIS              ("infoSpeedAxis",               false, "", "minihud.config.info_toggle.comment.infoSpeedAxis", "minihud.config.info_toggle.name.infoSpeedAxis"),
-    SPEED_HV                ("infoSpeedHV",                 false, "", "minihud.config.info_toggle.comment.infoSpeedHV", "minihud.config.info_toggle.name.infoSpeedHV"),
-    SPRINTING               ("infoSprinting",               false, "", "minihud.config.info_toggle.comment.infoSprinting", "minihud.config.info_toggle.name.infoSprinting"),
+    BLOCK_BREAK_SPEED       ("infoBlockBreakSpeed",         false, ""),
+    SPEED                   ("infoSpeed",                   false, ""),
+    SPEED_AXIS              ("infoSpeedAxis",               false, ""),
+    SPEED_HV                ("infoSpeedHV",                 false, ""),
+    SPRINTING               ("infoSprinting",               false, ""),
 
     // Server
-    SERVER_TPS              ("infoServerTPS",               false, "", "minihud.config.info_toggle.comment.infoServerTPS", "minihud.config.info_toggle.name.infoServerTPS"),
-    SERVUX                  ("infoServux",                  false, "", "minihud.config.info_toggle.comment.infoServux", "minihud.config.info_toggle.name.infoServux"),
-    PING                    ("infoPing",                    false, "", "minihud.config.info_toggle.comment.infoPing", "minihud.config.info_toggle.name.infoPing"),
+    SERVER_TPS              ("infoServerTPS",               false, ""),
+    SERVUX                  ("infoServux",                  false, ""),
+    PING                    ("infoPing",                    false, ""),
 
     // World
-    WEATHER                 ("infoWeather",                 false, "", "minihud.config.info_toggle.comment.infoWeather", "minihud.config.info_toggle.name.infoWeather"),
-    TIME_TOTAL_MODULO       ("infoTimeTotalModulo",         false, "", "minihud.config.info_toggle.comment.infoTimeTotalModulo", "minihud.config.info_toggle.name.infoTimeTotalModulo"),
-    TIME_DAY_MODULO         ("infoTimeDayModulo",           false, "", "minihud.config.info_toggle.comment.infoTimeDayModulo", "minihud.config.info_toggle.name.infoTimeDayModulo"),
-    MOB_CAPS                ("infoMobCaps",                 false, "", "minihud.config.info_toggle.comment.infoMobCaps", "minihud.config.info_toggle.name.infoMobCaps"),
-    PARTICLE_COUNT          ("infoParticleCount",           false, "", "minihud.config.info_toggle.comment.infoParticleCount", "minihud.config.info_toggle.name.infoParticleCount"),
-    DIFFICULTY              ("infoDifficulty",              false, "", "minihud.config.info_toggle.comment.infoDifficulty", "minihud.config.info_toggle.name.infoDifficulty"),
-    ENTITIES                ("infoEntities",                false, "", "minihud.config.info_toggle.comment.infoEntities", "minihud.config.info_toggle.name.infoEntities"),
-    ENTITIES_CLIENT_WORLD   ("infoEntitiesClientWorld",     false, "", "minihud.config.info_toggle.comment.infoEntitiesClientWorld", "minihud.config.info_toggle.name.infoEntitiesClientWorld"),
-    TILE_ENTITIES           ("infoTileEntities",            false, "", "minihud.config.info_toggle.comment.infoTileEntities", "minihud.config.info_toggle.name.infoTileEntities"),
+    WEATHER                 ("infoWeather",                 false, ""),
+    TIME_TOTAL_MODULO       ("infoTimeTotalModulo",         false, ""),
+    TIME_DAY_MODULO         ("infoTimeDayModulo",           false, ""),
+    MOB_CAPS                ("infoMobCaps",                 false, ""),
+    PARTICLE_COUNT          ("infoParticleCount",           false, ""),
+    DIFFICULTY              ("infoDifficulty",              false, ""),
+    ENTITIES                ("infoEntities",                false, ""),
+    ENTITIES_CLIENT_WORLD   ("infoEntitiesClientWorld",     false, ""),
+    TILE_ENTITIES           ("infoTileEntities",            false, ""),
 
     // World (Current position)
-    LIGHT_LEVEL             ("infoLightLevel",              false, "", "minihud.config.info_toggle.comment.infoLightLevel", "minihud.config.info_toggle.name.infoLightLevel"),
-    BIOME                   ("infoBiome",                   false, "", "minihud.config.info_toggle.comment.infoBiome", "minihud.config.info_toggle.name.infoBiome"),
-    BIOME_REG_NAME          ("infoBiomeRegistryName",       false, "", "minihud.config.info_toggle.comment.infoBiomeRegistryName", "minihud.config.info_toggle.name.infoBiomeRegistryName"),
-    DISTANCE                ("infoDistance",                false, "", "minihud.config.info_toggle.comment.infoDistance", "minihud.config.info_toggle.name.infoDistance"),
+    LIGHT_LEVEL             ("infoLightLevel",              false, ""),
+    BIOME                   ("infoBiome",                   false, ""),
+    BIOME_REG_NAME          ("infoBiomeRegistryName",       false, ""),
+    DISTANCE                ("infoDistance",                false, ""),
 
     // Chunk
-    LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       false, "", "minihud.config.info_toggle.comment.infoLoadedChunksCount", "minihud.config.info_toggle.name.infoLoadedChunksCount"),
-    CHUNK_SECTIONS          ("infoChunkSections",           false, "", "minihud.config.info_toggle.comment.infoChunkSections", "minihud.config.info_toggle.name.infoChunkSections"),
-    CHUNK_SECTIONS_FULL     ("infoChunkSectionsLine",       false, "", "minihud.config.info_toggle.comment.infoChunkSectionsLine", "minihud.config.info_toggle.name.infoChunkSectionsLine"),
-    CHUNK_UPDATES           ("infoChunkUpdates",            false, "", "minihud.config.info_toggle.comment.infoChunkUpdates", "minihud.config.info_toggle.name.infoChunkUpdates"),
-    REGION_FILE             ("infoRegionFile",              false, "", "minihud.config.info_toggle.comment.infoRegionFile", "minihud.config.info_toggle.name.infoRegionFile"),
-    SLIME_CHUNK             ("infoSlimeChunk",              false, "", "minihud.config.info_toggle.comment.infoSlimeChunk", "minihud.config.info_toggle.name.infoSlimeChunk"),
+    LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       false, ""),
+    CHUNK_SECTIONS          ("infoChunkSections",           false, ""),
+    CHUNK_SECTIONS_FULL     ("infoChunkSectionsLine",       false, ""),
+    CHUNK_UPDATES           ("infoChunkUpdates",            false, ""),
+    REGION_FILE             ("infoRegionFile",              false, ""),
+    SLIME_CHUNK             ("infoSlimeChunk",              false, ""),
 
     // Block
-    LOOKING_AT_BLOCK        ("infoLookingAtBlock",          false, "", "minihud.config.info_toggle.comment.infoLookingAtBlock", "minihud.config.info_toggle.name.infoLookingAtBlock"),
-    LOOKING_AT_BLOCK_CHUNK  ("infoLookingAtBlockInChunk",   false, "", "minihud.config.info_toggle.comment.infoLookingAtBlockInChunk", "minihud.config.info_toggle.name.infoLookingAtBlockInChunk"),
-    BLOCK_PROPS             ("infoBlockProperties",         false, "", "minihud.config.info_toggle.comment.infoBlockProperties", "minihud.config.info_toggle.name.infoBlockProperties"),
-    BEE_COUNT               ("infoBeeCount",                false, "", "minihud.config.info_toggle.comment.infoBeeCount", "minihud.config.info_toggle.name.infoBeeCount"),
-    HONEY_LEVEL             ("infoHoneyLevel",              false, "", "minihud.config.info_toggle.comment.infoHoneyLevel", "minihud.config.info_toggle.name.infoHoneyLevel"),
-    FURNACE_XP              ("infoFurnaceXp",               false, "", "minihud.config.info_toggle.comment.infoFurnaceXp", "minihud.config.info_toggle.name.infoFurnaceXp"),
+    LOOKING_AT_BLOCK        ("infoLookingAtBlock",          false, ""),
+    LOOKING_AT_BLOCK_CHUNK  ("infoLookingAtBlockInChunk",   false, ""),
+    BLOCK_PROPS             ("infoBlockProperties",         false, ""),
+    BEE_COUNT               ("infoBeeCount",                false, ""),
+    HONEY_LEVEL             ("infoHoneyLevel",              false, ""),
+    FURNACE_XP              ("infoFurnaceXp",               false, ""),
 
     // Entity
-    LOOKING_AT_ENTITY       ("infoLookingAtEntity",         false, "", "minihud.config.info_toggle.comment.infoLookingAtEntity", "minihud.config.info_toggle.name.infoLookingAtEntity"),
-    ENTITY_REG_NAME         ("infoEntityRegistryName",      false, "", "minihud.config.info_toggle.comment.infoEntityRegistryName", "minihud.config.info_toggle.name.infoEntityRegistryName"),
-    LOOKING_AT_EFFECTS      ("infoLookingAtEffects",        false, "", "minihud.config.info_toggle.comment.infoLookingAtEffects", "minihud.config.info_toggle.name.infoLookingAtEffects"),
-    ZOMBIE_CONVERSION       ("infoZombieConversion",        false, "", "minihud.config.info_toggle.comment.infoZombieConversion", "minihud.config.info_toggle.name.infoZombieConversion"),
-    HORSE_SPEED             ("infoHorseSpeed",              false, "", "minihud.config.info_toggle.comment.infoHorseSpeed", "minihud.config.info_toggle.name.infoHorseSpeed"),
-    HORSE_JUMP              ("infoHorseJump",               false, "", "minihud.config.info_toggle.comment.infoHorseJump", "minihud.config.info_toggle.name.infoHorseJump"),
-    PANDA_GENE              ("infoPandaGene",               false, "", "minihud.config.info_toggle.comment.infoPandaGene", "minihud.config.info_toggle.name.infoPandaGene"),
+    LOOKING_AT_ENTITY       ("infoLookingAtEntity",         false, ""),
+    ENTITY_REG_NAME         ("infoEntityRegistryName",      false, ""),
+    LOOKING_AT_EFFECTS      ("infoLookingAtEffects",        false, ""),
+    ZOMBIE_CONVERSION       ("infoZombieConversion",        false, ""),
+    HORSE_SPEED             ("infoHorseSpeed",              false, ""),
+    HORSE_JUMP              ("infoHorseJump",               false, ""),
+    PANDA_GENE              ("infoPandaGene",               false, ""),
     ;
 
     public static final ImmutableList<InfoToggle> VALUES = ImmutableList.copyOf(values());
+    private static final String translateNameBase = Reference.MOD_ID+".config.info_toggle";
 
     private final String name;
     private final String comment;
@@ -106,12 +108,61 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
         return nextDefaultLinePosition++;
     }
 
-    InfoToggle(String name, boolean defaultValue, String defaultHotkey, String comment, String translatedName)
+    InfoToggle(String name, boolean defaultValue, String defaultHotkey)
     {
-        this(name, defaultValue, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, translatedName);
+        this(name, defaultValue,
+                getNextDefaultLinePosition(),
+                defaultHotkey,
+                buildTranslateName(name, "comment"),
+                KeybindSettings.DEFAULT,
+                buildTranslateName(name, "name"),
+                buildTranslateName(name, "prettyName"));
     }
 
-    InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey, String comment, KeybindSettings settings, String translatedName)
+    InfoToggle(String name, boolean defaultValue, String defaultHotkey, KeybindSettings settings)
+    {
+        this(name, defaultValue,
+                getNextDefaultLinePosition(),
+                defaultHotkey,
+                buildTranslateName(name, "comment"),
+                settings,
+                buildTranslateName(name, "name"),
+                buildTranslateName(name, "prettyName"));
+    }
+
+    InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey)
+    {
+        this(name, defaultValue,
+                linePosition,
+                defaultHotkey,
+                buildTranslateName(name, "comment"),
+                KeybindSettings.DEFAULT,
+                buildTranslateName(name, "name"),
+                buildTranslateName(name, "prettyName"));
+    }
+
+    InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey, KeybindSettings settings)
+    {
+        this(name, defaultValue,
+                linePosition,
+                defaultHotkey,
+                buildTranslateName(name, "comment"),
+                settings,
+                buildTranslateName(name, "name"),
+                buildTranslateName(name, "prettyName"));
+    }
+
+    InfoToggle(String name, boolean defaultValue, String defaultHotkey, String comment)
+    {
+        this(name, defaultValue, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, buildTranslateName(name, "name"), name);
+    }
+
+    InfoToggle(String name, boolean defaultValue, String defaultHotkey, String comment, String translatedName)
+    {
+        this(name, defaultValue, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, translatedName, name);
+    }
+
+    InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey, String comment, KeybindSettings settings, String translatedName, String prettyName)
     {
         this.name = name;
         this.valueBoolean = defaultValue;
@@ -120,7 +171,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
         this.keybind.setCallback(new KeyCallbackToggleBoolean(this));
         this.defaultLinePosition = linePosition;
         this.comment = comment;
-        this.prettyName = name;
+        this.prettyName = prettyName;
         this.translatedName = translatedName;
     }
 
@@ -139,7 +190,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     @Override
     public String getPrettyName()
     {
-        return this.prettyName;
+        return StringUtils.getTranslatedOrFallback(this.prettyName, this.prettyName.isEmpty() ? this.name : this.prettyName);
     }
 
     @Override
@@ -157,13 +208,18 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     @Override
     public String getComment()
     {
-        return StringUtils.getTranslatedOrFallback("config.comment." + this.getName().toLowerCase(), this.comment);
+        return StringUtils.getTranslatedOrFallback(this.comment, this.comment.isEmpty() ? this.name : this.comment);
     }
 
     @Override
     public String getTranslatedName()
     {
-        return this.translatedName;
+        return StringUtils.getTranslatedOrFallback(this.translatedName, this.translatedName.isEmpty() ? this.name : this.translatedName);
+    }
+
+    private static String buildTranslateName(String name, String type)
+    {
+        return translateNameBase + "." + type + "." + name;
     }
 
     @Override
