@@ -111,6 +111,13 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                 this.allocateGlResources();
                 this.wasEmpty = false;
             }
+            else if (lastSize - this.lightInfos.size() > 0)
+            {
+                // A bit extreme, but this gets rid of the VBO when the count goes down; so there are no more 'Ghost' renders.
+                // I believe this happens whenever we use STATIC VBO buffers.
+                this.deleteGlResources();
+                this.allocateGlResources();
+            }
 
             RenderObjectBase renderQuads = this.renderObjects.get(0);
             RenderObjectBase renderLines = this.renderObjects.get(1);
@@ -129,8 +136,8 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
             this.wasEmpty = true;
         }
 
-        //long pre = System.nanoTime();
-        //System.out.printf("LL markers: %d, time: %.3f s\n", this.lightInfos.size(), (double) (System.nanoTime() - pre) / 1000000000D);
+        long pre = System.nanoTime();
+        System.out.printf("LL markers: %d, time: %.3f s\n", this.lightInfos.size(), (double) (System.nanoTime() - pre) / 1000000000D);
 
         this.lastUpdatePos = pos;
         this.lastDirection = entity.getHorizontalFacing();
@@ -488,7 +495,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
             }
         }
 
-        return this.lightInfos.isEmpty() == false && this.lightInfos.size() > 0;
+        return this.lightInfos.isEmpty() == false;
     }
 
     private boolean canSpawnAtWrapper(int x, int y, int z, Chunk chunk, World world, boolean skipBlockCheck)
@@ -573,10 +580,10 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
     public static class LightLevelInfo
     {
-        public final long pos;
-        public final byte block;
-        public final byte sky;
-        public final float y;
+        public long pos;
+        public byte block;
+        public byte sky;
+        public float y;
 
         public LightLevelInfo(long pos, float y, int block, int sky)
         {
