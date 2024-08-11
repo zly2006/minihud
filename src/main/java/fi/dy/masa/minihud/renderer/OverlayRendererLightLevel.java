@@ -136,8 +136,8 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
             this.wasEmpty = true;
         }
 
-        long pre = System.nanoTime();
-        System.out.printf("LL markers: %d, time: %.3f s\n", this.lightInfos.size(), (double) (System.nanoTime() - pre) / 1000000000D);
+        //long pre = System.nanoTime();
+        //System.out.printf("LL markers: %d, time: %.3f s\n", this.lightInfos.size(), (double) (System.nanoTime() - pre) / 1000000000D);
 
         this.lastUpdatePos = pos;
         this.lastDirection = entity.getHorizontalFacing();
