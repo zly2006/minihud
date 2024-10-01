@@ -31,15 +31,20 @@
                 "MixinDebugRenderer",
                 "MixinHeightmapDebugRenderer",
                 "MixinItemStack",
+                "MixinLanguage",
                 "MixinMinecraftClient",
                 "MixinMinecraftServer",
                 "MixinNeighborUpdateDebugRenderer",
                 "MixinServerEntityManager",
                 "MixinServerWorld",
-                "MixinSubtitlesHud",
-                "MixinLanguage"
+                "MixinSubtitlesHud"
         ],
         "injectors": {
                 "defaultRequire": 1
-        }
+        },
+        "mixins": [
+                "IMixinMinecraftServer",
+                "IMixinSkeletonEntity",
+                "IMixinZombieEntity"
+        ]
 }

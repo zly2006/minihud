@@ -4,59 +4,60 @@ import fi.dy.masa.malilib.config.HudAlignment;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.interfaces.IRenderer;
 import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.BlockUtils;
+import fi.dy.masa.malilib.util.*;
+import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
-import fi.dy.masa.malilib.util.StringUtils;
-import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
-import fi.dy.masa.minihud.mixin.IMixinPassiveEntity;
-import fi.dy.masa.minihud.mixin.IMixinServerWorld;
-import fi.dy.masa.minihud.mixin.IMixinWorldRenderer;
-import fi.dy.masa.minihud.mixin.IMixinZombieVillagerEntity;
-import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
+import fi.dy.masa.minihud.mixin.*;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
-import fi.dy.masa.minihud.util.DataStorage;
-import fi.dy.masa.minihud.util.IServerEntityManager;
-import fi.dy.masa.minihud.util.MiscUtils;
-import fi.dy.masa.minihud.util.RayTraceUtils;
+import fi.dy.masa.minihud.util.*;
+
 import net.minecraft.block.BeehiveBlock;
+import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.Frustum;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.mob.SkeletonEntity;
+import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.mob.ZombieVillagerEntity;
-import net.minecraft.entity.passive.AbstractHorseEntity;
-import net.minecraft.entity.passive.PandaEntity;
-import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.entity.passive.*;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
+import net.minecraft.util.DyeColor;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -65,6 +66,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.LightType;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.World;
@@ -73,23 +75,15 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
-import net.minecraft.world.level.LevelProperties;
+
+import com.llamalad7.mixinextras.lib.apache.commons.tuple.Pair;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.joml.Matrix4f;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class RenderHandler implements IRenderer
@@ -106,6 +100,8 @@ public class RenderHandler implements IRenderer
 
     private final List<StringHolder> lineWrappers = new ArrayList<>();
     private final List<String> lines = new ArrayList<>();
+    private Pair<BlockEntity, NbtCompound> lastBlockEntity = null;
+    private Pair<Entity,      NbtCompound> lastEntity = null;
 
     public RenderHandler()
     {
@@ -135,7 +131,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderGameOverlayPost(DrawContext context)
+    public void onRenderGameOverlayPost(DrawContext drawContext)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() == false)
         {
@@ -143,9 +139,9 @@ public class RenderHandler implements IRenderer
             return;
         }
 
-        if (this.mc.getDebugHud().shouldShowDebugHud() == false &&
-            this.mc.player != null && this.mc.options.hudHidden == false &&
-            (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || this.mc.player.isSneaking()) &&
+        if (mc.getDebugHud().shouldShowDebugHud() == false &&
+            mc.player != null && mc.options.hudHidden == false &&
+            (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || mc.player.isSneaking()) &&
             Configs.Generic.REQUIRED_KEY.getKeybind().isKeybindHeld())
         {
 
@@ -166,19 +162,21 @@ public class RenderHandler implements IRenderer
             boolean useBackground = Configs.Generic.USE_TEXT_BACKGROUND.getBooleanValue();
             boolean useShadow = Configs.Generic.USE_FONT_SHADOW.getBooleanValue();
 
-            RenderUtils.renderText(x, y, Configs.Generic.FONT_SCALE.getDoubleValue(), textColor, bgColor, alignment, useBackground, useShadow, this.lines, context);
+            RenderUtils.renderText(x, y, Configs.Generic.FONT_SCALE.getDoubleValue(), textColor, bgColor, alignment, useBackground, useShadow, this.lines, drawContext);
         }
 
         if (Configs.Generic.INVENTORY_PREVIEW_ENABLED.getBooleanValue() &&
             Configs.Generic.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
         {
-            var inventory = RayTraceUtils.getTargetInventory(this.mc);
+            var inventory = RayTraceUtils.getTargetInventory(mc, true);
+
             if (inventory != null)
             {
-                // OG method
-                //fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(this.mc, context);
-                fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(inventory, context);
+                fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(inventory, drawContext);
             }
+
+            // OG method (Works with Crafters also)
+            //fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(mc, drawContext);
         }
     }
 
@@ -191,7 +189,7 @@ public class RenderHandler implements IRenderer
             if (Configs.Generic.MAP_PREVIEW.getBooleanValue() &&
                (Configs.Generic.MAP_PREVIEW_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
             {
-                fi.dy.masa.malilib.render.RenderUtils.renderMapPreview(stack, x, y, Configs.Generic.MAP_PREVIEW_SIZE.getIntegerValue(), false);
+                RenderUtils.renderMapPreview(stack, x, y, Configs.Generic.MAP_PREVIEW_SIZE.getIntegerValue(), false);
             }
         }
         else if (stack.getComponents().contains(DataComponentTypes.CONTAINER) && InventoryUtils.shulkerBoxHasItems(stack))
@@ -199,7 +197,7 @@ public class RenderHandler implements IRenderer
             if (Configs.Generic.SHULKER_BOX_PREVIEW.getBooleanValue() &&
                (Configs.Generic.SHULKER_DISPLAY_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
             {
-                fi.dy.masa.malilib.render.RenderUtils.renderShulkerBoxPreview(stack, x, y, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue(), drawContext);
+                RenderUtils.renderShulkerBoxPreview(stack, x, y, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue(), drawContext);
             }
         }
     }
@@ -292,12 +290,12 @@ public class RenderHandler implements IRenderer
         }
     }
 
-    private void addLine(String text)
+    public void addLine(String text)
     {
         this.lineWrappers.add(new StringHolder(text));
     }
 
-    private void addLineI18n(String translatedName, Object... args)
+    public void addLineI18n(String translatedName, Object... args)
     {
         this.addLine(StringUtils.translate(translatedName, args));
     }
@@ -321,7 +319,7 @@ public class RenderHandler implements IRenderer
 
         if (type == InfoToggle.FPS)
         {
-            this.addLineI18n("minihud.info_line.fps", MinecraftClient.getInstance().getCurrentFps());
+            this.addLineI18n("minihud.info_line.fps", mc.getCurrentFps());
         }
         else if (type == InfoToggle.MEMORY_USAGE)
         {
@@ -331,11 +329,11 @@ public class RenderHandler implements IRenderer
             long memUsed = memTotal - memFree;
 
             this.addLineI18n("minihud.info_line.memory_usage",
-                    memUsed * 100L / memMax,
-                    MiscUtils.bytesToMb(memUsed),
-                    MiscUtils.bytesToMb(memMax),
-                    memTotal * 100L / memMax,
-                    MiscUtils.bytesToMb(memTotal));
+                             memUsed * 100L / memMax,
+                             MiscUtils.bytesToMb(memUsed),
+                             MiscUtils.bytesToMb(memMax),
+                             memTotal * 100L / memMax,
+                             MiscUtils.bytesToMb(memTotal));
         }
         else if (type == InfoToggle.TIME_REAL)
         {
@@ -408,7 +406,7 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.SERVER_TPS)
         {
-            if (mc.isIntegratedServerRunning() && (mc.getServer().getTicks() % 10) == 0)
+            if (this.data.hasIntegratedServer() && (this.data.getIntegratedServer().getTicks() % 10) == 0)
             {
                 this.data.updateIntegratedServerTPS();
             }
@@ -422,7 +420,7 @@ public class RenderHandler implements IRenderer
                 String preMspt;
 
                 // Carpet server and integrated server have actual meaningful MSPT data available
-                if (this.data.hasCarpetServer() || mc.isInSingleplayer())
+                if (this.data.hasCarpetServer() || this.data.isSinglePlayer())
                 {
                     if      (mspt <= 40) { preMspt = GuiBase.TXT_GREEN; }
                     else if (mspt <= 45) { preMspt = GuiBase.TXT_YELLOW; }
@@ -448,11 +446,41 @@ public class RenderHandler implements IRenderer
         {
             if (EntitiesDataStorage.getInstance().hasServuxServer())
             {
-                this.addLineI18n("minihud.info_line.servux",
-                        EntitiesDataStorage.getInstance().getServuxVersion(),
-                        ServuxEntitiesPacket.PROTOCOL_VERSION,
-                        EntitiesDataStorage.getInstance().getPendingBLockEntitiesCount(),
-                        EntitiesDataStorage.getInstance().getPendingEntitiesCount()
+                this.addLineI18n("minihud.info_line.servux", EntitiesDataStorage.getInstance().getServuxVersion());
+            }
+            else if (this.getDataStorage().hasServuxServer())
+            {
+                this.addLineI18n("minihud.info_line.servux", this.getDataStorage().getServuxVersion());
+            }
+            else if (this.getDataStorage().hasIntegratedServer() == false)
+            {
+                this.addLineI18n("minihud.info_line.servux.not_connected");
+            }
+            if (EntitiesDataStorage.getInstance().hasServuxServer())
+            {
+                this.addLineI18n("minihud.info_line.servux.entity_sync",
+                                 EntitiesDataStorage.getInstance().getBlockEntityCacheCount(),
+                                 EntitiesDataStorage.getInstance().getPendingBlockEntitiesCount(),
+                                 EntitiesDataStorage.getInstance().getEntityCacheCount(),
+                                 EntitiesDataStorage.getInstance().getPendingEntitiesCount()
+                );
+            }
+            if (this.getDataStorage().hasServuxServer())
+            {
+                this.addLineI18n("minihud.info_line.servux.structures",
+                                 this.getDataStorage().getStrucutreCount(),
+                                 this.getDataStorage().getSpawnChunkRadius(),
+                                 this.getDataStorage().getWorldSpawn().toShortString(),
+                                 this.getDataStorage().isWorldSpawnKnown() ? StringUtils.translate("minihud.info_line.slime_chunk.yes") : StringUtils.translate("minihud.info_line.slime_chunk.no")
+                );
+            }
+            else if (this.getDataStorage().hasIntegratedServer())
+            {
+                this.addLineI18n("minihud.info_line.servux.structures_integrated",
+                                 this.getDataStorage().getStrucutreCount(),
+                                 this.getDataStorage().getSpawnChunkRadius(),
+                                 this.getDataStorage().getWorldSpawn().toShortString(),
+                                 this.getDataStorage().isWorldSpawnKnown() ? StringUtils.translate("minihud.info_line.slime_chunk.yes") : StringUtils.translate("minihud.info_line.slime_chunk.no")
                 );
             }
         }
@@ -461,6 +489,27 @@ public class RenderHandler implements IRenderer
             World bestWorld = WorldUtils.getBestWorld(mc);
             String weatherType = "clear";
             int weatherTime = -1;
+
+            if (bestWorld == null)
+            {
+                return;
+            }
+            if (this.data.isWeatherThunder())
+            {
+                weatherType = "thundering";
+                weatherTime = this.data.getThunderTime();
+            }
+            else if (this.data.isWeatherRain())
+            {
+                weatherType = "raining";
+                weatherTime = this.data.getRainTime();
+            }
+            else if (this.data.isWeatherClear())
+            {
+                weatherType = "clear";
+                weatherTime = this.data.getClearTime();
+            }
+            /*
             if (bestWorld.getLevelProperties().isThundering())
             {
                 weatherType = "thundering";
@@ -477,8 +526,9 @@ public class RenderHandler implements IRenderer
                     weatherTime = lp.getRainTime();
                 }
             }
+             */
 
-            if (weatherType.equals("clear") || weatherTime == -1)
+            if (weatherTime == -1)
             {
                 this.addLineI18n("minihud.info_line.weather", StringUtils.translate("minihud.info_line.weather." + weatherType), "");
             }
@@ -486,8 +536,9 @@ public class RenderHandler implements IRenderer
             {
                 // 50 = 1000 (ms/s) / 20 (ticks/s)
                 this.addLineI18n("minihud.info_line.weather",
-                        StringUtils.translate("minihud.info_line.weather." + weatherType),
-                        ", " + DurationFormatUtils.formatDurationWords(weatherTime * 50L, true, true) + " " + StringUtils.translate("minihud.info_line.remaining")
+                                 StringUtils.translate("minihud.info_line.weather." + weatherType),
+                                 ", " + DurationFormatUtils.formatDurationWords(weatherTime * 50L, true, true)
+                                 + " " + StringUtils.translate("minihud.info_line.remaining")
                 );
             }
         }
@@ -679,6 +730,7 @@ public class RenderHandler implements IRenderer
             Direction facing = entity.getHorizontalFacing();
             String facingName = StringUtils.translate("minihud.info_line.facing." + facing.getName() + ".name");
             String str;
+
             if (facingName.contains("minihud.info_line.facing." + facing.getName() + ".name"))
             {
                 facingName = facing.name();
@@ -705,9 +757,19 @@ public class RenderHandler implements IRenderer
         else if (type == InfoToggle.BEE_COUNT)
         {
             World bestWorld = WorldUtils.getBestWorld(mc);
-            BlockEntity be = this.getTargetedBlockEntity(bestWorld, mc);
+            Pair<BlockEntity, NbtCompound> pair = this.getTargetedBlockEntity(bestWorld, mc);
 
-            if (be instanceof BeehiveBlockEntity)
+            if (pair == null)
+            {
+                return;
+            }
+            if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
+                BlockUtils.getBlockEntityTypeFromNbt(pair.getRight()).equals(BlockEntityType.BEEHIVE))
+            {
+                Pair<List<BeehiveBlockEntity.BeeData>, BlockPos> bees = BlockUtils.getBeesDataFromNbt(pair.getRight());
+                this.addLineI18n("minihud.info_line.bee_count.flower_pos", bees.getLeft().size(), bees.getRight().toShortString());
+            }
+            else if (pair.getLeft() instanceof BeehiveBlockEntity be)
             {
                 this.addLineI18n("minihud.info_line.bee_count", ((BeehiveBlockEntity) be).getBeeCount());
             }
@@ -715,11 +777,26 @@ public class RenderHandler implements IRenderer
         else if (type == InfoToggle.FURNACE_XP)
         {
             World bestWorld = WorldUtils.getBestWorld(mc);
-            BlockEntity be = this.getTargetedBlockEntity(bestWorld, mc);
+            Pair<BlockEntity, NbtCompound> pair = this.getTargetedBlockEntity(bestWorld, mc);
 
-            if (be instanceof AbstractFurnaceBlockEntity furnace)
+            if (pair == null)
             {
-                this.addLineI18n("minihud.info_line.furnace_xp", MiscUtils.getFurnaceXpAmount(furnace));
+                return;
+            }
+            if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue())
+            {
+                BlockEntityType<?> beType = BlockUtils.getBlockEntityTypeFromNbt(pair.getRight());
+
+                if (beType.equals(BlockEntityType.FURNACE) ||
+                    beType.equals(BlockEntityType.BLAST_FURNACE) ||
+                    beType.equals(BlockEntityType.SMOKER))
+                {
+                    this.addLineI18n("minihud.info_line.furnace_xp", MiscUtils.getFurnaceXpAmount(bestWorld, pair.getRight()));
+                }
+            }
+            else if (pair.getLeft() instanceof AbstractFurnaceBlockEntity furnace)
+            {
+                this.addLineI18n("minihud.info_line.furnace_xp", MiscUtils.getFurnaceXpAmount(bestWorld, furnace));
             }
         }
         else if (type == InfoToggle.HONEY_LEVEL)
@@ -741,8 +818,17 @@ public class RenderHandler implements IRenderer
             }
 
             World bestWorld = WorldUtils.getBestWorld(mc);
-            Entity targeted = this.getTargetEntity(bestWorld, this.mc);
-            Entity vehicle = targeted == null ? this.mc.player.getVehicle() : targeted;
+            Pair<Entity, NbtCompound> pair = this.getTargetEntity(bestWorld, mc);
+            Entity vehicle;
+
+            if (pair == null)
+            {
+                vehicle = mc.player.getVehicle();
+            }
+            else
+            {
+                vehicle = pair.getLeft() == null ? mc.player.getVehicle() : pair.getLeft();
+            }
 
             if (vehicle instanceof AbstractHorseEntity == false)
             {
@@ -751,18 +837,41 @@ public class RenderHandler implements IRenderer
 
             AbstractHorseEntity horse = (AbstractHorseEntity) vehicle;
             String AnimalType = horse.getType().getName().getString();
+            float speed = 0f;
+            double jump = 0d;
 
-            if (InfoToggle.HORSE_SPEED.getBooleanValue())
+            if (pair != null && Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue())
             {
-                float speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horse.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+                NbtCompound nbt = pair.getRight();
+                EntityType<?> entityType = EntityUtils.getEntityTypeFromNbt(nbt);
+
+                if (entityType.equals(EntityType.CAMEL) ||
+                    entityType.equals(EntityType.DONKEY) ||
+                    entityType.equals(EntityType.HORSE) ||
+                    entityType.equals(EntityType.LLAMA) ||
+                    entityType.equals(EntityType.MULE) ||
+                    entityType.equals(EntityType.SKELETON_HORSE) ||
+                    entityType.equals(EntityType.TRADER_LLAMA) ||
+                    entityType.equals(EntityType.ZOMBIE_HORSE))
+                {
+                    Pair<Float, Float> horsePair = EntityUtils.getSpeedAndJumpStrengthFromNbt(nbt);
+                    speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horsePair.getLeft();
+                    jump = horsePair.getRight();
+                }
+            }
+            else
+            {
+                speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horse.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+                jump = horse.getAttributeValue(EntityAttributes.GENERIC_JUMP_STRENGTH);
+            }
+            if (InfoToggle.HORSE_SPEED.getBooleanValue() && speed > 0f)
+            {
                 speed *= 42.1629629629629f;
                 this.addLineI18n("minihud.info_line.horse_speed", AnimalType, speed);
                 this.addedTypes.add(InfoToggle.HORSE_SPEED);
             }
-
-            if (InfoToggle.HORSE_JUMP.getBooleanValue())
+            if (InfoToggle.HORSE_JUMP.getBooleanValue() && jump > 0d)
             {
-                double jump = horse.getAttributeValue(EntityAttributes.GENERIC_JUMP_STRENGTH);
                 double calculatedJumpHeight =
                         -0.1817584952d * jump * jump * jump +
                                 3.689713992d * jump * jump +
@@ -830,7 +939,7 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.CHUNK_SECTIONS)
         {
-            this.addLineI18n("minihud.info_line.chunk_sections", ((IMixinWorldRenderer) mc.worldRenderer).getRenderedChunksInvoker());
+            this.addLineI18n("minihud.info_line.chunk_sections", ((IMixinWorldRenderer) mc.worldRenderer).minihud_getRenderedChunksInvoker());
         }
         else if (type == InfoToggle.CHUNK_SECTIONS_FULL)
         {
@@ -858,7 +967,35 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.PANDA_GENE)
         {
-            if (this.getTargetEntity(world, mc) instanceof PandaEntity panda)
+            Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+
+            if (pair == null)
+            {
+                return;
+            }
+            if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue())
+            {
+                NbtCompound nbt = pair.getRight();
+                EntityType<?> entityType = EntityUtils.getEntityTypeFromNbt(nbt);
+
+                if (entityType.equals(EntityType.PANDA))
+                {
+                    Pair<PandaEntity.Gene, PandaEntity.Gene> genes = EntityUtils.getPandaGenesFromNbt(nbt);
+
+                    if (genes.getLeft() != null && genes.getRight() != null)
+                    {
+                        this.addLineI18n("minihud.info_line.panda_gene.main_gene",
+                                         StringUtils.translate("minihud.info_line.panda_gene.gene." + genes.getLeft().asString()),
+                                         genes.getLeft().isRecessive() ? StringUtils.translate("minihud.info_line.panda_gene.recessive_gene") : StringUtils.translate("minihud.info_line.panda_gene.dominant_gene")
+                        );
+                        this.addLineI18n("minihud.info_line.panda_gene.hidden_gene",
+                                         StringUtils.translate("minihud.info_line.panda_gene.gene." + genes.getRight().asString()),
+                                         genes.getRight().isRecessive() ? StringUtils.translate("minihud.info_line.panda_gene.recessive_gene") : StringUtils.translate("minihud.info_line.panda_gene.dominant_gene")
+                        );
+                    }
+                }
+            }
+            else if (pair.getLeft() instanceof PandaEntity panda)
             {
                 this.addLineI18n("minihud.info_line.panda_gene.main_gene",
                         StringUtils.translate("minihud.info_line.panda_gene.gene." + panda.getMainGene().asString()),
@@ -943,7 +1080,7 @@ public class RenderHandler implements IRenderer
                 if (serverWorld instanceof ServerWorld)
                 {
                     IServerEntityManager manager = (IServerEntityManager) ((IMixinServerWorld) serverWorld).minihud_getEntityManager();
-                    int indexSize = manager.getIndexSize();
+                    int indexSize = manager.minihud$getIndexSize();
                     this.addLineI18n("minihud.info_line.entities_client_world.server", countClient, indexSize);
                     return;
                 }
@@ -984,8 +1121,48 @@ public class RenderHandler implements IRenderer
         {
             if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
             {
-                Entity lookedEntity = this.getTargetEntity(world, mc);
-                if (lookedEntity instanceof LivingEntity living)
+                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+
+                if (pair == null)
+                {
+                    return;
+                }
+                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
+                    pair.getLeft() instanceof LivingEntity living)
+                {
+                    NbtCompound nbt = pair.getRight();
+                    Pair<Float, Float> healthPair = EntityUtils.getHealthFromNbt(nbt);
+                    Pair<UUID, ItemStack> ownerPair = EntityUtils.getOwnerAndSaddle(nbt, world.getRegistryManager());
+                    Pair<Integer, Integer> agePair = EntityUtils.getAgeFromNbt(nbt);
+
+                    float health = healthPair.getLeft();
+                    float maxHealth = healthPair.getRight();
+
+                    // Update the Health, as it might not be timely otherwise.
+                    if (living.getHealth() != health)
+                    {
+                        health = living.getHealth();
+                    }
+
+                    String entityLine = StringUtils.translate("minihud.info_line.looking_at_entity.livingentity", pair.getLeft().getName().getString(), health, maxHealth);
+
+                    if (ownerPair.getLeft() != Util.NIL_UUID)
+                    {
+                        LivingEntity owner = world.getPlayerByUuid(ownerPair.getLeft());
+
+                        if (owner != null)
+                        {
+                            entityLine = entityLine + " - " + StringUtils.translate("minihud.info_line.looking_at_entity.owner") + ": " + owner.getName().getLiteralString();
+                        }
+                    }
+                    if (agePair.getLeft() < 0)
+                    {
+                        int untilGrown = agePair.getLeft() * (-1);
+                        entityLine = entityLine+ " [" + DurationFormatUtils.formatDurationWords((untilGrown * 50), true, true) + " " + StringUtils.translate("minihud.info_line.remaining") + "]";
+                    }
+                    this.addLine(entityLine);
+                }
+                else if (pair.getLeft() instanceof LivingEntity living)
                 {
                     String entityLine = StringUtils.translate("minihud.info_line.looking_at_entity.livingentity", living.getName().getString(), living.getHealth(), living.getMaxHealth());
 
@@ -1002,7 +1179,7 @@ public class RenderHandler implements IRenderer
                         if (passive.getBreedingAge() < 0)
                         {
                             int untilGrown = ((IMixinPassiveEntity) passive).getRealBreedingAge() * (-1);
-                            entityLine = entityLine+ " [" + DurationFormatUtils.formatDurationWords(untilGrown * 50, true, true) + " " + StringUtils.translate("minihud.info_line.remaining") + "]";
+                            entityLine = entityLine+ " [" + DurationFormatUtils.formatDurationWords((untilGrown * 50), true, true) + " " + StringUtils.translate("minihud.info_line.remaining") + "]";
                         }
                     }
 
@@ -1010,7 +1187,133 @@ public class RenderHandler implements IRenderer
                 }
                 else
                 {
-                    this.addLineI18n("minihud.info_line.looking_at_entity", lookedEntity.getName().getString());
+                    this.addLineI18n("minihud.info_line.looking_at_entity", pair.getLeft().getName().getString());
+                }
+            }
+        }
+        else if (type == InfoToggle.ENTITY_VARIANT)
+        {
+            if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
+            {
+                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+
+                if (pair == null)
+                {
+                    return;
+                }
+                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
+                        pair.getLeft() instanceof LivingEntity living)
+                {
+                    NbtCompound nbt = pair.getRight();
+                    EntityType<?> entityType = EntityUtils.getEntityTypeFromNbt(nbt);
+
+                    if (entityType.equals(EntityType.AXOLOTL))
+                    {
+                        AxolotlEntity.Variant variant = EntityUtils.getAxolotlVariantFromNbt(nbt);
+
+                        if (variant != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.axolotl", variant.getName());
+                        }
+                    }
+                    else if (entityType.equals(EntityType.CAT))
+                    {
+                        Pair<RegistryKey<CatVariant>, DyeColor> catPair = EntityUtils.getCatVariantFromNbt(nbt);
+
+                        if (catPair.getLeft() != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.cat", catPair.getLeft().getValue().getPath(), catPair.getRight().getName());
+                        }
+                    }
+                    else if (entityType.equals(EntityType.FROG))
+                    {
+                        RegistryKey<FrogVariant> variant = EntityUtils.getFrogVariantFromNbt(nbt);
+
+                        if (variant != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.frog", variant.getValue().getPath());
+                        }
+                    }
+                    else if (entityType.equals(EntityType.HORSE))
+                    {
+                        Pair<HorseColor, HorseMarking> horsePair = EntityUtils.getHorseVariantFromNbt(nbt);
+
+                        if (horsePair.getLeft() != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.horse", horsePair.getLeft().asString(), horsePair.getRight().name().toLowerCase());
+                        }
+                    }
+                    else if (entityType.equals(EntityType.PARROT))
+                    {
+                        ParrotEntity.Variant variant = EntityUtils.getParrotVariantFromNbt(nbt);
+
+                        if (variant != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.parrot", variant.asString());
+                        }
+                    }
+                    else if (entityType.equals(EntityType.SHEEP))
+                    {
+                        DyeColor color = EntityUtils.getSheepColorFromNbt(nbt);
+
+                        if (color != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.sheep", color.getName());
+                        }
+                    }
+                    else if (entityType.equals(EntityType.TROPICAL_FISH))
+                    {
+                        TropicalFishEntity.Variety variant = EntityUtils.getFishVariantFromNbt(nbt);
+
+                        if (variant != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.tropical_fish", variant.asString());
+                        }
+                    }
+                    else if (entityType.equals(EntityType.WOLF))
+                    {
+                        Pair<RegistryKey<WolfVariant>, DyeColor> wolfPair = EntityUtils.getWolfVariantFromNbt(nbt);
+
+                        if (wolfPair.getLeft() != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.wolf", wolfPair.getLeft().getValue().getPath(), wolfPair.getRight().getName());
+                        }
+                    }
+                }
+                else if (pair.getLeft() instanceof AxolotlEntity axolotl)
+                {
+                    this.addLineI18n("minihud.info_line.entity_variant.axolotl", axolotl.getVariant().getName());
+                }
+                else if (pair.getLeft() instanceof CatEntity cat)
+                {
+                    RegistryKey<CatVariant> variant = cat.getVariant().getKey().orElse(CatVariant.ALL_BLACK);
+                    this.addLineI18n("minihud.info_line.entity_variant.cat", variant.getValue().getPath(), cat.getCollarColor().getName());
+                }
+                else if (pair.getLeft() instanceof FrogEntity frog)
+                {
+                    RegistryKey<FrogVariant> variant = frog.getVariant().getKey().orElse(FrogVariant.TEMPERATE);
+                    this.addLineI18n("minihud.info_line.entity_variant.frog", variant.getValue().getPath());
+                }
+                else if (pair.getLeft() instanceof HorseEntity horse)
+                {
+                    this.addLineI18n("minihud.info_line.entity_variant.horse", horse.getVariant().asString(), horse.getMarking().name().toLowerCase());
+                }
+                else if (pair.getLeft() instanceof ParrotEntity parrot)
+                {
+                    this.addLineI18n("minihud.info_line.entity_variant.parrot", parrot.getVariant().asString());
+                }
+                else if (pair.getLeft() instanceof SheepEntity sheep)
+                {
+                    this.addLineI18n("minihud.info_line.entity_variant.sheep", sheep.getColor().getName());
+                }
+                else if (pair.getLeft() instanceof TropicalFishEntity fish)
+                {
+                    this.addLineI18n("minihud.info_line.entity_variant.tropical_fish", fish.getVariant().asString());
+                }
+                else if (pair.getLeft() instanceof WolfEntity wolf)
+                {
+                    RegistryKey<WolfVariant> variant = wolf.getVariant().getKey().orElse(WolfVariants.PALE);
+                    this.addLineI18n("minihud.info_line.entity_variant.wolf", variant.getValue().getPath(), wolf.getCollarColor().getName());
                 }
             }
         }
@@ -1018,8 +1321,40 @@ public class RenderHandler implements IRenderer
         {
             if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
             {
-                Entity lookedEntity = this.getTargetEntity(world, mc);
-                if (lookedEntity instanceof LivingEntity living)
+                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+
+                if (pair == null)
+                {
+                    return;
+                }
+                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
+                    pair.getLeft() instanceof LivingEntity)
+                {
+                    NbtCompound nbt = pair.getRight();
+                    Map<RegistryEntry<StatusEffect>, StatusEffectInstance> effects = EntityUtils.getActiveStatusEffectsFromNbt(nbt);
+
+                    if (effects == null || effects.isEmpty())
+                    {
+                        return;
+                    }
+
+                    for (RegistryEntry<StatusEffect> effectType : effects.keySet())
+                    {
+                        StatusEffectInstance effect = effects.get(effectType);
+
+                        if (effect.isInfinite() || effect.getDuration() > 0)
+                        {
+                            this.addLineI18n("minihud.info_line.looking_at_effects",
+                                             effectType.value().getName().getString(),
+                                             effect.getAmplifier() > 0 ? StringUtils.translate("minihud.info_line.looking_at_effects.amplifier", effect.getAmplifier() + 1) : "",
+                                             effect.isInfinite() ? StringUtils.translate("minihud.info_line.looking_at_effects.infinite") :
+                                             DurationFormatUtils.formatDurationWords((effect.getDuration() / 20) * 1000L, true, true),
+                                             StringUtils.translate("minihud.info_line.remaining")
+                            );
+                        }
+                    }
+                }
+                else if (pair.getLeft() instanceof LivingEntity living)
                 {
                     Collection<StatusEffectInstance> effects = living.getStatusEffects();
                     Iterator<StatusEffectInstance> iter = effects.iterator();
@@ -1034,7 +1369,7 @@ public class RenderHandler implements IRenderer
                                     effect.getEffectType().value().getName().getString(),
                                     effect.getAmplifier() > 0 ? StringUtils.translate("minihud.info_line.looking_at_effects.amplifier", effect.getAmplifier() + 1) : "",
                                     effect.isInfinite() ? StringUtils.translate("minihud.info_line.looking_at_effects.infinite") :
-                                            DurationFormatUtils.formatDurationWords((effect.getDuration() / 20) * 1000L, true, true),
+                                    DurationFormatUtils.formatDurationWords((effect.getDuration() / 20) * 1000L, true, true),
                                     StringUtils.translate("minihud.info_line.remaining")
                             );
                         }
@@ -1046,14 +1381,56 @@ public class RenderHandler implements IRenderer
         {
             if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
             {
-                Entity lookedEntity = this.getTargetEntity(world, mc);
-                if (lookedEntity instanceof ZombieVillagerEntity zombie)
+                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+
+                if (pair == null)
                 {
-                    int conversionTimer = ((IMixinZombieVillagerEntity) zombie).conversionTimer();
-                    if (conversionTimer > 0)
+                    return;
+                }
+
+                String zombieType = pair.getLeft().getType().getName().getString();
+                int conversionTimer = -1;
+
+                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue())
+                {
+                    NbtCompound nbt = pair.getRight();
+                    EntityType<?> entityType = EntityUtils.getEntityTypeFromNbt(nbt);
+
+                    //MiniHUD.logger.error("ZombieDoctor: type [{}], raw nbt [{}]", entityType.getName().getString(), nbt.toString());
+
+                    if (entityType.equals(EntityType.ZOMBIE_VILLAGER))
                     {
-                        this.addLineI18n("minihud.info_line.zombie_conversion", DurationFormatUtils.formatDurationWords((conversionTimer / 20) * 1000L, true, true));
+                        Pair<Integer, UUID> zombieDoctor = EntityUtils.getZombieConversionTimerFromNbt(nbt);
+                        conversionTimer = zombieDoctor.getLeft();
                     }
+                    else if (entityType.equals(EntityType.ZOMBIE))
+                    {
+                        Pair<Integer, Integer> zombieDoctor = EntityUtils.getDrownedConversionTimerFromNbt(nbt);
+                        conversionTimer = zombieDoctor.getLeft();
+                    }
+                    else if (entityType.equals(EntityType.SKELETON))
+                    {
+                        conversionTimer = EntityUtils.getStrayConversionTimeFromNbt(nbt);
+                    }
+                }
+                else
+                {
+                    if (pair.getLeft() instanceof ZombieVillagerEntity zombie)
+                    {
+                        conversionTimer = ((IMixinZombieVillagerEntity) zombie).minihud_conversionTimer();
+                    }
+                    else if (pair.getLeft() instanceof ZombieEntity zombert)
+                    {
+                        conversionTimer = ((IMixinZombieEntity) zombert).minihud_ticksUntilWaterConversion();
+                    }
+                    else if (pair.getLeft() instanceof SkeletonEntity skeleton)
+                    {
+                        conversionTimer = ((IMixinSkeletonEntity) skeleton).minihud_conversionTime();
+                    }
+                }
+                if (conversionTimer > 0)
+                {
+                    this.addLineI18n("minihud.info_line.zombie_conversion", zombieType, DurationFormatUtils.formatDurationWords((conversionTimer / 20) * 1000L, true, true));
                 }
             }
         }
@@ -1061,8 +1438,12 @@ public class RenderHandler implements IRenderer
         {
             if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
             {
-                Entity lookedEntity = this.getTargetEntity(world, mc);
-                Identifier regName = EntityType.getId(lookedEntity.getType());
+                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+                if (pair == null)
+                {
+                    return;
+                }
+                Identifier regName = EntityType.getId(pair.getLeft().getType());
 
                 if (regName != null)
                 {
@@ -1112,20 +1493,44 @@ public class RenderHandler implements IRenderer
     }
 
     @Nullable
-    public Entity getTargetEntity(World world, MinecraftClient mc)
+    public Pair<Entity, NbtCompound> getTargetEntity(World world, MinecraftClient mc)
     {
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
         {
             Entity lookedEntity = ((EntityHitResult) mc.crosshairTarget).getEntity();
-            if (!(world instanceof ServerWorld))
+            World bestWorld = WorldUtils.getBestWorld(mc);
+            Pair<Entity, NbtCompound> pair = null;
+
+            if (bestWorld instanceof ServerWorld serverWorld)
             {
-                EntitiesDataStorage.getInstance().requestEntity(lookedEntity.getId());
+                Entity serverEntity = serverWorld.getEntityById(lookedEntity.getId());
+                NbtCompound nbt = new NbtCompound();
+                serverEntity.saveSelfNbt(nbt);
+                pair = Pair.of(serverEntity, nbt);
             }
-            return lookedEntity;
+            else
+            {
+                pair = EntitiesDataStorage.getInstance().requestEntity(lookedEntity.getId());
+            }
+
+            // Remember the last entity so the "refresh time" is smoothed over.
+            if (pair == null && this.lastEntity != null &&
+                this.lastEntity.getLeft().getId() == lookedEntity.getId())
+            {
+                pair = this.lastEntity;
+            }
+            else if (pair != null)
+            {
+                this.lastEntity = pair;
+            }
+
+            return pair;
         }
+
         return null;
     }
 
+    /*
     @Nullable
     public BlockEntity getTargetedBlockEntity(World world, MinecraftClient mc)
     {
@@ -1141,25 +1546,72 @@ public class RenderHandler implements IRenderer
 
         return null;
     }
+     */
 
-    public void requestBlockEntityAt(World world, BlockPos pos)
+    @Nullable
+    public Pair<BlockEntity, NbtCompound> getTargetedBlockEntity(World world, MinecraftClient mc)
+    {
+        if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK)
+        {
+            BlockPos posLooking = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
+            World bestWorld = WorldUtils.getBestWorld(mc);
+            BlockState state = bestWorld.getBlockState(posLooking);
+            Pair<BlockEntity, NbtCompound> pair = null;
+
+            if (state.getBlock() instanceof BlockEntityProvider)
+            {
+                if (bestWorld instanceof ServerWorld)
+                {
+                    NbtCompound nbt = new NbtCompound();
+                    BlockEntity be = bestWorld.getWorldChunk(posLooking).getBlockEntity(posLooking);
+                    pair = Pair.of(be, be != null ? be.createNbtWithIdentifyingData(bestWorld.getRegistryManager()) : nbt);
+                }
+                else
+                {
+                    pair = EntitiesDataStorage.getInstance().requestBlockEntity(world, posLooking);
+                }
+
+                // Remember the last entity so the "refresh time" is smoothed over.
+                if (pair == null && this.lastBlockEntity != null &&
+                    this.lastBlockEntity.getLeft().getPos().equals(posLooking))
+                {
+                    pair = this.lastBlockEntity;
+                }
+                else if (pair != null)
+                {
+                    this.lastBlockEntity = pair;
+                }
+
+                return pair;
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public Pair<BlockEntity, NbtCompound> requestBlockEntityAt(World world, BlockPos pos)
     {
         if (!(world instanceof ServerWorld))
         {
-            EntitiesDataStorage.getInstance().requestBlockEntity(world, pos);
+            Pair<BlockEntity, NbtCompound> pair = EntitiesDataStorage.getInstance().requestBlockEntity(world, pos);
 
             BlockState state = world.getBlockState(pos);
+
             if (state.getBlock() instanceof ChestBlock)
             {
                 ChestType type = state.get(ChestBlock.CHEST_TYPE);
 
                 if (type != ChestType.SINGLE)
                 {
-                    BlockPos posAdj = pos.offset(ChestBlock.getFacing(state));
-                    EntitiesDataStorage.getInstance().requestBlockEntity(world, posAdj);
+                    return EntitiesDataStorage.getInstance().requestBlockEntity(world, pos.offset(ChestBlock.getFacing(state)));
                 }
             }
+
+            return pair;
         }
+
+        return null;
     }
 
     @Nullable
@@ -1222,7 +1674,7 @@ public class RenderHandler implements IRenderer
 
     private CompletableFuture<OptionalChunk<Chunk>> setupChunkFuture(ChunkPos chunkPos)
     {
-        IntegratedServer server = this.mc.getServer();
+        IntegratedServer server = this.getDataStorage().getIntegratedServer();
         CompletableFuture<OptionalChunk<Chunk>> future = null;
 
         if (server != null)

@@ -8,6 +8,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -22,6 +23,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerTask;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureStart;
 import net.minecraft.text.MutableText;
@@ -39,6 +41,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.gen.structure.Structure;
 import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.interfaces.IClientTickHandler;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.util.*;
@@ -47,6 +50,7 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
+import fi.dy.masa.minihud.mixin.IMixinMinecraftServer;
 import fi.dy.masa.minihud.network.ServuxStructuresHandler;
 import fi.dy.masa.minihud.network.ServuxStructuresPacket;
 import fi.dy.masa.minihud.renderer.*;
@@ -80,6 +84,9 @@ public class DataStorage
     private boolean structureRendererNeedsUpdate;
     private boolean structuresNeedUpdating;
     private boolean shouldRegisterStructureChannel;
+    private boolean isRaining;
+    private boolean isThundering;
+    private int weatherTimer;
     private long worldSeed;
     private long lastServerTick;
     private long lastServerTimeUpdate;
@@ -90,7 +97,7 @@ public class DataStorage
     private final int[] blockBreakCounter = new int[100];
     private final ArrayListMultimap<StructureType, StructureData> structures = ArrayListMultimap.create();
     private final MinecraftClient mc = MinecraftClient.getInstance();
-
+    private IntegratedServer integratedServer;
     private DynamicRegistryManager registryManager = DynamicRegistryManager.EMPTY;
     private BlockPos worldSpawn = BlockPos.ORIGIN;
     private final PriorityBlockingQueue<ChunkTask> taskQueue = Queues.newPriorityBlockingQueue();
@@ -154,7 +161,7 @@ public class DataStorage
             this.carpetServer = false;
             this.worldSpawnValid = false;
             this.spawnChunkRadiusValid = false;
-            this.setHasIntegratedServer(false);
+            this.setHasIntegratedServer(false, null);
         }
         else
         {
@@ -167,6 +174,9 @@ public class DataStorage
         this.structuresNeedUpdating = true;
         this.hasStructureDataFromServer = false;
         this.structureRendererNeedsUpdate = true;
+        this.isRaining = false;
+        this.isThundering = false;
+        this.weatherTimer = -1;
 
         this.lastStructureUpdatePos = null;
         this.structures.clear();
@@ -225,11 +235,37 @@ public class DataStorage
         }
     }
 
+    public String getServuxVersion()
+    {
+        if (this.hasServuxServer())
+        {
+            return this.servuxVersion;
+        }
+
+        return "not_connected";
+    }
+
     public boolean hasIntegratedServer() { return this.hasIntegratedServer; }
 
-    public void setHasIntegratedServer(boolean toggle)
+    public void setHasIntegratedServer(boolean toggle, @Nullable IntegratedServer server)
     {
         this.hasIntegratedServer = toggle;
+        this.integratedServer = server;
+    }
+
+    public IntegratedServer getIntegratedServer()
+    {
+        return this.integratedServer;
+    }
+
+    public boolean isSinglePlayer()
+    {
+        if (this.mc != null)
+        {
+            return this.mc.isInSingleplayer();
+        }
+
+        return false;
     }
 
     public void onWorldPre()
@@ -421,6 +457,51 @@ public class DataStorage
         return this.worldSeed;
     }
 
+    public boolean isWeatherClear()
+    {
+        return this.getClearTime() > -1;
+    }
+
+    public int getClearTime()
+    {
+        if (this.isRaining == false && this.isThundering == false)
+        {
+            return this.weatherTimer;
+        }
+
+        return -1;
+    }
+
+    public boolean isWeatherRain()
+    {
+        return this.getRainTime() > -1;
+    }
+
+    public int getRainTime()
+    {
+        if (this.isRaining && this.isThundering == false)
+        {
+            return this.weatherTimer;
+        }
+
+        return -1;
+    }
+
+    public boolean isWeatherThunder()
+    {
+        return this.getThunderTime() > -1;
+    }
+
+    public int getThunderTime()
+    {
+        if (this.isThundering && this.isRaining == false)
+        {
+            return this.weatherTimer;
+        }
+
+        return -1;
+    }
+
     /**
      * This function checks the Integrated Server's World Seed at Server Launch.
      * This happens before the WorldLoadListener/fromJson load which works fine for Multiplayer;
@@ -559,6 +640,14 @@ public class DataStorage
         {
             int tick = (int) (mc.world.getTime() % this.blockBreakCounter.length);
             this.blockBreakCounter[tick] = 0;
+        }
+    }
+
+    public void onClientTickPost(MinecraftClient mc)
+    {
+        if (this.hasIntegratedServer == false && this.weatherTimer > 1)
+        {
+            this.weatherTimer--;
         }
     }
 
@@ -771,6 +860,35 @@ public class DataStorage
         }
     }
 
+    public void onServerWeatherTick(int clearTime, int rainTime, boolean isThundering)
+    {
+        if (rainTime > 1)
+        {
+            if (isThundering)
+            {
+                this.isThundering = true;
+                this.isRaining = false;
+            }
+            else
+            {
+                this.isThundering = false;
+                this.isRaining = true;
+            }
+
+            this.weatherTimer = rainTime;
+        }
+        else if (clearTime > 1 && (this.isRaining || this.isThundering))
+        {
+            this.isThundering = false;
+            this.isRaining = false;
+        }
+
+        if (clearTime > 1)
+        {
+            this.weatherTimer = clearTime;
+        }
+    }
+
     public void updateIntegratedServerTPS()
     {
         if (this.mc != null && this.mc.player != null && this.mc.getServer() != null)
@@ -930,6 +1048,10 @@ public class DataStorage
             this.setServuxVersion(data.getString("servux"));
             this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
             this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"), true);
+            if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
+            {
+                this.setWorldSeed(data.getLong("worldSeed"));
+            }
             this.setIsServuxServer();
 
             if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
@@ -955,6 +1077,42 @@ public class DataStorage
             this.setServuxVersion(data.getString("servux"));
             this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
             this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"), true);
+            if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
+            {
+                this.setWorldSeed(data.getLong("worldSeed"));
+            }
+
+            if (this.hasInValidServux)
+            {
+                this.hasInValidServux = false;
+            }
+        }
+    }
+
+    public void receiveWeatherData(NbtCompound data)
+    {
+        if (this.hasIntegratedServer == false)
+        {
+            MiniHUD.printDebug("DataStorage#receiveWeatherData(): from Servux");
+
+            if (data.contains("SetRaining", Constants.NBT.TAG_INT))
+            {
+                this.isThundering = false;
+                this.isRaining = true;
+                this.weatherTimer = data.getInt("SetRaining");
+            }
+            else if (data.contains("SetThundering", Constants.NBT.TAG_INT))
+            {
+                this.isThundering = true;
+                this.isRaining = false;
+                this.weatherTimer = data.getInt("SetThundering");
+            }
+            else if (data.contains("SetClear", Constants.NBT.TAG_INT))
+            {
+                this.isRaining = false;
+                this.isThundering = false;
+                this.weatherTimer = data.getInt("SetClear");
+            }
 
             if (this.hasInValidServux)
             {
@@ -995,6 +1153,11 @@ public class DataStorage
                 Math.abs(playerPos.getZ() - this.lastStructureUpdatePos.getZ()) >= hysteresis;
     }
 
+    public int getStrucutreCount()
+    {
+        return this.structures.size();
+    }
+
     private void updateStructureDataFromIntegratedServer(final BlockPos playerPos)
     {
         final RegistryKey<World> worldId = this.mc.player.getEntityWorld().getRegistryKey();
@@ -1005,7 +1168,8 @@ public class DataStorage
             MinecraftServer server = this.mc.getServer();
             final int maxChunkRange = this.mc.options.getClampedViewDistance();
 
-            server.send(new ServerTask(server.getTicks(), () ->
+            //server.executeTask(new ServerTask(server.getTicks(), () ->
+            ((IMixinMinecraftServer) server).minihud_send(new ServerTask(server.getTicks(), () ->
             {
                 synchronized (this.structures)
                 {

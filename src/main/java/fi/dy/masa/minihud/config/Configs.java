@@ -45,9 +45,11 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       DONT_RESET_SEED_ON_DIMENSION_CHANGE = new ConfigBoolean("dontClearStoredSeedOnDimensionChange", true, "minihud.config.generic.comment.dontClearStoredSeedOnDimensionChange").translatedName("minihud.config.generic.name.dontClearStoredSeedOnDimensionChange");
         public static final ConfigBoolean       ENTITY_DATA_SYNC                    = new ConfigBoolean("entityDataSync", true, "minihud.config.generic.comment.entityDataSync").translatedName("minihud.config.generic.name.entityDataSync");
         public static final ConfigBoolean       ENTITY_DATA_SYNC_BACKUP             = new ConfigBoolean("entityDataSyncBackup", true, "minihud.config.generic.comment.entityDataSyncBackup").translatedName("minihud.config.generic.name.entityDataSyncBackup");
+        public static final ConfigBoolean       ENTITY_DATA_LOAD_NBT                = new ConfigBoolean("entityDataSyncLoadNbt", false, "minihud.config.generic.comment.entityDataSyncLoadNbt").translatedName("minihud.config.generic.name.entityDataSyncLoadNbt");
         //public static final ConfigBoolean       FIX_VANILLA_DEBUG_RENDERERS         = new ConfigBoolean("enableVanillaDebugRendererFix", true, "minihud.config.generic.comment.enableVanillaDebugRendererFix").translatedName("minihud.config.generic.name.enableVanillaDebugRendererFix");
         public static final ConfigDouble        FONT_SCALE                          = new ConfigDouble("fontScale", 0.5, 0.01, 100.0, "minihud.config.generic.comment.fontScale").translatedName("minihud.config.generic.name.fontScale");
         public static final ConfigOptionList    HUD_ALIGNMENT                       = new ConfigOptionList("hudAlignment", HudAlignment.TOP_LEFT, "minihud.config.generic.comment.hudAlignment").translatedName("minihud.config.generic.name.hudAlignment");
+        public static final ConfigBoolean       INFO_LINES_USES_NBT                 = new ConfigBoolean("infoLinesUsesNbt", true, "minihud.config.generic.comment.infoLinesUsesNbt").translatedName("minihud.config.generic.name.infoLinesUsesNbt");
         public static final ConfigHotkey        INVENTORY_PREVIEW                   = new ConfigHotkey("inventoryPreview", "LEFT_ALT", KeybindSettings.PRESS_ALLOWEXTRA, "minihud.config.generic.comment.inventoryPreview").translatedName("minihud.config.generic.name.inventoryPreview");
         public static final ConfigBoolean       INVENTORY_PREVIEW_ENABLED           = new ConfigBoolean("inventoryPreviewEnabled", false, "minihud.config.generic.comment.inventoryPreviewEnabled").translatedName("minihud.config.generic.name.inventoryPreviewEnabled");
         public static final ConfigHotkey        INVENTORY_PREVIEW_TOGGLE_SCREEN     = new ConfigHotkey("inventoryPreviewToggleScreen", "BUTTON_3", KeybindSettings.create(KeybindSettings.Context.ANY, KeyAction.PRESS, true, true, false, true), "minihud.config.generic.comment.inventoryPreviewToggleScreen").translatedName("minihud.config.generic.name.inventoryPreviewToggleScreen");
@@ -120,6 +122,8 @@ public class Configs implements IConfigHandler
                 DONT_RESET_SEED_ON_DIMENSION_CHANGE,
                 ENTITY_DATA_SYNC,
                 ENTITY_DATA_SYNC_BACKUP,
+                ENTITY_DATA_LOAD_NBT,
+                INFO_LINES_USES_NBT,
                 //FIX_VANILLA_DEBUG_RENDERERS,
                 LIGHT_LEVEL_AUTO_HEIGHT,
                 LIGHT_LEVEL_COLLISION_CHECK,
