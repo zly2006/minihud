@@ -227,7 +227,7 @@ public class EntitiesDataStorage implements IClientTickHandler
 
                 if (nowTime - pair.getLeft() > blockTimeout || pair.getLeft() - nowTime > 0)
                 {
-                    MiniHUD.printDebug("entityCache: be at pos [{}] has timed out", pos.toShortString());
+                    //MiniHUD.printDebug("entityCache: be at pos [{}] has timed out", pos.toShortString());
                     this.blockEntityCache.remove(pos);
                     count++;
                 }
@@ -244,7 +244,7 @@ public class EntitiesDataStorage implements IClientTickHandler
 
                 if (nowTime - pair.getLeft() > entityTimeout || pair.getLeft() - nowTime > 0)
                 {
-                    MiniHUD.printDebug("entityCache: enity Id [{}] has timed out", entityId);
+                    //MiniHUD.printDebug("entityCache: enity Id [{}] has timed out", entityId);
                     this.entityCache.remove(entityId);
                     count++;
                 }
