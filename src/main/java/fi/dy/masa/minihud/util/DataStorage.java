@@ -1093,7 +1093,7 @@ public class DataStorage
     {
         if (this.hasIntegratedServer == false)
         {
-            MiniHUD.printDebug("DataStorage#receiveWeatherData(): from Servux");
+            //MiniHUD.printDebug("DataStorage#receiveWeatherData(): from Servux");
 
             if (data.contains("SetRaining", Constants.NBT.TAG_INT))
             {
