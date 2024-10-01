@@ -1,5 +1,6 @@
 package fi.dy.masa.minihud.util;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
