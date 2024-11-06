@@ -38,7 +38,7 @@ import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.event.RenderHandler;
 import fi.dy.masa.minihud.mixin.IMixinAbstractHorseEntity;
 import fi.dy.masa.minihud.mixin.IMixinPiglinEntity;
@@ -187,7 +187,7 @@ public class RayTraceUtils
             }
             else
             {
-                Pair<Entity, NbtCompound> pair = EntitiesDataStorage.getInstance().requestEntity(entity.getId());
+                Pair<Entity, NbtCompound> pair = EntitiesDataManager.getInstance().requestEntity(entity.getId());
 
                 if (pair != null)
                 {
@@ -235,11 +235,13 @@ public class RayTraceUtils
                 }
             }
 
-            inv = EntitiesDataStorage.getInstance().getBlockInventory(world, pos, false);
+            inv = EntitiesDataManager.getInstance().getBlockInventory(world, pos, false);
         }
 
         if (nbt != null && !nbt.isEmpty())
         {
+            //MiniHUD.logger.warn("getTargetInventoryFromBlock(): rawNbt: [{}]", nbt.toString());
+
             Inventory inv2 = InventoryUtils.getNbtInventory(nbt, inv != null ? inv.size() : -1, world.getRegistryManager());
 
             if (inv == null)
@@ -297,14 +299,15 @@ public class RayTraceUtils
             //MiniHUD.logger.warn("getTargetInventoryFromEntity(): rawNbt: [{}]", nbt.toString());
 
             // Fix for empty horse inv
-            if (inv != null && inv.size() == 1 &&
+            if (inv != null &&
+                //inv.size() == 1 &&
                 nbt.contains(NbtKeys.ITEMS) &&
-                nbt.getList(NbtKeys.ITEMS, Constants.NBT.TAG_COMPOUND).size() > 1 &&
-                !DataStorage.getInstance().hasIntegratedServer())
+                nbt.getList(NbtKeys.ITEMS, Constants.NBT.TAG_COMPOUND).size() > 1)
+                //!DataStorage.getInstance().hasIntegratedServer())
             {
                 if (entity instanceof AbstractHorseEntity)
                 {
-                    inv2 = fi.dy.masa.minihud.util.InventoryUtils.getNbtInventoryHorseFix(nbt, -1, entity.getRegistryManager());
+                    inv2 = InventoryUtils.getNbtInventoryHorseFix(nbt, -1, entity.getRegistryManager());
                 }
                 else
                 {
@@ -313,18 +316,19 @@ public class RayTraceUtils
                 inv = null;
             }
             // Fix for saddled horse, no inv
-            else if (inv != null && inv.size() == 1 &&
-                    nbt.contains(NbtKeys.SADDLE) &&
-                    !DataStorage.getInstance().hasIntegratedServer())
+            else if (inv != null &&
+                    inv.size() == 1 &&
+                    nbt.contains(NbtKeys.SADDLE))
+                    //!DataStorage.getInstance().hasIntegratedServer())
             {
-                inv2 = fi.dy.masa.minihud.util.InventoryUtils.getNbtInventoryHorseFix(nbt, -1, entity.getRegistryManager());
+                inv2 = InventoryUtils.getNbtInventoryHorseFix(nbt, -1, entity.getRegistryManager());
                 inv = null;
             }
             // Fix for empty Villager/Piglin inv
             else if (inv != null && inv.size() == 8 &&
                     nbt.contains(NbtKeys.INVENTORY) &&
-                    !nbt.getList(NbtKeys.INVENTORY, Constants.NBT.TAG_COMPOUND).isEmpty() &&
-                    !DataStorage.getInstance().hasIntegratedServer())
+                    !nbt.getList(NbtKeys.INVENTORY, Constants.NBT.TAG_COMPOUND).isEmpty())
+                    //!DataStorage.getInstance().hasIntegratedServer())
             {
                 inv2 = InventoryUtils.getNbtInventory(nbt, 8, entity.getRegistryManager());
                 inv = null;
@@ -332,16 +336,18 @@ public class RayTraceUtils
             else
             {
                 inv2 = InventoryUtils.getNbtInventory(nbt, inv != null ? inv.size() : -1, entity.getRegistryManager());
+
+                if (inv2 != null)
+                {
+                    inv = null;
+                }
             }
 
             //MiniHUD.logger.error("getTargetInventoryFromEntity(): inv.size [{}], inv2.size [{}]", inv != null ? inv.size() : "null", inv2 != null ? inv2.size() : "null");
 
             if (inv2 != null)
             {
-                if (inv == null)
-                {
-                    inv = inv2;
-                }
+                inv = inv2;
             }
         }
 
@@ -350,14 +356,7 @@ public class RayTraceUtils
             return null;
         }
 
-        //return new InventoryPreviewData(inv, null, entityLivingBase);
         return new InventoryOverlay.Context(inv != null ? InventoryOverlay.getBestInventoryType(inv, nbt) : InventoryOverlay.getInventoryType(nbt),
                                             inv, null, entityLivingBase, nbt);
     }
-
-    /*
-    public record InventoryPreviewData(Inventory inv, @Nullable BlockEntity te, @Nullable LivingEntity entity)
-    {
-    }
-     */
 }

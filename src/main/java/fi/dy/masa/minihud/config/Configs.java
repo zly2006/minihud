@@ -37,10 +37,14 @@ public class Configs implements IConfigHandler
         public static final ConfigString        BLOCK_POS_FORMAT_STRING             = new ConfigString("blockPosFormat", "Block: %d, %d, %d", "minihud.config.generic.comment.blockPosFormat").translatedName("minihud.config.generic.name.blockPosFormat");
         public static final ConfigOptionList    BLOCK_GRID_OVERLAY_MODE             = new ConfigOptionList("blockGridOverlayMode", BlockGridMode.ALL, "minihud.config.generic.comment.blockGridOverlayMode").translatedName("minihud.config.generic.name.blockGridOverlayMode");
         public static final ConfigInteger       BLOCK_GRID_OVERLAY_RADIUS           = new ConfigInteger("blockGridOverlayRadius", 32, 0, 128, "minihud.config.generic.comment.blockGridOverlayRadius").translatedName("minihud.config.generic.name.blockGridOverlayRadius");
+        public static final ConfigBoolean       BUNDLE_PREVIEW                      = new ConfigBoolean("bundlePreview", false, "minihud.config.generic.comment.bundlePreview").translatedName("minihud.config.generic.name.bundlePreview");
+        public static final ConfigBoolean       BUNDLE_DISPLAY_BACKGROUND_COLOR     = new ConfigBoolean("bundleDisplayBgColor", true, "minihud.config.generic.comment.bundleDisplayBgColor").translatedName("minihud.config.generic.name.bundleDisplayBgColor");
+        public static final ConfigBoolean       BUNDLE_DISPLAY_REQUIRE_SHIFT        = new ConfigBoolean("bundleDisplayRequireShift", true, "minihud.config.generic.comment.bundleDisplayRequireShift").translatedName("minihud.config.generic.name.bundleDisplayRequireShift");
         public static final ConfigString        COORDINATE_FORMAT_STRING            = new ConfigString("coordinateFormat", "x: %.1f y: %.1f z: %.1f", "minihud.config.generic.comment.coordinateFormat").translatedName("minihud.config.generic.name.coordinateFormat");
         public static final ConfigString        DATE_FORMAT_REAL                    = new ConfigString("dateFormatReal", "yyyy-MM-dd HH:mm:ss", "minihud.config.generic.comment.dateFormatReal").translatedName("minihud.config.generic.name.dateFormatReal");
         public static final ConfigString        DATE_FORMAT_MINECRAFT               = new ConfigString("dateFormatMinecraft", "MC time: (day {DAY}) {HOUR}:{MIN}:xx", "minihud.config.generic.comment.dateFormatMinecraft").translatedName("minihud.config.generic.name.dateFormatMinecraft");
         public static final ConfigBoolean       DEBUG_MESSAGES                      = new ConfigBoolean("debugMessages", false, "minihud.config.generic.comment.debugMessages").translatedName("minihud.config.generic.name.debugMessages");
+        //public static final ConfigBoolean       DEBUG_DEVELOPMENT_MODE              = new ConfigBoolean("debugDevelopmentMode", false, "minihud.config.generic.comment.debugDevelopmentMode").translatedName("minihud.config.generic.name.debugDevelopmentMode");
         //public static final ConfigBoolean       DEBUG_RENDERER_PATH_MAX_DIST        = new ConfigBoolean("debugRendererPathFindingEnablePointWidth", true, "minihud.config.generic.comment.debugRendererPathFindingEnablePointWidth").translatedName("minihud.config.generic.name.debugRendererPathFindingEnablePointWidth");
         public static final ConfigBoolean       DONT_RESET_SEED_ON_DIMENSION_CHANGE = new ConfigBoolean("dontClearStoredSeedOnDimensionChange", true, "minihud.config.generic.comment.dontClearStoredSeedOnDimensionChange").translatedName("minihud.config.generic.name.dontClearStoredSeedOnDimensionChange");
         public static final ConfigBoolean       ENTITY_DATA_SYNC                    = new ConfigBoolean("entityDataSync", true, "minihud.config.generic.comment.entityDataSync").translatedName("minihud.config.generic.name.entityDataSync");
@@ -117,7 +121,11 @@ public class Configs implements IConfigHandler
                 BEE_TOOLTIPS,
                 HONEY_TOOLTIPS,
                 BIOME_OVERLAY_SINGLE_COLOR,
+                BUNDLE_PREVIEW,
+                BUNDLE_DISPLAY_BACKGROUND_COLOR,
+                BUNDLE_DISPLAY_REQUIRE_SHIFT,
                 DEBUG_MESSAGES,
+                //DEBUG_DEVELOPMENT_MODE,
                 //DEBUG_RENDERER_PATH_MAX_DIST,
                 DONT_RESET_SEED_ON_DIMENSION_CHANGE,
                 ENTITY_DATA_SYNC,

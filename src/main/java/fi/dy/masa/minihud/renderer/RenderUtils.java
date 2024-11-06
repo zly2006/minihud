@@ -28,10 +28,11 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+
 import fi.dy.masa.malilib.render.InventoryOverlay;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.gui.InventoryOverlayScreen;
 import fi.dy.masa.minihud.mixin.IMixinAbstractHorseEntity;
 import fi.dy.masa.minihud.renderer.shapes.SideQuad;
@@ -573,7 +574,7 @@ public class RenderUtils
             if (entity.getWorld().isClient &&
                 Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
             {
-                EntitiesDataStorage.getInstance().requestEntity(entity.getId());
+                EntitiesDataManager.getInstance().requestEntity(entity.getId());
             }
 
             if (entity instanceof LivingEntity)
@@ -607,8 +608,8 @@ public class RenderUtils
             final int totalSlots = isHorse ? inv.size() - 1 : inv.size();
             final int firstSlot = isHorse ? 1 : 0;
 
-            final fi.dy.masa.malilib.render.InventoryOverlay.InventoryRenderType type = (entityLivingBase instanceof VillagerEntity) ? fi.dy.masa.malilib.render.InventoryOverlay.InventoryRenderType.VILLAGER : fi.dy.masa.malilib.render.InventoryOverlay.getInventoryType(inv);
-            final fi.dy.masa.malilib.render.InventoryOverlay.InventoryProperties props = fi.dy.masa.malilib.render.InventoryOverlay.getInventoryPropsTemp(type, totalSlots);
+            final InventoryOverlay.InventoryRenderType type = (entityLivingBase instanceof VillagerEntity) ? InventoryOverlay.InventoryRenderType.VILLAGER : InventoryOverlay.getInventoryType(inv);
+            final InventoryOverlay.InventoryProperties props = InventoryOverlay.getInventoryPropsTemp(type, totalSlots);
             final int rows = (int) Math.ceil((double) totalSlots / props.slotsPerRow);
             Set<Integer> lockedSlots = new HashSet<>();
             int xInv = xCenter - (props.width / 2);
@@ -645,21 +646,37 @@ public class RenderUtils
                 horseInv.setStack(0, horseArmor != null && !horseArmor.isEmpty() ? horseArmor : ItemStack.EMPTY);
                 horseInv.setStack(1, inv.getStack(0));
 
-                fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryBackground(type, xInv, yInv, 1, 2, mc);
-                fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryStacks(type, horseInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, 2, mc, drawContext);
-                xInv += 32 + 4;
+                InventoryOverlay.renderInventoryBackground(type, xInv, yInv, 1, 2, mc);
+                // TODO 1.21.2+
+                /*
+                if (type == InventoryOverlay.InventoryRenderType.LLAMA)
+                {
+                    InventoryOverlay.renderLlamaArmorBackgroundSlots(horseInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, drawContext);
+                }
+                else
+                {
+                    InventoryOverlay.renderHorseArmorBackgroundSlots(horseInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, drawContext);
+                }
+                 */
+                InventoryOverlay.renderInventoryStacks(type, horseInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, 2, mc, drawContext);                xInv += 32 + 4;
             }
             if (totalSlots > 0)
             {
-                fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryBackground(type, xInv, yInv, props.slotsPerRow, totalSlots, mc);
-                fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryStacks(type, inv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, props.slotsPerRow, firstSlot, totalSlots, lockedSlots, mc, drawContext);
-            }
+                InventoryOverlay.renderInventoryBackground(type, xInv, yInv, props.slotsPerRow, totalSlots, mc);
+                // TODO 1.21.2+
+                /*
+                if (type == InventoryOverlay.InventoryRenderType.BREWING_STAND)
+                {
+                    InventoryOverlay.renderBrewerBackgroundSlots(inv, xInv, yInv, drawContext);
+                }
+                 */
+                InventoryOverlay.renderInventoryStacks(type, inv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, props.slotsPerRow, firstSlot, totalSlots, lockedSlots, mc, drawContext);            }
         }
 
         if (isWolf)
         {
             InventoryOverlay.InventoryRenderType type = InventoryOverlay.InventoryRenderType.HORSE;
-            final fi.dy.masa.malilib.render.InventoryOverlay.InventoryProperties props = fi.dy.masa.malilib.render.InventoryOverlay.getInventoryPropsTemp(type, 2);
+            final InventoryOverlay.InventoryProperties props = InventoryOverlay.getInventoryPropsTemp(type, 2);
             final int rows = (int) Math.ceil((double) 2 / props.slotsPerRow);
             int xInv;
             int yInv = yCenter - props.height - 6;
@@ -677,14 +694,15 @@ public class RenderUtils
             Inventory wolfInv = new SimpleInventory(2);
             ItemStack wolfArmor = ((WolfEntity) entityLivingBase).getBodyArmor();
             wolfInv.setStack(0, wolfArmor != null && !wolfArmor.isEmpty() ? wolfArmor : ItemStack.EMPTY);
-            fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryBackground(type, xInv, yInv, 1, 2, mc);
-            fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryStacks(type, wolfInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, 2, mc, drawContext);
-        }
+            InventoryOverlay.renderInventoryBackground(type, xInv, yInv, 1, 2, mc);
+            // TODO 1.21.2+
+            //InventoryOverlay.renderWolfArmorBackgroundSlots(wolfInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, drawContext);
+            InventoryOverlay.renderInventoryStacks(type, wolfInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, 2, mc, drawContext);        }
 
         if (entityLivingBase != null)
         {
-            fi.dy.masa.malilib.render.InventoryOverlay.renderEquipmentOverlayBackground(x, y, entityLivingBase, drawContext);
-            fi.dy.masa.malilib.render.InventoryOverlay.renderEquipmentStacks(entityLivingBase, x, y, mc, drawContext);
+            InventoryOverlay.renderEquipmentOverlayBackground(x, y, entityLivingBase, drawContext);
+            InventoryOverlay.renderEquipmentStacks(entityLivingBase, x, y, mc, drawContext);
         }
     }
 }
