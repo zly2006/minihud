@@ -443,36 +443,6 @@ public class HudDataManager
         this.thunderWeatherTimer = thunderTime;
         this.isRaining = isRaining;
         this.isThundering = isThunder;
-
-        /*
-        if (rainTime > 1)
-        {
-            if (isThundering)
-            {
-                this.isThundering = true;
-                this.isRaining = false;
-            }
-            else
-            {
-                this.isThundering = false;
-                this.isRaining = true;
-            }
-
-            this.weatherTimer = rainTime;
-        }
-        else if (clearTime > 1)
-        {
-            this.isThundering = false;
-            this.isRaining = false;
-            this.weatherTimer = clearTime;
-        }
-        else
-        {
-            this.isThundering = false;
-            this.isRaining = false;
-            this.weatherTimer = -1;
-        }
-         */
     }
 
     public boolean receiveMetadata(NbtCompound data)
@@ -528,11 +498,6 @@ public class HudDataManager
             {
                 this.setWorldSeed(data.getLong("worldSeed"));
             }
-
-            if (this.hasInValidServux)
-            {
-                this.hasInValidServux = false;
-            }
         }
     }
 
@@ -563,30 +528,11 @@ public class HudDataManager
                 this.clearWeatherTimer = data.getInt("SetClear");
             }
 
-            if (this.hasServuxServer() == false && DataStorage.getInstance().hasServuxServer())
+            if (!this.hasServuxServer() && DataStorage.getInstance().hasServuxServer())
             {
                 // Backwards compat, the best effort.
-                if (this.thunderWeatherTimer > 0 && this.isThundering == false)
-                {
-                    this.isThundering = true;
-                }
-                else
-                {
-                    this.isThundering = false;
-                }
-                if (this.rainWeatherTimer > 0 && this.isRaining == false)
-                {
-                    this.isRaining = true;
-                }
-                else
-                {
-                    this.isRaining = false;
-                }
-            }
-
-            if (this.hasInValidServux)
-            {
-                this.hasInValidServux = false;
+                this.isThundering = this.thunderWeatherTimer > 0 && !this.isThundering;
+                this.isRaining = this.rainWeatherTimer > 0 && !this.isRaining;
             }
         }
     }
