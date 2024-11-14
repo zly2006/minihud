@@ -16,6 +16,7 @@ import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.EnderChestInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
@@ -25,9 +26,7 @@ import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.render.InventoryOverlay;
 import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.BlockUtils;
-import fi.dy.masa.malilib.util.GuiUtils;
-import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
@@ -36,7 +35,7 @@ import fi.dy.masa.minihud.util.RayTraceUtils;
 
 public class InventoryOverlayScreen extends Screen implements Drawable
 {
-    InventoryOverlay.Context previewData;
+    private InventoryOverlay.Context previewData;
     private int ticks;
 
     public InventoryOverlayScreen(InventoryOverlay.Context previewData)
@@ -110,7 +109,7 @@ public class InventoryOverlayScreen extends Screen implements Drawable
             {
                 lockedSlots = BlockUtils.getDisabledSlots(cbe);
             }
-            else if (previewData.nbt() != null && previewData.nbt().contains("disabled_slots"))
+            else if (previewData.nbt() != null && previewData.nbt().contains(NbtKeys.DISABLED_SLOTS))
             {
                 lockedSlots = BlockUtils.getDisabledSlotsFromNbt(previewData.nbt());
             }
@@ -130,6 +129,7 @@ public class InventoryOverlayScreen extends Screen implements Drawable
                 RenderUtils.setShulkerboxBackgroundTintColor(sbb, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue());
             }
 
+            // Inv Display
             if (totalSlots > 0 && previewData.inv() != null)
             {
                 InventoryOverlay.renderInventoryBackground(type, xInv, yInv, props.slotsPerRow, totalSlots, mc);
@@ -143,21 +143,40 @@ public class InventoryOverlayScreen extends Screen implements Drawable
                 //this.dumpInvStacks(previewData.inv(), world);
                 InventoryOverlay.renderInventoryStacks(type, previewData.inv(), xInv + props.slotOffsetX, yInv + props.slotOffsetY, props.slotsPerRow, startSlot, totalSlots, lockedSlots, mc, drawContext, mouseX, mouseY);            }
 
-            if (previewData.entity() instanceof PlayerEntity player)
+            // EnderItems Display
+            if (previewData.type() == InventoryOverlay.InventoryRenderType.PLAYER &&
+                previewData.nbt() != null && previewData.nbt().contains(NbtKeys.ENDER_ITEMS))
+            {
+                EnderChestInventory enderItems = InventoryUtils.getPlayerEnderItemsFromNbt(previewData.nbt(), world.getRegistryManager());
+
+                if (enderItems == null)
+                {
+                    enderItems = new EnderChestInventory();
+                }
+
+                //this.dumpInvStacks(enderItems, world);
+                yInv = yCenter + 6;
+                InventoryOverlay.renderInventoryBackground(InventoryOverlay.InventoryRenderType.GENERIC, xInv, yInv, 9, 27, mc);
+                InventoryOverlay.renderInventoryStacks(InventoryOverlay.InventoryRenderType.GENERIC, enderItems, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 9, 0, 27, mc, drawContext, mouseX, mouseY);
+            }
+            else if (previewData.entity() instanceof PlayerEntity player)
             {
                 yInv = yCenter + 6;
                 InventoryOverlay.renderInventoryBackground(InventoryOverlay.InventoryRenderType.GENERIC, xInv, yInv, 9, 27, mc);
                 InventoryOverlay.renderInventoryStacks(InventoryOverlay.InventoryRenderType.GENERIC, player.getEnderChestInventory(), xInv + props.slotOffsetX, yInv + props.slotOffsetY, 9, 0, 27, mc, drawContext, mouseX, mouseY);
             }
 
+            // Entity Display
             if (previewData.entity() != null)
             {
                 InventoryOverlay.renderEquipmentOverlayBackground(x, y, previewData.entity(), drawContext);
                 InventoryOverlay.renderEquipmentStacks(previewData.entity(), x, y, mc, drawContext, mouseX, mouseY);
             }
 
+            // Refresh
             if (ticks % 4 == 0)
             {
+                // Refresh data
                 if (previewData.be() != null)
                 {
                     RenderHandler.getInstance().requestBlockEntityAt(world, previewData.be().getPos());
@@ -178,7 +197,7 @@ public class InventoryOverlayScreen extends Screen implements Drawable
         return false;
     }
 
-    private void dumpInvStacks(Inventory inv, World world)
+    public static void dumpInvStacks(Inventory inv, World world)
     {
         System.out.print("dumpInvStacks() -->\n");
 
@@ -190,7 +209,16 @@ public class InventoryOverlayScreen extends Screen implements Drawable
 
         for (int i = 0; i < inv.size(); i++)
         {
-            System.out.printf("slot[%d]: [%s]\n", i, inv.getStack(i).encode(world.getRegistryManager()));
+            ItemStack stack = inv.getStack(i);
+
+            if (stack.isEmpty())
+            {
+                System.out.printf("slot[%d]: [%s]\n", i, "minecraft:air [EMPTY]");
+            }
+            else
+            {
+                System.out.printf("slot[%d]: [%s]\n", i, inv.getStack(i).toNbt(world.getRegistryManager()));
+            }
         }
 
         System.out.print("END\n");

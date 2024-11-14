@@ -146,6 +146,7 @@ public class Configs implements IConfigHandler
                 REQUIRE_SNEAK,
                 SHULKER_BOX_PREVIEW,
                 SHULKER_DISPLAY_BACKGROUND_COLOR,
+                SHULKER_DISPLAY_ENDER_CHEST,
                 SHULKER_DISPLAY_REQUIRE_SHIFT,
                 SLIME_CHUNK_TOP_TO_PLAYER,
                 SORT_LINES_BY_LENGTH,
