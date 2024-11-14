@@ -885,9 +885,9 @@ public class RenderHandler implements IRenderer
             }
             else
             {
-                //speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
-                speed = horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
-                jump = horse.getAttributeValue(EntityAttributes.JUMP_STRENGTH);
+                //speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : horse.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+                speed = horse.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+                jump = horse.getAttributeValue(EntityAttributes.GENERIC_JUMP_STRENGTH);
             }
 
             if (InfoToggle.HORSE_SPEED.getBooleanValue() && speed > 0d)

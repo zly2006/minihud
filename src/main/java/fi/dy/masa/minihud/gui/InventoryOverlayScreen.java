@@ -217,7 +217,7 @@ public class InventoryOverlayScreen extends Screen implements Drawable
             }
             else
             {
-                System.out.printf("slot[%d]: [%s]\n", i, inv.getStack(i).toNbt(world.getRegistryManager()));
+                System.out.printf("slot[%d]: [%s]\n", i, inv.getStack(i).encode(world.getRegistryManager()));
             }
         }
 
