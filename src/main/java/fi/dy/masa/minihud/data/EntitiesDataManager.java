@@ -421,7 +421,10 @@ public class EntitiesDataManager implements IClientTickHandler
                 NbtCompound nbt = be.createNbtWithIdentifyingData(world.getRegistryManager());
                 Pair<BlockEntity, NbtCompound> pair = Pair.of(be, nbt);
 
-                this.blockEntityCache.put(pos, Pair.of(System.currentTimeMillis(), pair));
+                synchronized (this.blockEntityCache)
+                {
+                    this.blockEntityCache.put(pos, Pair.of(System.currentTimeMillis(), pair));
+                }
                 return pair;
             }
         }
@@ -433,7 +436,8 @@ public class EntitiesDataManager implements IClientTickHandler
     {
         if (this.entityCache.containsKey(entityId))
         {
-            return this.entityCache.get(entityId).getRight();
+            Pair<Entity, NbtCompound> pair = this.entityCache.get(entityId).getRight();
+            return pair;
         }
 
         if (!DataStorage.getInstance().hasIntegratedServer() &&
@@ -450,7 +454,12 @@ public class EntitiesDataManager implements IClientTickHandler
             if (entity != null && entity.saveSelfNbt(nbt))
             {
                 Pair<Entity, NbtCompound> pair = Pair.of(entity, nbt);
-                this.entityCache.put(entityId, Pair.of(System.currentTimeMillis(), pair));
+
+                synchronized (this.entityCache)
+                {
+                    this.entityCache.put(entityId, Pair.of(System.currentTimeMillis(), pair));
+                }
+
                 return pair;
             }
         }
@@ -735,6 +744,7 @@ public class EntitiesDataManager implements IClientTickHandler
                     nbt.putString(NbtKeys.ID, id.toString());
                 }
             }
+
             synchronized (this.entityCache)
             {
                 if (this.entityCache.containsKey(entityId))
