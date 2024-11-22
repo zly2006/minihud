@@ -512,7 +512,6 @@ public class RenderUtils
         }
     }
 
-    //public static void renderInventoryOverlay(RayTraceUtils.InventoryPreviewData inventory, DrawContext drawContext)
     public static void renderInventoryOverlay(InventoryOverlay.Context inventory, DrawContext drawContext)
     {
         var screen = new InventoryOverlayScreen(inventory);

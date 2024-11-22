@@ -213,7 +213,7 @@ public class EntitiesDataManager implements IClientTickHandler
 
     private long getCacheTimeout()
     {
-        return (long) (MathHelper.clamp(Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getDoubleValue(), 0.25f, 25.0f) * 1000L);
+        return (long) (MathHelper.clamp(Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue(), 0.25f, 25.0f) * 1000L);
     }
 
     private void tickCache()
@@ -415,7 +415,7 @@ public class EntitiesDataManager implements IClientTickHandler
         else if (world.getBlockState(pos).getBlock() instanceof BlockEntityProvider)
         {
             if (!DataStorage.getInstance().hasIntegratedServer() &&
-                    Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+                Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
             {
                 this.pendingBlockEntitiesQueue.add(pos);
             }
@@ -446,7 +446,7 @@ public class EntitiesDataManager implements IClientTickHandler
         }
 
         if (!DataStorage.getInstance().hasIntegratedServer() &&
-                Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+            Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
         {
             this.pendingEntitiesQueue.add(entityId);
         }
