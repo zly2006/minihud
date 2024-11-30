@@ -377,7 +377,7 @@
     "minihud.config.info_toggle.comment.infoTimeWorld": "Show the current world time in ticks",
     "minihud.config.info_toggle.comment.infoWorldTimeFormatted": "Show the current world time formatted to days, hours, minutes",
     "minihud.config.info_toggle.comment.infoWeather": "Show the current weather, and time remaining\nThis requires using Servux on servers to function properly",
-    "minihud.config.info_toggle.comment.infoZombieConversion": "Show the Time that a Zombie Villager,\nZombie (Drowned), or Skeleton (Husk) has\nuntil Conversion",
+    "minihud.config.info_toggle.comment.infoZombieConversion": "Show the Time that a Zombie Villager,\nZombie (Drowned), or Skeleton (Stray) has\nuntil Conversion",
 
     "minihud.config.render_toggle.name.overlayBeaconRange": "overlayBeaconRange",
     "minihud.config.render_toggle.name.overlayBiomeBorder": "overlayBiomeBorder",

@@ -370,7 +370,6 @@
   "minihud.config.info_toggle.comment.infoTimeWorld": "顯示當前世界開放的時間刻\n可以理解為開服時間",
   "minihud.config.info_toggle.comment.infoWorldTimeFormatted": "按照天、小時、分鐘的格式展示當前時間",
   "minihud.config.info_toggle.comment.infoWeather": "顯示當前天氣",
-  "minihud.config.info_toggle.comment.infoZombieConversion": "顯示殭屍村民距離轉換剩餘的時間",
   "minihud.config.render_toggle.name.overlayBeaconRange": "烽火台範圍顯示",
   "minihud.config.render_toggle.name.overlayBiomeBorder": "生態域邊界顯示",
   "minihud.config.render_toggle.name.overlayBlockGrid": "方塊網格顯示",
